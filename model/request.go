@@ -117,3 +117,9 @@ type ReqTeamMemberQueryParam struct {
 	TeamUUID string `json:"team_uuid"`
 	Pagination
 }
+
+// 创建用户角色参数
+type ReqUserRole struct {
+	UserUUID  string   `json:"user_uuid"`
+	RoleUUIDs []string `json:"role_uuids"`
+}
