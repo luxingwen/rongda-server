@@ -7,6 +7,7 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,7 @@ func NewAppService() *AppService {
 func (s *AppService) CreateApp(ctx *app.Context, app *model.App) error {
 	app.CreatedAt = time.Now()
 	app.UpdatedAt = app.CreatedAt
+	app.UUID = uuid.New().String()
 
 	err := ctx.DB.Create(app).Error
 	if err != nil {
@@ -57,7 +59,7 @@ func (s *AppService) GetAppByApiKey(ctx *app.Context, apikey string) (*model.App
 
 func (s *AppService) UpdateApp(ctx *app.Context, app *model.App) error {
 	app.UpdatedAt = time.Now()
-	err := ctx.DB.Save(app).Error
+	err := ctx.DB.Where("uuid = ?", app.UUID).Updates(app).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update app", err)
 		return errors.New("failed to update app")

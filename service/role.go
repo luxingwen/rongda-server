@@ -7,6 +7,7 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,7 @@ func NewRoleService() *RoleService {
 func (s *RoleService) CreateRole(ctx *app.Context, role *model.Role) error {
 	role.CreatedAt = time.Now()
 	role.UpdatedAt = role.CreatedAt
+	role.Uuid = uuid.New().String()
 
 	err := ctx.DB.Create(role).Error
 	if err != nil {
@@ -44,7 +46,7 @@ func (s *RoleService) GetRoleByUUID(ctx *app.Context, uuid string) (*model.Role,
 
 func (s *RoleService) UpdateRole(ctx *app.Context, role *model.Role) error {
 	role.UpdatedAt = time.Now()
-	err := ctx.DB.Save(role).Error
+	err := ctx.DB.Where("uuid = ?", role.Uuid).Updates(role).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update role", err)
 		return errors.New("failed to update role")

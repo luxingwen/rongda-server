@@ -56,7 +56,7 @@ func (s *UserRoleService) GetUserRoleByUUID(ctx *app.Context, userUuid, roleUuid
 
 func (s *UserRoleService) UpdateUserRole(ctx *app.Context, userRole *model.UserRole) error {
 	userRole.UpdatedAt = time.Now()
-	err := ctx.DB.Save(userRole).Error
+	err := ctx.DB.Where("uuid = ?", userRole.UUID).Updates(userRole).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update user role", err)
 		return errors.New("failed to update user role")

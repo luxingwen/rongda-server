@@ -10,7 +10,7 @@ type App struct {
 	ApiKey    string    `gorm:"type:varchar(255)" json:"api_key"` // ApiKey 是调用方的API Key
 	SecKey    string    `gorm:"type:varchar(255)" json:"sec_key"` // SecKey 是调用方的Sec Key
 	UserUUID  string    `gorm:"type:char(36)" json:"user_uuid"`   // UserUUID 是用户的UUID
-	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"` // CreatedAt 记录了调用方创建的时间
-	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"` // UpdatedAt 记录了调用方信息最后更新的时间
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"-"`          // CreatedAt 记录了调用方创建的时间
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"-"`          // UpdatedAt 记录了调用方信息最后更新的时间
 	Status    int       `gorm:"type:int(1)" json:"status"`        // Status 0:未启用 1:启用 2:删除
 }

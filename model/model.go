@@ -14,8 +14,8 @@ type ProcurementOrder struct {
 	Supplier    string    `json:"supplier" gorm:"comment:'供应商'"`       // 供应商
 	OrderDate   time.Time `json:"order_date" gorm:"comment:'订单日期'"`    // 订单日期
 	Remarks     string    `json:"remarks" gorm:"comment:'备注'"`         // 备注
-	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`    // CreatedAt 记录了创建的时间
-	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`    // UpdatedAt 记录了信息最后更新的时间
+	CreatedAt   time.Time `gorm:"autoCreateTime" json:"-"`             // CreatedAt 记录了创建的时间
+	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"-"`             // UpdatedAt 记录了信息最后更新的时间
 }
 
 type ProcurementArrival struct {
@@ -25,8 +25,8 @@ type ProcurementArrival struct {
 	ArrivalDate time.Time `json:"arrival_date" gorm:"comment:'到货日期'"`  // 到货日期
 	Inspector   string    `json:"inspector" gorm:"comment:'检验员'"`      // 检验员
 	Batch       string    `json:"batch" gorm:"comment:'批次号'"`          // 批次号
-	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`    // CreatedAt 记录了创建的时间
-	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`    // UpdatedAt 记录了信息最后更新的时间
+	CreatedAt   time.Time `gorm:"autoCreateTime" json:"-"`             // CreatedAt 记录了创建的时间
+	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"-"`             // UpdatedAt 记录了信息最后更新的时间
 }
 
 type Payment struct {
@@ -38,8 +38,8 @@ type Payment struct {
 	Description      string    `json:"description" gorm:"comment:'描述'"`         // 描述
 	ConfirmedBy      string    `json:"confirmed_by" gorm:"comment:'确认人'"`       // 确认人
 	ConfirmationDate time.Time `json:"confirmation_date" gorm:"comment:'确认日期'"` // 确认日期
-	CreatedAt        time.Time `gorm:"autoCreateTime" json:"created_at"`        // CreatedAt 记录了创建的时间
-	UpdatedAt        time.Time `gorm:"autoUpdateTime" json:"updated_at"`        // UpdatedAt 记录了信息最后更新的时间
+	CreatedAt        time.Time `gorm:"autoCreateTime" json:"-"`                 // CreatedAt 记录了创建的时间
+	UpdatedAt        time.Time `gorm:"autoUpdateTime" json:"-"`                 // UpdatedAt 记录了信息最后更新的时间
 }
 
 type ThirdPartyWarehouse struct {
@@ -49,8 +49,8 @@ type ThirdPartyWarehouse struct {
 	Location    string    `json:"location" gorm:"comment:'位置'"`        // 位置
 	ArrivalDate time.Time `json:"arrival_date" gorm:"comment:'到货日期'"`  // 到货日期
 	StorageFee  float64   `json:"storage_fee" gorm:"comment:'存储费'"`    // 存储费
-	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`    // CreatedAt 记录了创建的时间
-	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`    // UpdatedAt 记录了信息最后更新的时间
+	CreatedAt   time.Time `gorm:"autoCreateTime" json:"-"`             // CreatedAt 记录了创建的时间
+	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"-"`             // UpdatedAt 记录了信息最后更新的时间
 }
 
 // 仓库管理模块
@@ -59,8 +59,8 @@ type Warehouse struct {
 	Location  string    `json:"location" gorm:"comment:'仓库位置'"`      // 仓库位置
 	Capacity  int       `json:"capacity" gorm:"comment:'容量'"`        // 容量
 	Manager   string    `json:"manager" gorm:"comment:'管理员'"`        // 管理员
-	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`    // CreatedAt 记录了创建的时间
-	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`    // UpdatedAt 记录了信息最后更新的时间
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"-"`             // CreatedAt 记录了创建的时间
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"-"`             // UpdatedAt 记录了信息最后更新的时间
 }
 
 type InventoryCheck struct {

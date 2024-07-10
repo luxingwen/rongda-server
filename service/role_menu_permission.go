@@ -7,6 +7,7 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,7 @@ func NewRoleMenuPermissionService() *RoleMenuPermissionService {
 func (s *RoleMenuPermissionService) CreateRoleMenuPermission(ctx *app.Context, rmp *model.RoleMenuPermission) error {
 	rmp.CreatedAt = time.Now()
 	rmp.UpdatedAt = rmp.CreatedAt
+	rmp.UUID = uuid.New().String()
 
 	err := ctx.DB.Create(rmp).Error
 	if err != nil {
@@ -44,7 +46,7 @@ func (s *RoleMenuPermissionService) GetRoleMenuPermissionByUUID(ctx *app.Context
 
 func (s *RoleMenuPermissionService) UpdateRoleMenuPermission(ctx *app.Context, rmp *model.RoleMenuPermission) error {
 	rmp.UpdatedAt = time.Now()
-	err := ctx.DB.Save(rmp).Error
+	err := ctx.DB.Where("uuid = ?", rmp.UUID).Updates(rmp).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update role menu permission", err)
 		return errors.New("failed to update role menu permission")

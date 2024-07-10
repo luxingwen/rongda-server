@@ -8,6 +8,6 @@ type Server struct {
 	Name        string    `json:"name" gorm:"column:name;type:varchar(255);not null;unique_index"`
 	Address     string    `json:"address" gorm:"column:address;type:varchar(255);not null;"`
 	Description string    `json:"description" gorm:"column:description;type:varchar(255);not null;"`
-	CreateAt    time.Time `json:"create_at" gorm:"column:create_at;type:datetime;not null;"`
-	UpdateAt    time.Time `json:"update_at" gorm:"column:update_at;type:datetime;not null;"`
+	CreateAt    time.Time `json:"-" gorm:"column:create_at;type:datetime;not null;"`
+	UpdateAt    time.Time `json:"-" gorm:"column:update_at;type:datetime;not null;"`
 }

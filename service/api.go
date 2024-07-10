@@ -7,6 +7,7 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,7 @@ func NewAPIService() *APIService {
 func (s *APIService) CreateAPI(ctx *app.Context, api *model.API) error {
 	api.CreatedAt = time.Now()
 	api.UpdatedAt = api.CreatedAt
+	api.UUID = uuid.New().String()
 
 	err := ctx.DB.Create(api).Error
 	if err != nil {

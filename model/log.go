@@ -18,6 +18,6 @@ type Log struct {
 	Message   string    `gorm:"type:text" json:"message"`             // Message 是用户的操作信息
 	Header    string    `gorm:"type:text" json:"header"`              // Header 是用户的请求头
 	TraceID   string    `gorm:"type:varchar(255)" json:"trace_id"`    // TraceID 是用户的请求追踪ID
-	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`     // CreatedAt 记录了日志创建的时间
-	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`     // UpdatedAt 记录了日志信息最后更新的时间
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"-"`              // CreatedAt 记录了日志创建的时间
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"-"`              // UpdatedAt 记录了日志信息最后更新的时间
 }

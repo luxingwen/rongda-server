@@ -7,6 +7,7 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,7 @@ func NewMenuService() *MenuService {
 func (s *MenuService) CreateMenu(ctx *app.Context, menu *model.Menu) error {
 	menu.CreatedAt = time.Now()
 	menu.UpdatedAt = menu.CreatedAt
+	menu.UUID = uuid.New().String()
 
 	err := ctx.DB.Create(menu).Error
 	if err != nil {
@@ -44,7 +46,7 @@ func (s *MenuService) GetMenuByUUID(ctx *app.Context, uuid string) (*model.Menu,
 
 func (s *MenuService) UpdateMenu(ctx *app.Context, menu *model.Menu) error {
 	menu.UpdatedAt = time.Now()
-	err := ctx.DB.Save(menu).Error
+	err := ctx.DB.Where("uuid = ?", menu.UUID).Updates(menu).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update menu", err)
 		return errors.New("failed to update menu")
@@ -82,7 +84,7 @@ func (s *MenuService) GetMenuList(ctx *app.Context, params *model.ReqMenuQueryPa
 		return nil, errors.New("failed to get menu count")
 	}
 
-	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&menus).Error
+	err = db.Find(&menus).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get menu list", err)
 		return nil, errors.New("failed to get menu list")

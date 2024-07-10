@@ -10,7 +10,7 @@ type API struct {
 	Name       string    `gorm:"type:varchar(100)" json:"name"`         // Name 是API的名称
 	Path       string    `gorm:"type:varchar(255)" json:"path"`         // Path 是API的路径
 	Method     string    `gorm:"type:varchar(10)" json:"method"`        // Method 是API的HTTP方法
-	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`      // CreatedAt 记录了API创建的时间
-	UpdatedAt  time.Time `gorm:"autoUpdateTime" json:"updated_at"`      // UpdatedAt 记录了API信息最后更新的时间
+	CreatedAt  time.Time `gorm:"autoCreateTime" json:"-"`               // CreatedAt 记录了API创建的时间
+	UpdatedAt  time.Time `gorm:"autoUpdateTime" json:"-"`               // UpdatedAt 记录了API信息最后更新的时间
 	Status     int       `gorm:"type:int(1)" json:"status"`             // Status 0:未启用 1:启用 2:删除
 }

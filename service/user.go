@@ -7,7 +7,9 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,6 +23,13 @@ func NewUserService() *UserService {
 func (s *UserService) CreateUser(ctx *app.Context, user *model.User) error {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
+	user.Uuid = uuid.New().String()
+
+	if user.Password == "" {
+		user.Password = "123456"
+	}
+
+	user.Password = utils.HashPasswordWithSalt(user.Password, ctx.Config.PasswdKey)
 
 	err := ctx.DB.Create(user).Error
 	if err != nil {
@@ -45,9 +54,9 @@ func (s *UserService) GetUserByUUID(ctx *app.Context, uuid string) (*model.User,
 
 func (s *UserService) UpdateUser(ctx *app.Context, user *model.User) error {
 	user.UpdatedAt = time.Now()
-	err := ctx.DB.Save(user).Error
+	err := ctx.DB.Where("uuid = ?", user.Uuid).Updates(user).Error
 	if err != nil {
-		ctx.Logger.Error("Failed to update user", err)
+		ctx.Logger.Error("Failed to update user:", err)
 		return errors.New("failed to update user")
 	}
 

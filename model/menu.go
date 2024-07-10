@@ -9,6 +9,6 @@ type Menu struct {
 	Name       string    `gorm:"type:varchar(100)" json:"name"`    // Name 是菜单的名称
 	Link       string    `gorm:"type:varchar(255)" json:"link"`    // Link 是菜单的链接
 	ParentUUID string    `gorm:"type:char(36)" json:"parent_uuid"` // ParentUUID 是父菜单的UUID
-	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"` // CreatedAt 记录了菜单创建的时间
-	UpdatedAt  time.Time `gorm:"autoUpdateTime" json:"updated_at"` // UpdatedAt 记录了菜单信息最后更新的时间
+	CreatedAt  time.Time `gorm:"autoCreateTime" json:"-"`          // CreatedAt 记录了菜单创建的时间
+	UpdatedAt  time.Time `gorm:"autoUpdateTime" json:"-"`          // UpdatedAt 记录了菜单信息最后更新的时间
 }

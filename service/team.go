@@ -46,7 +46,7 @@ func (s *TeamService) GetTeamByUUID(ctx *app.Context, uuid string) (*model.Team,
 
 func (s *TeamService) UpdateTeam(ctx *app.Context, team *model.Team) error {
 	team.UpdatedAt = time.Now()
-	err := ctx.DB.Save(team).Error
+	err := ctx.DB.Where("uuid = ?", team.UUID).Updates(team).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update team", err)
 		return errors.New("failed to update team")
