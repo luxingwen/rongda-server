@@ -42,7 +42,7 @@ class UserReq:
         return r
 
     def update_user(self, user_id, user):
-        return self.client.put(f'/users/{user_id}', user)
+        return self.client.post(f'/users/{user_id}', user)
 
     def delete_user(self, user_id):
         return self.client.delete(f'/users/{user_id}')

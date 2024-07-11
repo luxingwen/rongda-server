@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"sgin/model"
@@ -34,6 +35,14 @@ func (s *UserService) CreateUser(ctx *app.Context, user *model.User) error {
 	err := ctx.DB.Create(user).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to create user", err)
+
+		if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%s' for key", user.Username)) {
+			return errors.New(user.Username + "用户名已存在")
+		}
+		if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%s' for key", user.Email)) {
+			return errors.New(user.Email + "邮箱已存在")
+		}
+
 		return errors.New("failed to create user")
 	}
 	return nil

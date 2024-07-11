@@ -56,7 +56,7 @@ func (s *MenuService) UpdateMenu(ctx *app.Context, menu *model.Menu) error {
 }
 
 func (s *MenuService) DeleteMenu(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Delete(&model.Menu{}).Error
+	err := ctx.DB.Where("uuid = ? OR parent_uuid = ?", uuid, uuid).Delete(&model.Menu{}).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete menu", err)
 		return errors.New("failed to delete menu")

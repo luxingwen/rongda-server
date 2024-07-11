@@ -3,7 +3,7 @@ package model
 import "gorm.io/gorm"
 
 func MigrateDbTable(db *gorm.DB) {
-	db.AutoMigrate(
+	err := db.AutoMigrate(
 		&AppPermission{},
 		&API{},
 		&App{},
@@ -17,4 +17,7 @@ func MigrateDbTable(db *gorm.DB) {
 		&TeamMember{},
 		&VerificationCode{},
 	)
+	if err != nil {
+		panic(err)
+	}
 }

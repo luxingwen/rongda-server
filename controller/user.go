@@ -100,6 +100,11 @@ func (uc *UserController) DeleteUser(c *app.Context) {
 		return
 	}
 
+	if params.Uuid == c.GetString("user_id") {
+		c.JSONError(http.StatusBadRequest, "You can't delete yourself")
+		return
+	}
+
 	err := uc.Service.DeleteUser(c, params.Uuid)
 	if err != nil {
 		c.JSONError(http.StatusInternalServerError, err.Error())

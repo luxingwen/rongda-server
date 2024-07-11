@@ -2,6 +2,7 @@ package routers
 
 import (
 	"sgin/controller"
+	"sgin/middleware"
 	"sgin/pkg/app"
 
 	"io/ioutil"
@@ -25,6 +26,7 @@ func InitRouter(ctx *app.App) {
 
 func InitUserRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
 	{
 		userController := &controller.UserController{
 			Service: &service.UserService{},
