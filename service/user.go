@@ -130,6 +130,11 @@ func (s *UserService) GetUserList(ctx *app.Context, params *model.ReqUserQueryPa
 		ctx.Logger.Error("Failed to get user list", err)
 		return nil, errors.New("failed to get user list")
 	}
+
+	for _, user := range users {
+		user.Password = ""
+	}
+
 	return &model.PagedResponse{
 		Total:    total,
 		Data:     users,

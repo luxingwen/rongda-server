@@ -147,30 +147,6 @@ type Product struct {
 	Cost        float64 `json:"cost" gorm:"comment:'成本'"`            // 成本
 }
 
-type Supplier struct {
-	ID          uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
-	Name        string `json:"name" gorm:"comment:'企业名称'"`          // 企业名称
-	Country     string `json:"country" gorm:"comment:'国家'"`         // 国家
-	ContactInfo string `json:"contact_info" gorm:"comment:'联系方式'"`  // 联系方式
-}
-
-type Agent struct {
-	ID          uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
-	Name        string `json:"name" gorm:"comment:'企业名称'"`          // 企业名称
-	Address     string `json:"address" gorm:"comment:'地址'"`         // 地址
-	ContactInfo string `json:"contact_info" gorm:"comment:'联系方式'"`  // 联系方式
-}
-
-type Customer struct {
-	ID           uint    `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
-	Name         string  `json:"name" gorm:"comment:'企业名称'"`          // 企业名称
-	Address      string  `json:"address" gorm:"comment:'地址'"`         // 地址
-	ContactInfo  string  `json:"contact_info" gorm:"comment:'联系方式'"`  // 联系方式
-	BankAccount  string  `json:"bank_account" gorm:"comment:'银行账号'"`  // 银行账号
-	CreditStatus string  `json:"credit_status" gorm:"comment:'信用状态'"` // 信用状态
-	Discount     float64 `json:"discount" gorm:"comment:'折扣'"`        // 折扣
-}
-
 // 员工管理模块
 type Employee struct {
 	ID          uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID

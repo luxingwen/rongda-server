@@ -22,6 +22,10 @@ func InitRouter(ctx *app.App) {
 	InitLoginRouter(ctx)
 	InitServerRouter(ctx)
 	InitTeamRouter(ctx)
+	InitCustomerRouter(ctx)
+	InitAgentRouter(ctx)
+	InitSupplierRouter(ctx)
+	InitSettlementCurrencyRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -140,6 +144,62 @@ func InitTeamRouter(ctx *app.App) {
 		v1.POST("/team/delete", teamController.DeleteTeam)
 		v1.POST("/team/info", teamController.GetTeamInfo)
 		v1.POST("/team/list", teamController.GetTeamList)
+	}
+}
+
+func InitCustomerRouter(ctx *app.App) {
+
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		customerController := &controller.CustomerController{
+			CustomerService: &service.CustomerService{},
+		}
+		v1.POST("/customer/create", customerController.CreateCustomer)
+		v1.POST("/customer/update", customerController.UpdateCustomer)
+		v1.POST("/customer/delete", customerController.DeleteCustomer)
+		v1.POST("/customer/info", customerController.GetCustomerInfo)
+		v1.POST("/customer/list", customerController.GetCustomerList)
+	}
+}
+func InitAgentRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		agentController := &controller.AgentController{
+			AgentService: &service.AgentService{},
+		}
+		v1.POST("/agent/create", agentController.CreateAgent)
+		v1.POST("/agent/update", agentController.UpdateAgent)
+		v1.POST("/agent/delete", agentController.DeleteAgent)
+		v1.POST("/agent/info", agentController.GetAgentInfo)
+		v1.POST("/agent/list", agentController.GetAgentList)
+	}
+}
+
+func InitSupplierRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		suppliersController := &controller.SupplierController{
+			SupplierService: &service.SupplierService{},
+		}
+		v1.POST("/supplier/create", suppliersController.CreateSupplier)
+		v1.POST("/supplier/update", suppliersController.UpdateSupplier)
+		v1.POST("/supplier/delete", suppliersController.DeleteSupplier)
+		v1.POST("/supplier/info", suppliersController.GetSupplierInfo)
+		v1.POST("/supplier/list", suppliersController.GetSupplierList)
+	}
+}
+
+func InitSettlementCurrencyRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		settlementController := &controller.SettlementCurrencyController{
+			SettlementCurrencyService: &service.SettlementCurrencyService{},
+		}
+		v1.POST("/settlement_currency/create", settlementController.CreateSettlementCurrency)
+		v1.POST("/settlement_currency/update", settlementController.UpdateSettlementCurrency)
+		v1.POST("/settlement_currency/delete", settlementController.DeleteSettlementCurrency)
+		v1.POST("/settlement_currency/info", settlementController.GetSettlementCurrencyInfo)
+		v1.POST("/settlement_currency/list", settlementController.GetSettlementCurrencyList)
 	}
 }
 

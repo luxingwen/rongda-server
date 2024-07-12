@@ -123,3 +123,23 @@ type ReqUserRole struct {
 	UserUUID  string   `json:"user_uuid"`
 	RoleUUIDs []string `json:"role_uuids"`
 }
+
+type ReqCustomerQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
+
+type ReqAgentQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
+
+type ReqSupplierQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
+
+type ReqSettlementCurrencyQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
