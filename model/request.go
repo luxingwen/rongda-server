@@ -143,3 +143,13 @@ type ReqSettlementCurrencyQueryParam struct {
 	Name string `json:"name"`
 	Pagination
 }
+
+type ReqSkuQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
+
+type ReqDepartmentQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}

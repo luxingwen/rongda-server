@@ -22,7 +22,7 @@ func NewUserService() *UserService {
 }
 
 func (s *UserService) CreateUser(ctx *app.Context, user *model.User) error {
-	user.CreatedAt = time.Now()
+	user.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	user.UpdatedAt = user.CreatedAt
 	user.Uuid = uuid.New().String()
 
@@ -62,7 +62,12 @@ func (s *UserService) GetUserByUUID(ctx *app.Context, uuid string) (*model.User,
 }
 
 func (s *UserService) UpdateUser(ctx *app.Context, user *model.User) error {
-	user.UpdatedAt = time.Now()
+	user.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+
+	if user.Password != "" {
+		user.Password = utils.HashPasswordWithSalt(user.Password, ctx.Config.PasswdKey)
+	}
+
 	err := ctx.DB.Where("uuid = ?", user.Uuid).Updates(user).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update user:", err)

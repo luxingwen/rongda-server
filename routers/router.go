@@ -26,6 +26,8 @@ func InitRouter(ctx *app.App) {
 	InitAgentRouter(ctx)
 	InitSupplierRouter(ctx)
 	InitSettlementCurrencyRouter(ctx)
+	InitSkuRouter(ctx)
+	InitDepartmentRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -200,6 +202,34 @@ func InitSettlementCurrencyRouter(ctx *app.App) {
 		v1.POST("/settlement_currency/delete", settlementController.DeleteSettlementCurrency)
 		v1.POST("/settlement_currency/info", settlementController.GetSettlementCurrencyInfo)
 		v1.POST("/settlement_currency/list", settlementController.GetSettlementCurrencyList)
+	}
+}
+
+func InitSkuRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		skuController := &controller.SkuController{
+			SkuService: &service.SkuService{},
+		}
+		v1.POST("/sku/create", skuController.CreateSku)
+		v1.POST("/sku/update", skuController.UpdateSku)
+		v1.POST("/sku/delete", skuController.DeleteSku)
+		v1.POST("/sku/info", skuController.GetSkuInfo)
+		v1.POST("/sku/list", skuController.GetSkuList)
+	}
+}
+
+func InitDepartmentRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		departmentController := &controller.DepartmentController{
+			DepartmentService: &service.DepartmentService{},
+		}
+		v1.POST("/department/create", departmentController.CreateDepartment)
+		v1.POST("/department/update", departmentController.UpdateDepartment)
+		v1.POST("/department/delete", departmentController.DeleteDepartment)
+		v1.POST("/department/info", departmentController.GetDepartmentInfo)
+		v1.POST("/department/list", departmentController.GetDepartmentList)
 	}
 }
 

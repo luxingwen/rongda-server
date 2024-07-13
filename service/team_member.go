@@ -18,7 +18,7 @@ func NewTeamMemberService() *TeamMemberService {
 }
 
 func (s *TeamMemberService) CreateTeamMember(ctx *app.Context, teamMember *model.TeamMember) error {
-	teamMember.CreatedAt = time.Now()
+	teamMember.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	teamMember.UpdatedAt = teamMember.CreatedAt
 
 	err := ctx.DB.Create(teamMember).Error
@@ -43,7 +43,7 @@ func (s *TeamMemberService) GetTeamMemberByUUID(ctx *app.Context, uuid string) (
 }
 
 func (s *TeamMemberService) UpdateTeamMember(ctx *app.Context, teamMember *model.TeamMember) error {
-	teamMember.UpdatedAt = time.Now()
+	teamMember.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 	err := ctx.DB.Where("uuid = ?", teamMember.UUID).Updates(teamMember).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update team member", err)
