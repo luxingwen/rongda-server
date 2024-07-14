@@ -13,3 +13,8 @@ type Supplier struct {
 	CreatedAt          string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt          string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
+
+type SupplierRes struct {
+	Supplier
+	SettlementCurrencyInfo *SettlementCurrency `json:"settlement_currency_info"`
+}

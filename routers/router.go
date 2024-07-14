@@ -28,6 +28,8 @@ func InitRouter(ctx *app.App) {
 	InitSettlementCurrencyRouter(ctx)
 	InitSkuRouter(ctx)
 	InitDepartmentRouter(ctx)
+	InitProductRouter(ctx)
+	InitStorehouseRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -202,6 +204,7 @@ func InitSettlementCurrencyRouter(ctx *app.App) {
 		v1.POST("/settlement_currency/delete", settlementController.DeleteSettlementCurrency)
 		v1.POST("/settlement_currency/info", settlementController.GetSettlementCurrencyInfo)
 		v1.POST("/settlement_currency/list", settlementController.GetSettlementCurrencyList)
+		v1.GET("/settlement_currency/all", settlementController.GetAllSettlementCurrency)
 	}
 }
 
@@ -230,6 +233,34 @@ func InitDepartmentRouter(ctx *app.App) {
 		v1.POST("/department/delete", departmentController.DeleteDepartment)
 		v1.POST("/department/info", departmentController.GetDepartmentInfo)
 		v1.POST("/department/list", departmentController.GetDepartmentList)
+	}
+}
+
+func InitProductRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		productController := &controller.ProductController{
+			ProductService: &service.ProductService{},
+		}
+		v1.POST("/product/create", productController.CreateProduct)
+		v1.POST("/product/update", productController.UpdateProduct)
+		v1.POST("/product/delete", productController.DeleteProduct)
+		v1.POST("/product/info", productController.GetProductInfo)
+		v1.POST("/product/list", productController.GetProductList)
+	}
+}
+
+func InitStorehouseRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		storehouseController := &controller.StorehouseController{
+			StorehouseService: &service.StorehouseService{},
+		}
+		v1.POST("/storehouse/create", storehouseController.CreateStorehouse)
+		v1.POST("/storehouse/update", storehouseController.UpdateStorehouse)
+		v1.POST("/storehouse/delete", storehouseController.DeleteStorehouse)
+		v1.POST("/storehouse/info", storehouseController.GetStorehouseInfo)
+		v1.POST("/storehouse/list", storehouseController.GetStorehouseList)
 	}
 }
 

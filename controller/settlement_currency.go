@@ -119,3 +119,19 @@ func (s *SettlementCurrencyController) GetSettlementCurrencyList(ctx *app.Contex
 
 	ctx.JSONSuccess(currencies)
 }
+
+// @Summary 获取全部可用的结算币种
+// @Description 获取全部可用的结算币种
+// @Tags 结算币种
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} model.SettlementCurrency
+// @Router /api/v1/settlement_currency/all [get]
+func (s *SettlementCurrencyController) GetAllSettlementCurrency(ctx *app.Context) {
+	currencies, err := s.SettlementCurrencyService.GetAvailableSettlementCurrencyList(ctx)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(currencies)
+}

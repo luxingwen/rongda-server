@@ -137,16 +137,6 @@ type Analysis struct {
 	GeneratedAt time.Time `json:"generated_at" gorm:"comment:'生成日期'"`  // 生成日期
 }
 
-// 资料管理模块
-type Product struct {
-	ID          uint    `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
-	Name        string  `json:"name" gorm:"comment:'商品名称'"`          // 商品名称
-	SKU         string  `json:"sku" gorm:"comment:'SKU'"`            // SKU
-	Description string  `json:"description" gorm:"comment:'描述'"`     // 描述
-	Price       float64 `json:"price" gorm:"comment:'价格'"`           // 价格
-	Cost        float64 `json:"cost" gorm:"comment:'成本'"`            // 成本
-}
-
 // 员工管理模块
 type Employee struct {
 	ID          uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID

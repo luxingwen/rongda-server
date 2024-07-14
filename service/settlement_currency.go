@@ -97,3 +97,29 @@ func (s *SettlementCurrencyService) GetSettlementCurrencyList(ctx *app.Context, 
 		Data:  currencies,
 	}, nil
 }
+
+// 获取全部可用的结算币种
+func (s *SettlementCurrencyService) GetAvailableSettlementCurrencyList(ctx *app.Context) ([]*model.SettlementCurrency, error) {
+	var currencies []*model.SettlementCurrency
+	err := ctx.DB.Model(&model.SettlementCurrency{}).Where("status = ?", model.SettlementCurrencyStatusEnabled).Find(&currencies).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get available settlement currency list", err)
+		return nil, errors.New("failed to get available settlement currency list")
+	}
+	return currencies, nil
+}
+
+// 根据uuid获取结算币种
+func (s *SettlementCurrencyService) GetSettlementCurrencyByUuids(ctx *app.Context, uuids []string) (map[string]*model.SettlementCurrency, error) {
+	currencies := make([]*model.SettlementCurrency, 0)
+	err := ctx.DB.Model(&model.SettlementCurrency{}).Where("uuid IN (?)", uuids).Find(&currencies).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get settlement currency by uuid", err)
+		return nil, errors.New("failed to get settlement currency by uuid")
+	}
+	result := make(map[string]*model.SettlementCurrency)
+	for _, currency := range currencies {
+		result[currency.Uuid] = currency
+	}
+	return result, nil
+}

@@ -22,6 +22,8 @@ func MigrateDbTable(db *gorm.DB) {
 		&SettlementCurrency{},
 		&Sku{},
 		&Department{},
+		&Product{},
+		&Storehouse{},
 	)
 	if err != nil {
 		panic(err)

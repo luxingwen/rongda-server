@@ -1,5 +1,10 @@
 package model
 
+const (
+	SettlementCurrencyStatusEnabled  = 1 // 启用
+	SettlementCurrencyStatusDisabled = 0 // 未启用
+)
+
 type SettlementCurrency struct {
 	ID           uint    `json:"id" gorm:"primaryKey;comment:'主键ID'"`             // 主键ID
 	Uuid         string  `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`  // UUID

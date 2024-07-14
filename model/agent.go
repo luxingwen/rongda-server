@@ -8,7 +8,7 @@ type Agent struct {
 	ContactInfo  string  `json:"contact_info" gorm:"comment:'联系方式'"`              // 联系方式
 	BankAccount  string  `json:"bank_account" gorm:"comment:'银行账号'"`              // 银行账号
 	CreditStatus string  `json:"credit_status" gorm:"comment:'信用状态'"`             // 信用状态
-	Rate         float64 `json:"discount" gorm:"comment:'折扣'"`                    // 费率
+	Rate         float64 `json:"rate" gorm:"comment:'折扣'"`                        // 费率
 	Status       int     `json:"status" gorm:"comment:'状态'"`                      // 状态
 	CreatedAt    string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt    string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间

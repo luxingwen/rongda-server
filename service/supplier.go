@@ -92,8 +92,31 @@ func (s *SupplierService) GetSupplierList(ctx *app.Context, params *model.ReqSup
 		return nil, errors.New("failed to get supplier list")
 	}
 
+	settlementCurrencyUuids := make([]string, 0)
+	for _, supplier := range suppliers {
+		settlementCurrencyUuids = append(settlementCurrencyUuids, supplier.SettlementCurrency)
+	}
+
+	rSettlementCurrency, err := NewSettlementCurrencyService().GetSettlementCurrencyByUuids(ctx, settlementCurrencyUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get settlement currency by UUID", err)
+		return nil, errors.New("failed to get settlement currency by UUID")
+	}
+
+	res := make([]*model.SupplierRes, 0)
+
+	for _, supplier := range suppliers {
+		supplierRes := &model.SupplierRes{
+			Supplier: *supplier,
+		}
+		if currency, ok := rSettlementCurrency[supplier.SettlementCurrency]; ok {
+			supplierRes.SettlementCurrencyInfo = currency
+		}
+		res = append(res, supplierRes)
+	}
+
 	return &model.PagedResponse{
 		Total: total,
-		Data:  suppliers,
+		Data:  res,
 	}, nil
 }

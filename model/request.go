@@ -153,3 +153,13 @@ type ReqDepartmentQueryParam struct {
 	Name string `json:"name"`
 	Pagination
 }
+
+type ReqProductQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
+
+type ReqStorehouseQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
