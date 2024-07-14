@@ -26,3 +26,7 @@ MailConfig:
 
 NoRouterFoward: "https://www.baidu.com"
 ApiPrefix: "/api"
+
+
+Upload:
+  Dir: "public"

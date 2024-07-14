@@ -119,3 +119,19 @@ func (p *StorehouseController) GetStorehouseList(ctx *app.Context) {
 
 	ctx.JSONSuccess(storehouses)
 }
+
+// @Summary 获取所有可用仓库列表
+// @Description 获取所有可用仓库列表
+// @Tags 仓库
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.Storehouse
+// @Router /api/v1/storehouse/all [get]
+func (p *StorehouseController) GetAllStorehouse(ctx *app.Context) {
+	storehouses, err := p.StorehouseService.GetAvailableStorehouses(ctx)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(storehouses)
+}

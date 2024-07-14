@@ -1,5 +1,10 @@
 package model
 
+const (
+	StorehouseStatusEnabled  = 1 // 仓库状态启用
+	StorehouseStatusDisabled = 2 // 仓库状态未启用
+)
+
 type Storehouse struct {
 	ID      uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
 	Uuid    string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
@@ -16,6 +21,47 @@ type Storehouse struct {
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
+// 仓库物品信息
+type StorehouseProduct struct {
+	ID             uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`                         // 主键ID
+	Uuid           string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`              // UUID
+	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` //
+	ProductUuid    string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"`    // 商品UUID
+	SkuUuid        string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`      // SKU UUID
+	// 库存数量
+	Quantity  int    `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
+	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+type StorehouseProductRes struct {
+	StorehouseProduct
+	Storehouse Storehouse `json:"storehouse"`
+	Product    Product    `json:"product"`
+	Sku        Sku        `json:"sku"`
+}
+
+// 请求入库信息
+type StorehouseInboundReq struct {
+	StorehouseUuid string                       `json:"storehouse_uuid" binding:"required"` // 仓库UUID
+	Title          string                       `json:"title" binding:"required"`           // 标题
+	InboundType    string                       `json:"inbound_type" binding:"required"`    // 入库类型 1:采购入库 2:退货入库 3:手工入库
+	Status         int                          `json:"status" binding:"required"`          // 状态 1:已入库 2:未入库
+	Detail         []StorehouseInboundDetailReq `json:"detail" binding:"required"`          // 入库明细
+}
+
+type StorehouseInboundUpdateReq struct {
+	StorehouseInboundReq
+	InboundOrderNo string `json:"inbound_order_no" binding:"required"` // 入库单号
+}
+
+// 请求入库明细信息
+type StorehouseInboundDetailReq struct {
+	ProductUuid string `json:"product_uuid" binding:"required"` // 商品UUID
+	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
+	Quantity    int    `json:"quantity" binding:"required"`     // 入库数量
+}
+
 // 入库
 type StorehouseInbound struct {
 	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
@@ -23,17 +69,24 @@ type StorehouseInbound struct {
 	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
 	// 入库单号
 	InboundOrderNo string `json:"inbound_order_no" gorm:"comment:'入库单号'"` // 入库单号
+
+	Title string `json:"title" gorm:"comment:'标题'"` // 标题
+
 	// 入库日期
 	InboundDate string `json:"inbound_date" gorm:"comment:'入库日期'"` // 入库日期
 	// 入库类型
-	InboundType string `json:"inbound_type" gorm:"comment:'入库类型'"` // 入库类型
+	InboundType string `json:"inbound_type" gorm:"comment:'入库类型'"` // 入库类型 1:采购入库 2:退货入库 3:手工入库
 	// 入库状态
 	Status int `json:"status" gorm:"comment:'状态'"` // 状态 1:已入库 2:未入库
 	// 入库人
 	InboundBy string `json:"inbound_by" gorm:"comment:'入库人'"`                 // 入库人
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
 
+type StorehouseInboundRes struct {
+	StorehouseInbound
+	Storehouse Storehouse `json:"storehouse"`
 }
 
 // 入库明细
@@ -48,6 +101,20 @@ type StorehouseInboundDetail struct {
 	Quantity  int    `json:"quantity" gorm:"comment:'入库数量'"`                  // 入库数量
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+// 请求出库信息
+type StorehouseOutboundReq struct {
+	StorehouseUuid string                        `json:"storehouse_uuid" binding:"required"` // 仓库UUID
+	OutboundType   string                        `json:"outbound_type" binding:"required"`   // 出库类型 1:销售出库 2:退货出库 3:手工出库
+	Status         int                           `json:"status" binding:"required"`          // 状态 1:已出库 2:未出库
+	Detail         []StorehouseOutboundDetailReq `json:"detail" binding:"required"`          // 出库明细
+}
+
+type StorehouseOutboundDetailReq struct {
+	ProductUuid string `json:"product_uuid" binding:"required"` // 商品UUID
+	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
+	Quantity    int    `json:"quantity" binding:"required"`     // 入库数量
 }
 
 // 出库
@@ -70,6 +137,11 @@ type StorehouseOutbound struct {
 
 }
 
+type StorehouseOutboundRes struct {
+	StorehouseOutbound
+	Storehouse Storehouse `json:"storehouse"`
+}
+
 // 出库明细
 type StorehouseOutboundDetail struct {
 	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
@@ -82,6 +154,22 @@ type StorehouseOutboundDetail struct {
 	Quantity  int    `json:"quantity" gorm:"comment:'出库数量'"`                  // 出库数量
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+// 仓库盘点请求
+type StorehouseInventoryCheckReq struct {
+	StorehouseUuid string                              `json:"storehouse_uuid" binding:"required"` // 仓库UUID
+	CheckDate      string                              `json:"check_date" binding:"required"`      // 盘点日期
+	Status         int                                 `json:"status" binding:"required"`          // 状态 1:已盘点 2:未盘点
+	Detail         []StorehouseInventoryCheckDetailReq `json:"detail" binding:"required"`          // 盘点明细
+}
+
+type StorehouseInventoryCheckDetailReq struct {
+	ProductUuid string `json:"product_uuid" binding:"required"` // 商品UUID
+	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
+	Quantity    int    `json:"quantity" binding:"required"`     // 盘点数量
+	// 差异op
+	DifferenceOp string `json:"difference_op" gorm:"comment:'差异操作'"` // 差异操作 1:盘盈 2:盘亏
 }
 
 // 仓库盘点
@@ -99,6 +187,11 @@ type StorehouseInventoryCheck struct {
 	CheckBy   string `json:"check_by" gorm:"comment:'盘点人'"`                   // 盘点人
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+type StorehouseInventoryCheckRes struct {
+	StorehouseInventoryCheck
+	Storehouse Storehouse `json:"storehouse"`
 }
 
 // 仓库盘点明细

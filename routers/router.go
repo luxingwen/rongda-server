@@ -30,6 +30,10 @@ func InitRouter(ctx *app.App) {
 	InitDepartmentRouter(ctx)
 	InitProductRouter(ctx)
 	InitStorehouseRouter(ctx)
+	InitStorehouseInboundRouter(ctx)
+	InitStorehouseProductRouter(ctx)
+	InitStorehouseOutRouter(ctx)
+	InitStorehouseInventoryCheckRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -46,6 +50,7 @@ func InitUserRouter(ctx *app.App) {
 		v1.POST("/user/update", userController.UpdateUser)
 		v1.POST("/user/delete", userController.DeleteUser)
 		v1.GET("/user/myinfo", userController.GetMyInfo)
+		v1.POST("/user/avatar", userController.UpdateAvatar)
 
 	}
 
@@ -190,6 +195,7 @@ func InitSupplierRouter(ctx *app.App) {
 		v1.POST("/supplier/delete", suppliersController.DeleteSupplier)
 		v1.POST("/supplier/info", suppliersController.GetSupplierInfo)
 		v1.POST("/supplier/list", suppliersController.GetSupplierList)
+		v1.POST("/supplier/all", suppliersController.GetAllSupplier)
 	}
 }
 
@@ -241,12 +247,15 @@ func InitProductRouter(ctx *app.App) {
 	{
 		productController := &controller.ProductController{
 			ProductService: &service.ProductService{},
+			SkuService:     &service.SkuService{},
 		}
 		v1.POST("/product/create", productController.CreateProduct)
 		v1.POST("/product/update", productController.UpdateProduct)
 		v1.POST("/product/delete", productController.DeleteProduct)
 		v1.POST("/product/info", productController.GetProductInfo)
 		v1.POST("/product/list", productController.GetProductList)
+		v1.GET("/product/all", productController.GetAllProduct)
+		v1.POST("/product/sku/list", productController.GetProductSkuList)
 	}
 }
 
@@ -261,7 +270,65 @@ func InitStorehouseRouter(ctx *app.App) {
 		v1.POST("/storehouse/delete", storehouseController.DeleteStorehouse)
 		v1.POST("/storehouse/info", storehouseController.GetStorehouseInfo)
 		v1.POST("/storehouse/list", storehouseController.GetStorehouseList)
+		v1.POST("/storehouse/all", storehouseController.GetAllStorehouse)
 	}
+}
+
+func InitStorehouseInboundRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		storehouseInboundController := &controller.StorehouseInboundController{
+			InboundService: &service.StorehouseInboundService{},
+		}
+		v1.POST("/storehouse_inbound/create", storehouseInboundController.CreateInbound)
+		v1.POST("/storehouse_inbound/update", storehouseInboundController.UpdateInbound)
+		v1.POST("/storehouse_inbound/delete", storehouseInboundController.DeleteInbound)
+		v1.POST("/storehouse_inbound/info", storehouseInboundController.GetInboundInfo)
+		v1.POST("/storehouse_inbound/list", storehouseInboundController.GetInboundList)
+	}
+}
+
+func InitStorehouseProductRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		storehouseProductController := &controller.StorehouseProductController{
+			ProductService: &service.StorehouseProductService{},
+		}
+		v1.POST("/storehouse_product/create", storehouseProductController.CreateProduct)
+		v1.POST("/storehouse_product/update", storehouseProductController.UpdateProduct)
+		v1.POST("/storehouse_product/delete", storehouseProductController.DeleteProduct)
+		v1.POST("/storehouse_product/info", storehouseProductController.GetProductInfo)
+		v1.POST("/storehouse_product/list", storehouseProductController.GetProductList)
+	}
+}
+
+func InitStorehouseOutRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		storehouseOutController := &controller.StorehouseOutboundController{
+			OutboundService: &service.StorehouseOutboundService{},
+		}
+		v1.POST("/storehouse_outbound/create", storehouseOutController.CreateOutbound)
+		v1.POST("/storehouse_outbound/update", storehouseOutController.UpdateOutbound)
+		v1.POST("/storehouse_outbound/delete", storehouseOutController.DeleteOutbound)
+		v1.POST("/storehouse_outbound/info", storehouseOutController.GetOutboundInfo)
+		v1.POST("/storehouse_outbound/list", storehouseOutController.GetOutboundList)
+	}
+}
+
+func InitStorehouseInventoryCheckRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		storehouseInventoryCheckController := &controller.StorehouseInventoryCheckController{
+			InventoryCheckService: &service.StorehouseInventoryCheckService{},
+		}
+		v1.POST("/storehouse_inventory_check/create", storehouseInventoryCheckController.CreateInventoryCheck)
+		v1.POST("/storehouse_inventory_check/update", storehouseInventoryCheckController.UpdateInventoryCheck)
+		v1.POST("/storehouse_inventory_check/delete", storehouseInventoryCheckController.DeleteInventoryCheck)
+		v1.POST("/storehouse_inventory_check/info", storehouseInventoryCheckController.GetInventoryCheck)
+		v1.POST("/storehouse_inventory_check/list", storehouseInventoryCheckController.GetInventoryCheckList)
+	}
+
 }
 
 func InitSwaggerRouter(ctx *app.App) {

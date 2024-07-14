@@ -91,3 +91,28 @@ func (s *StorehouseService) GetStorehouseList(ctx *app.Context, param *model.Req
 	}
 	return
 }
+
+// 获取所有可用仓库
+func (s *StorehouseService) GetAvailableStorehouses(ctx *app.Context) (storehouseList []*model.Storehouse, err error) {
+	err = ctx.DB.Where("status = ?", model.StorehouseStatusEnabled).Find(&storehouseList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get available storehouses", err)
+		return nil, errors.New("failed to get available storehouses")
+	}
+	return
+}
+
+// 根据uuids获取仓库列表
+func (s *StorehouseService) GetStorehousesByUUIDs(ctx *app.Context, uuids []string) (r map[string]*model.Storehouse, err error) {
+	storehouseList := make([]*model.Storehouse, 0)
+	r = make(map[string]*model.Storehouse)
+	err = ctx.DB.Where("uuid in (?)", uuids).Find(&storehouseList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get storehouses by UUIDs", err)
+		return nil, errors.New("failed to get storehouses by UUIDs")
+	}
+	for _, storehouse := range storehouseList {
+		r[storehouse.Uuid] = storehouse
+	}
+	return
+}

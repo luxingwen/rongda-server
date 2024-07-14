@@ -163,3 +163,23 @@ type ReqStorehouseQueryParam struct {
 	Name string `json:"name"`
 	Pagination
 }
+
+type ReqStorehouseInboundQueryParam struct {
+	StorehouseUuid string `json:"storehouse_uuid"`
+	Pagination
+}
+
+type ReqStorehouseProductQueryParam struct {
+	StorehouseUuid string `json:"storehouse_uuid"`
+	Pagination
+}
+
+type ReqStorehouseOutboundQueryParam struct {
+	StorehouseUuid string `json:"storehouse_uuid"`
+	Pagination
+}
+
+type ReqInventoryCheckQueryParam struct {
+	StorehouseUuid string `json:"storehouse_uuid"`
+	Pagination
+}

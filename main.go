@@ -49,6 +49,8 @@ func main() {
 
 	serverApp.NoRoute(app.NoRouterHandler())
 
+	serverApp.Router.Static("/public", serverApp.Config.Upload.Dir)
+
 	v1 := serverApp.Group("/api/v1")
 	userController := &controller.UserController{Service: &service.UserService{}}
 	{

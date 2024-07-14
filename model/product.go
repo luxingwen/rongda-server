@@ -1,5 +1,9 @@
 package model
 
+const (
+	ProductStatusAvailable = 1 // 商品状态可用
+)
+
 type Product struct {
 	ID            uint    `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
 	Uuid          string  `json:"uuid" gorm:"comment:'商品唯一标识'"`        // 商品唯一标识
@@ -13,4 +17,9 @@ type Product struct {
 	Creater       string  `json:"creater" gorm:"comment:'创建人'"`        // 创建人
 	CreatedAt     string  `json:"created_at" gorm:"comment:'创建时间'"`    // 创建时间
 	UpdatedAt     string  `json:"updated_at" gorm:"comment:'更新时间'"`    // 更新时间
+}
+
+type ProductRes struct {
+	Product
+	SupplierInfo *Supplier `json:"supplier_info"`
 }

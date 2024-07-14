@@ -120,3 +120,31 @@ func (s *SupplierService) GetSupplierList(ctx *app.Context, params *model.ReqSup
 		Data:  res,
 	}, nil
 }
+
+// 获取所有可用的供应商
+func (s *SupplierService) GetAvailableSupplierList(ctx *app.Context) (r []*model.Supplier, err error) {
+	err = ctx.DB.Where("status = ?", 1).Find(&r).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get available supplier list", err)
+		return nil, errors.New("failed to get available supplier list")
+	}
+	return
+}
+
+// 根据uuid列表获取供应商列表
+func (s *SupplierService) GetSupplierListByUUIDs(ctx *app.Context, uuids []string) (r map[string]*model.Supplier, err error) {
+	var supplierList []*model.Supplier
+	r = make(map[string]*model.Supplier)
+
+	err = ctx.DB.Where("uuid in ?", uuids).Find(&supplierList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get supplier list by UUIDs", err)
+		return nil, errors.New("failed to get supplier list by UUIDs")
+	}
+
+	for _, supplier := range supplierList {
+		r[supplier.Uuid] = supplier
+	}
+
+	return
+}

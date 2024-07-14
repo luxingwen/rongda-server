@@ -119,3 +119,19 @@ func (s *SupplierController) GetSupplierList(ctx *app.Context) {
 
 	ctx.JSONSuccess(suppliers)
 }
+
+// @Summary 获取全部可用的供应商
+// @Description 获取全部可用的供应商
+// @Tags 供应商
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.SupplierList
+// @Router /api/v1/supplier/all [post]
+func (s *SupplierController) GetAllSupplier(ctx *app.Context) {
+	suppliers, err := s.SupplierService.GetAvailableSupplierList(ctx)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(suppliers)
+}

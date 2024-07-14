@@ -86,12 +86,61 @@ func (s *SkuService) GetSkuList(ctx *app.Context, param *model.ReqSkuQueryParam)
 		return
 	}
 
+	productUuids := make([]string, 0)
+	for _, sku := range skuList {
+		productUuids = append(productUuids, sku.ProductUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return nil, errors.New("failed to get product list by UUIDs")
+	}
+
+	res := make([]*model.SkuRes, 0)
+	for _, sku := range skuList {
+		skuRes := &model.SkuRes{
+			Sku: *sku,
+		}
+		if product, ok := productMap[sku.ProductUuid]; ok {
+			skuRes.Product = *product
+		}
+		res = append(res, skuRes)
+	}
+
 	r = &model.PagedResponse{
 		Total:    total,
 		Current:  param.Current,
 		PageSize: param.PageSize,
-		Data:     skuList,
+		Data:     res,
 	}
 
+	return
+}
+
+// 根据SKU UUID列表获取SKU列表
+func (s *SkuService) GetSkuListByUUIDs(ctx *app.Context, uuids []string) (map[string]*model.Sku, error) {
+	skuList := make([]*model.Sku, 0)
+	err := ctx.DB.Where("uuid in (?)", uuids).Find(&skuList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get SKU list by UUIDs", err)
+		return nil, errors.New("failed to get SKU list by UUIDs")
+	}
+
+	skuMap := make(map[string]*model.Sku)
+	for _, sku := range skuList {
+		skuMap[sku.UUID] = sku
+	}
+
+	return skuMap, nil
+}
+
+// 根据产品uuid获取SKU列表
+func (s *SkuService) GetSkuListByProductUUID(ctx *app.Context, productUUID string) (r []*model.Sku, err error) {
+	err = ctx.DB.Where("product_uuid = ?", productUUID).Find(&r).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get SKU list by product UUID", err)
+		return nil, errors.New("failed to get SKU list by product UUID")
+	}
 	return
 }

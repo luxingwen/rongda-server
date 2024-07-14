@@ -9,6 +9,7 @@ import (
 
 type ProductController struct {
 	ProductService *service.ProductService
+	SkuService     *service.SkuService
 }
 
 // @Summary 创建商品
@@ -89,6 +90,17 @@ func (p *ProductController) DeleteProduct(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
+
+	rskulist, err := p.SkuService.GetSkuListByProductUUID(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if len(rskulist) > 0 {
+		ctx.JSONError(http.StatusBadRequest, "商品下有SKU，不能删除")
+		return
+	}
+
 	if err := p.ProductService.DeleteProduct(ctx, param.Uuid); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
@@ -118,4 +130,44 @@ func (p *ProductController) GetProductList(ctx *app.Context) {
 	}
 
 	ctx.JSONSuccess(products)
+}
+
+// @Summary 获取所有商品
+// @Description 获取所有商品
+// @Tags 商品
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.PagedResponse
+// @Router /api/v1/product/all [get]
+func (p *ProductController) GetAllProduct(ctx *app.Context) {
+	products, err := p.ProductService.GetAvailableProductList(ctx)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(products)
+}
+
+// @Summary 获取商品SKU列表
+// @Description 获取商品SKU列表
+// @Tags 商品
+// @Accept  json
+// @Produce  json
+// @Param param body model.ReqUuidParam true "商品UUID"
+// @Success 200 {object} model.PagedResponse
+// @Router /api/v1/product/sku/list [post]
+func (p *ProductController) GetProductSkuList(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	skulist, err := p.SkuService.GetSkuListByProductUUID(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(skulist)
 }
