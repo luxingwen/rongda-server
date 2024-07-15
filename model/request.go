@@ -183,3 +183,25 @@ type ReqInventoryCheckQueryParam struct {
 	StorehouseUuid string `json:"storehouse_uuid"`
 	Pagination
 }
+
+type ReqPurchaseOrderQueryParam struct {
+	OrderNo      string `json:"order_no"`
+	SupplierUuid string `json:"supplier_uuid"`
+	Pagination
+}
+
+type ReqAgreementQueryParam struct {
+	Type string `json:"type"`
+	Pagination
+}
+
+type ReqPurchaseArrivalQueryParam struct {
+	PurchaseOrderNo string `json:"order_no"`
+	Pagination
+}
+
+type ReqPurchaseBillQueryParam struct {
+	PurchaseOrderNo string `json:"purchase_order_no"`
+	SupplierUuid    string `json:"supplier_uuid"`
+	Pagination
+}

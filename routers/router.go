@@ -34,6 +34,10 @@ func InitRouter(ctx *app.App) {
 	InitStorehouseProductRouter(ctx)
 	InitStorehouseOutRouter(ctx)
 	InitStorehouseInventoryCheckRouter(ctx)
+	InitPurchaseOrderRouter(ctx)
+	InitAgreementRouter(ctx)
+	InitPurchaseArrivalRouter(ctx)
+	InitPurchaseBillRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -91,6 +95,20 @@ func InitAppRouter(ctx *app.App) {
 		v1.POST("/app/update", appController.UpdateApp)
 		v1.POST("/app/delete", appController.DeleteApp)
 
+	}
+}
+
+func InitPurchaseOrderRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		purchaseOrderController := &controller.PurchaseOrderController{
+			PurchaseOrderService: &service.PurchaseOrderService{},
+		}
+		v1.POST("/purchase_order/create", purchaseOrderController.CreatePurchaseOrder)
+		v1.POST("/purchase_order/update", purchaseOrderController.UpdatePurchaseOrder)
+		v1.POST("/purchase_order/delete", purchaseOrderController.DeletePurchaseOrder)
+		v1.POST("/purchase_order/info", purchaseOrderController.GetPurchaseOrder)
+		v1.POST("/purchase_order/list", purchaseOrderController.GetPurchaseOrderList)
 	}
 }
 
@@ -329,6 +347,48 @@ func InitStorehouseInventoryCheckRouter(ctx *app.App) {
 		v1.POST("/storehouse_inventory_check/list", storehouseInventoryCheckController.GetInventoryCheckList)
 	}
 
+}
+
+func InitAgreementRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		agreementController := &controller.AgreementController{
+			AgreementService: &service.AgreementService{},
+		}
+		v1.POST("/agreement/create", agreementController.CreateAgreement)
+		v1.POST("/agreement/update", agreementController.UpdateAgreement)
+		v1.POST("/agreement/delete", agreementController.DeleteAgreement)
+		v1.POST("/agreement/info", agreementController.GetAgreement)
+		v1.POST("/agreement/list", agreementController.ListAgreements)
+	}
+}
+
+func InitPurchaseArrivalRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		purchaseArrivalController := &controller.PurchaseArrivalController{
+			PurchaseArrivalService: &service.PurchaseArrivalService{},
+		}
+		v1.POST("/purchase_arrival/create", purchaseArrivalController.CreatePurchaseArrival)
+		v1.POST("/purchase_arrival/update", purchaseArrivalController.UpdatePurchaseArrival)
+		v1.POST("/purchase_arrival/delete", purchaseArrivalController.DeletePurchaseArrival)
+		v1.POST("/purchase_arrival/info", purchaseArrivalController.GetPurchaseArrival)
+		v1.POST("/purchase_arrival/list", purchaseArrivalController.GetPurchaseArrivalList)
+	}
+}
+
+func InitPurchaseBillRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		purchaseBillController := &controller.PurchaseBillController{
+			PurchaseBillService: &service.PurchaseBillService{},
+		}
+		v1.POST("/purchase_bill/create", purchaseBillController.CreatePurchaseBill)
+		v1.POST("/purchase_bill/update", purchaseBillController.UpdatePurchaseBill)
+		v1.POST("/purchase_bill/delete", purchaseBillController.DeletePurchaseBill)
+		v1.POST("/purchase_bill/info", purchaseBillController.GetPurchaseBill)
+		v1.POST("/purchase_bill/list", purchaseBillController.GetPurchaseBillList)
+	}
 }
 
 func InitSwaggerRouter(ctx *app.App) {
