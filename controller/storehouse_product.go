@@ -25,7 +25,8 @@ func (p *StorehouseProductController) CreateProduct(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := p.ProductService.CreateProduct(ctx, &param); err != nil {
+	userid := ctx.GetString("user_id")
+	if err := p.ProductService.CreateProduct(ctx, userid, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -68,7 +69,9 @@ func (p *StorehouseProductController) UpdateProduct(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := p.ProductService.UpdateProduct(ctx, &param); err != nil {
+	userId := ctx.GetString("user_id")
+	ctx.Logger.Info("user_id:", userId)
+	if err := p.ProductService.UpdateProduct(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}

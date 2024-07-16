@@ -119,3 +119,20 @@ func (c *CustomerController) GetCustomerList(ctx *app.Context) {
 
 	ctx.JSONSuccess(customers)
 }
+
+// @Summary 获取所有客户列表
+// @Description 获取所有客户列表
+// @Tags 客户
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.CustomerQueryResponse
+// @Router /api/v1/customer/all [post]
+func (c *CustomerController) GetAllCustomerList(ctx *app.Context) {
+	customers, err := c.CustomerService.GetAllCustomers(ctx)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(customers)
+}

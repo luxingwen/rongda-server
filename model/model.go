@@ -82,18 +82,6 @@ type DamageReport struct {
 	ReportedBy  string    `json:"reported_by" gorm:"comment:'报告人'"`    // 报告人
 }
 
-// 销售管理模块
-type SalesOrder struct {
-	ID            uint      `json:"id" gorm:"primaryKey;comment:'主键ID'"`  // 主键ID
-	Contract      string    `json:"contract" gorm:"comment:'合同信息'"`       // 合同信息
-	ProductList   string    `json:"product_list" gorm:"comment:'商品清单'"`   // 商品清单
-	Tax           float64   `json:"tax" gorm:"comment:'税费'"`              // 税费
-	Deposit       float64   `json:"deposit" gorm:"comment:'定金'"`          // 定金
-	PaymentMethod string    `json:"payment_method" gorm:"comment:'支付方式'"` // 支付方式
-	OrderDate     time.Time `json:"order_date" gorm:"comment:'订单日期'"`     // 订单日期
-	Remarks       string    `json:"remarks" gorm:"comment:'备注'"`          // 备注
-}
-
 type Shipment struct {
 	ID           uint      `json:"id" gorm:"primaryKey;comment:'主键ID'"`       // 主键ID
 	SalesOrderID uint      `json:"sales_order_id" gorm:"comment:'关联的销售订单ID'"` // 关联的销售订单ID

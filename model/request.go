@@ -205,3 +205,26 @@ type ReqPurchaseBillQueryParam struct {
 	SupplierUuid    string `json:"supplier_uuid"`
 	Pagination
 }
+
+type ReqSalesOrderQueryParam struct {
+	OrderNo      string `json:"order_no"`
+	CustomerUuid string `json:"customer_uuid"`
+	Pagination
+}
+
+type ReqSalesOutOfStockQueryParam struct {
+	SalesOrderNo   string `json:"order_no"`
+	StorehouseUuid string `json:"storehouse_uuid"`
+	Pagination
+}
+
+type ReqSalesSettlementQueryParam struct {
+	SalesOrderNo string `json:"order_no"`
+	OrderUuid    string `json:"order_uuid"`
+	Pagination
+}
+
+type ReqBillQueryParam struct {
+	InvoiceCompany string `json:"order_no"`
+	Pagination
+}

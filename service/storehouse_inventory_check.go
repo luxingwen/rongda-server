@@ -51,15 +51,19 @@ func (s *StorehouseInventoryCheckService) CreateInventoryCheck(ctx *app.Context,
 
 			differenceQuantity := 0
 			detailReq.DifferenceOp = "0" // 正常
+			beforQuantity := stock.Quantity
+			opDesc := "盘点，库存调整"
 
 			if detailReq.Quantity > stock.Quantity {
 				detailReq.DifferenceOp = "1"
 				differenceQuantity = detailReq.Quantity - stock.Quantity //盘盈
+				opDesc = "盘点，库存调整，盘盈, 增加库存"
 			}
 
 			if detailReq.Quantity < stock.Quantity {
 				detailReq.DifferenceOp = "2"
 				differenceQuantity = stock.Quantity - detailReq.Quantity //盘亏
+				opDesc = "盘点，库存调整，盘亏, 减少库存"
 			}
 
 			detail := &model.StorehouseInventoryCheckDetail{
@@ -84,6 +88,23 @@ func (s *StorehouseInventoryCheckService) CreateInventoryCheck(ctx *app.Context,
 				if err := tx.Where("uuid = ?", stock.Uuid).Updates(stock).Error; err != nil {
 					ctx.Logger.Error("Failed to update stock", err)
 					return err
+				}
+				// 创建库存记录
+				stockopLog := &model.StorehouseProductOpLog{
+					Uuid:                  uuid.New().String(),
+					StorehouseProductUuid: stock.Uuid,
+					StorehouseUuid:        check.StorehouseUuid,
+					BeforeQuantity:        beforQuantity,
+					Quantity:              stock.Quantity,
+					OpQuantity:            differenceQuantity,
+					OpType:                1,
+					OpDesc:                opDesc,
+					OpBy:                  userId,
+					CreatedAt:             nowStr,
+				}
+				if err := tx.Create(stockopLog).Error; err != nil {
+					ctx.Logger.Error("Failed to create stockop log", err)
+					return errors.New("failed to create stockop log")
 				}
 			}
 
@@ -122,11 +143,23 @@ func (s *StorehouseInventoryCheckService) UpdateInventoryCheck(ctx *app.Context,
 }
 
 func (s *StorehouseInventoryCheckService) DeleteInventoryCheck(ctx *app.Context, requuid string) error {
-	err := ctx.DB.Where("uuid = ?", requuid).Delete(&model.StorehouseInventoryCheck{}).Error
-	if err != nil {
-		ctx.Logger.Error("Failed to delete inventory check", err)
-		return errors.New("failed to delete inventory check")
-	}
+
+	ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		err := tx.Where("check_order_no = ?", requuid).Delete(&model.StorehouseInventoryCheck{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete inventory check", err)
+			return errors.New("failed to delete inventory check")
+		}
+		// 删除清单
+		err = tx.Where("check_order_no = ?", requuid).Delete(&model.StorehouseInventoryCheckDetail{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete inventory check detail", err)
+			return errors.New("failed to delete inventory check detail")
+		}
+		return nil
+	})
+
 	return nil
 }
 
@@ -149,14 +182,22 @@ func (s *StorehouseInventoryCheckService) ListInventoryChecks(ctx *app.Context, 
 		return
 	}
 
+	userUuids := make([]string, 0)
 	storehouseUuids := make([]string, 0)
 	for _, check := range checkList {
 		storehouseUuids = append(storehouseUuids, check.StorehouseUuid)
+		userUuids = append(userUuids, check.CheckBy)
 	}
 
 	storehouseMap, err := NewStorehouseService().GetStorehousesByUUIDs(ctx, storehouseUuids)
 	if err != nil {
 		ctx.Logger.Error("Failed to get storehouse list by UUIDs", err)
+		return
+	}
+
+	userMap, err := NewUserService().GetUsersByUUIDs(ctx, userUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user list by UUIDs", err)
 		return
 	}
 
@@ -168,6 +209,10 @@ func (s *StorehouseInventoryCheckService) ListInventoryChecks(ctx *app.Context, 
 		if storehouse, ok := storehouseMap[check.StorehouseUuid]; ok {
 			checkitem.Storehouse = *storehouse
 		}
+		if user, ok := userMap[check.CheckBy]; ok {
+			checkitem.CheckByUser = *user
+		}
+
 		res = append(res, checkitem)
 	}
 

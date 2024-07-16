@@ -38,6 +38,11 @@ func InitRouter(ctx *app.App) {
 	InitAgreementRouter(ctx)
 	InitPurchaseArrivalRouter(ctx)
 	InitPurchaseBillRouter(ctx)
+	InitSalesOrderRouter(ctx)
+	InitSalesOutOfStockRouter(ctx)
+	InitSalesSettlementRouter(ctx)
+	InitBillRouter(ctx)
+
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -186,6 +191,7 @@ func InitCustomerRouter(ctx *app.App) {
 		v1.POST("/customer/delete", customerController.DeleteCustomer)
 		v1.POST("/customer/info", customerController.GetCustomerInfo)
 		v1.POST("/customer/list", customerController.GetCustomerList)
+		v1.POST("/customer/all", customerController.GetAllCustomerList)
 	}
 }
 func InitAgentRouter(ctx *app.App) {
@@ -279,6 +285,7 @@ func InitProductRouter(ctx *app.App) {
 
 func InitStorehouseRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
 	{
 		storehouseController := &controller.StorehouseController{
 			StorehouseService: &service.StorehouseService{},
@@ -294,6 +301,7 @@ func InitStorehouseRouter(ctx *app.App) {
 
 func InitStorehouseInboundRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
 	{
 		storehouseInboundController := &controller.StorehouseInboundController{
 			InboundService: &service.StorehouseInboundService{},
@@ -308,6 +316,7 @@ func InitStorehouseInboundRouter(ctx *app.App) {
 
 func InitStorehouseProductRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
 	{
 		storehouseProductController := &controller.StorehouseProductController{
 			ProductService: &service.StorehouseProductService{},
@@ -322,6 +331,7 @@ func InitStorehouseProductRouter(ctx *app.App) {
 
 func InitStorehouseOutRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
 	{
 		storehouseOutController := &controller.StorehouseOutboundController{
 			OutboundService: &service.StorehouseOutboundService{},
@@ -336,6 +346,7 @@ func InitStorehouseOutRouter(ctx *app.App) {
 
 func InitStorehouseInventoryCheckRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
 	{
 		storehouseInventoryCheckController := &controller.StorehouseInventoryCheckController{
 			InventoryCheckService: &service.StorehouseInventoryCheckService{},
@@ -388,6 +399,63 @@ func InitPurchaseBillRouter(ctx *app.App) {
 		v1.POST("/purchase_bill/delete", purchaseBillController.DeletePurchaseBill)
 		v1.POST("/purchase_bill/info", purchaseBillController.GetPurchaseBill)
 		v1.POST("/purchase_bill/list", purchaseBillController.GetPurchaseBillList)
+	}
+}
+
+func InitSalesOrderRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		salesOrderController := &controller.SalesOrderController{
+			SalesOrderService: &service.SalesOrderService{},
+		}
+		v1.POST("/sales_order/create", salesOrderController.CreateSalesOrder)
+		v1.POST("/sales_order/update", salesOrderController.UpdateSalesOrder)
+		v1.POST("/sales_order/delete", salesOrderController.DeleteSalesOrder)
+		v1.POST("/sales_order/info", salesOrderController.GetSalesOrder)
+		v1.POST("/sales_order/list", salesOrderController.GetSalesOrderList)
+		v1.POST("/sales_order/all", salesOrderController.GetAllSalesOrder)
+	}
+}
+
+func InitSalesOutOfStockRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		salesOutOfStockController := &controller.SalesOutOfStockController{
+			SalesOutOfStockService: &service.SalesOutOfStockService{},
+		}
+		v1.POST("/sales_out_of_stock/create", salesOutOfStockController.CreateSalesOutOfStock)
+		v1.POST("/sales_out_of_stock/update", salesOutOfStockController.UpdateSalesOutOfStock)
+		v1.POST("/sales_out_of_stock/delete", salesOutOfStockController.DeleteSalesOutOfStock)
+		v1.POST("/sales_out_of_stock/info", salesOutOfStockController.GetSalesOutOfStock)
+		v1.POST("/sales_out_of_stock/list", salesOutOfStockController.GetSalesOutOfStockList)
+	}
+}
+
+func InitSalesSettlementRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		salesSettlementController := &controller.SalesSettlementController{
+			SalesSettlementService: &service.SalesSettlementService{},
+		}
+		v1.POST("/sales_settlement/create", salesSettlementController.CreateSalesSettlement)
+		v1.POST("/sales_settlement/update", salesSettlementController.UpdateSalesSettlement)
+		v1.POST("/sales_settlement/delete", salesSettlementController.DeleteSalesSettlement)
+		v1.POST("/sales_settlement/info", salesSettlementController.GetSalesSettlement)
+		v1.POST("/sales_settlement/list", salesSettlementController.GetSalesSettlementList)
+	}
+}
+
+func InitBillRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		billController := &controller.BillController{
+			BillService: &service.BillService{},
+		}
+		v1.POST("/bill/create", billController.CreateBill)
+		v1.POST("/bill/update", billController.UpdateBill)
+		v1.POST("/bill/delete", billController.DeleteBill)
+		v1.POST("/bill/info", billController.GetBill)
+		v1.POST("/bill/list", billController.GetBillList)
 	}
 }
 

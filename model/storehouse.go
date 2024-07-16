@@ -34,6 +34,23 @@ type StorehouseProduct struct {
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
+// 仓库物品操作日志
+type StorehouseProductOpLog struct {
+	ID                    uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`                                   // 主键ID
+	Uuid                  string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`                        // UUID
+	StorehouseUuid        string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"`           //
+	StorehouseProductUuid string `json:"storehouse_product_uuid" gorm:"type:char(36);index;comment:'仓库物品UUID'"` // 仓库物品UUID
+	// 操作之前库存数量
+	BeforeQuantity int `json:"before_quantity" gorm:"comment:'操作之前库存数量'"` // 操作之前库存数量
+	// 库存数量
+	Quantity   int    `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
+	OpType     int    `json:"op_type" gorm:"comment:'操作类型'"`                   // 操作类型 1:入库 2:出库 3:盘点 4:调拨
+	OpQuantity int    `json:"op_quantity" gorm:"comment:'操作数量'"`               // 操作数量
+	OpBy       string `json:"op_by" gorm:"comment:'操作人'"`                      // 操作人
+	OpDesc     string `json:"op_desc" gorm:"comment:'操作描述'"`                   // 操作描述
+	CreatedAt  string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+}
+
 type StorehouseProductRes struct {
 	StorehouseProduct
 	Storehouse Storehouse `json:"storehouse"`
@@ -86,7 +103,8 @@ type StorehouseInbound struct {
 
 type StorehouseInboundRes struct {
 	StorehouseInbound
-	Storehouse Storehouse `json:"storehouse"`
+	Storehouse    Storehouse `json:"storehouse"`
+	InboundByUser User       `json:"inbound_by_user"`
 }
 
 // 入库明细
@@ -139,7 +157,8 @@ type StorehouseOutbound struct {
 
 type StorehouseOutboundRes struct {
 	StorehouseOutbound
-	Storehouse Storehouse `json:"storehouse"`
+	Storehouse     Storehouse `json:"storehouse"`
+	OutboundByUser User       `json:"outbound_by_user"`
 }
 
 // 出库明细
@@ -191,7 +210,8 @@ type StorehouseInventoryCheck struct {
 
 type StorehouseInventoryCheckRes struct {
 	StorehouseInventoryCheck
-	Storehouse Storehouse `json:"storehouse"`
+	Storehouse  Storehouse `json:"storehouse"`
+	CheckByUser User       `json:"check_by_user"`
 }
 
 // 仓库盘点明细

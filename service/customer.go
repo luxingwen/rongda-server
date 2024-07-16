@@ -97,3 +97,14 @@ func (s *CustomerService) GetCustomerList(ctx *app.Context, params *model.ReqCus
 		Data:  customers,
 	}, nil
 }
+
+// 获取所用可用的客户
+func (s *CustomerService) GetAllCustomers(ctx *app.Context) ([]*model.Customer, error) {
+	var customers []*model.Customer
+	err := ctx.DB.Find(&customers).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get all customers", err)
+		return nil, errors.New("failed to get all customers")
+	}
+	return customers, nil
+}

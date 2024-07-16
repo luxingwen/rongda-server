@@ -56,6 +56,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 			err := tx.Where("storehouse_uuid = ? AND product_uuid = ? AND sku_uuid = ?", req.StorehouseUuid, detailReq.ProductUuid, detailReq.SkuUuid).First(stock).Error
 			if err != nil {
 				if err == gorm.ErrRecordNotFound {
+					stock.Uuid = uuid.New().String()
 					stock.StorehouseUuid = req.StorehouseUuid
 					stock.ProductUuid = detailReq.ProductUuid
 					stock.SkuUuid = detailReq.SkuUuid
@@ -65,12 +66,50 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 					if err := tx.Create(stock).Error; err != nil {
 						return err
 					}
+
+					// 创建库存记录
+					stockopLog := &model.StorehouseProductOpLog{
+						Uuid:                  uuid.New().String(),
+						StorehouseProductUuid: stock.Uuid,
+						StorehouseUuid:        inbound.StorehouseUuid,
+						BeforeQuantity:        0,
+						Quantity:              detail.Quantity,
+						OpQuantity:            detail.Quantity,
+						OpType:                1,
+						OpDesc:                "仓库第一次入库",
+						OpBy:                  userId,
+						CreatedAt:             nowstr,
+					}
+					if err := tx.Create(stockopLog).Error; err != nil {
+						ctx.Logger.Error("Failed to create stockop log", err)
+						return errors.New("failed to create stockop log")
+					}
+
 				}
 			} else {
+				beforQuantity := stock.Quantity
 				stock.Quantity += detailReq.Quantity
 				stock.UpdatedAt = nowstr
 				if err := tx.Where("storehouse_uuid = ? AND product_uuid = ? AND sku_uuid = ?", req.StorehouseUuid, detailReq.ProductUuid, detailReq.SkuUuid).Updates(stock).Error; err != nil {
 					return err
+				}
+
+				// 创建库存记录
+				stockopLog := &model.StorehouseProductOpLog{
+					Uuid:                  uuid.New().String(),
+					StorehouseProductUuid: stock.Uuid,
+					StorehouseUuid:        inbound.StorehouseUuid,
+					BeforeQuantity:        beforQuantity,
+					Quantity:              stock.Quantity,
+					OpQuantity:            detailReq.Quantity,
+					OpType:                1,
+					OpDesc:                "仓库入库,增加库存",
+					OpBy:                  userId,
+					CreatedAt:             nowstr,
+				}
+				if err := tx.Create(stockopLog).Error; err != nil {
+					ctx.Logger.Error("Failed to create stockop log", err)
+					return errors.New("failed to create stockop log")
 				}
 			}
 		}
@@ -177,6 +216,17 @@ func (s *StorehouseInboundService) ListInbounds(ctx *app.Context, param *model.R
 		return
 	}
 
+	userUuids := make([]string, 0)
+	for _, inbound := range inboundList {
+		userUuids = append(userUuids, inbound.InboundBy)
+	}
+
+	userMap, err := NewUserService().GetUsersByUUIDs(ctx, userUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user list by UUIDs", err)
+		return
+	}
+
 	storehouseUuids := make([]string, 0)
 	for _, inbound := range inboundList {
 		storehouseUuids = append(storehouseUuids, inbound.StorehouseUuid)
@@ -195,6 +245,11 @@ func (s *StorehouseInboundService) ListInbounds(ctx *app.Context, param *model.R
 		if storehouse, ok := storehouseMap[inbound.StorehouseUuid]; ok {
 			inboundRes.Storehouse = *storehouse
 		}
+
+		if user, ok := userMap[inbound.InboundBy]; ok {
+			inboundRes.InboundByUser = *user
+		}
+
 		res = append(res, inboundRes)
 	}
 

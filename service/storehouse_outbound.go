@@ -70,12 +70,32 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 				ctx.Logger.Error("Failed to create outbound detail", err)
 				return errors.New("failed to create outbound detail")
 			}
+			beforQuantity := stock.Quantity
 
 			stock.Quantity -= detailReq.Quantity
 			stock.UpdatedAt = nowstr
 			if err := tx.Where("uuid = ?", stock.Uuid).Updates(stock).Error; err != nil {
 				return err
 			}
+
+			// 创建库存记录
+			stockopLog := &model.StorehouseProductOpLog{
+				Uuid:                  uuid.New().String(),
+				StorehouseProductUuid: stock.Uuid,
+				StorehouseUuid:        outbound.StorehouseUuid,
+				BeforeQuantity:        beforQuantity,
+				Quantity:              stock.Quantity,
+				OpQuantity:            detailReq.Quantity,
+				OpType:                1,
+				OpDesc:                "仓库出库，减少库存",
+				OpBy:                  userId,
+				CreatedAt:             nowstr,
+			}
+			if err := tx.Create(stockopLog).Error; err != nil {
+				ctx.Logger.Error("Failed to create stockop log", err)
+				return errors.New("failed to create stockop log")
+			}
+
 		}
 		return nil
 	})
@@ -111,11 +131,24 @@ func (s *StorehouseOutboundService) UpdateOutbound(ctx *app.Context, outbound *m
 }
 
 func (s *StorehouseOutboundService) DeleteOutbound(ctx *app.Context, requuid string) error {
-	err := ctx.DB.Where("uuid = ?", requuid).Delete(&model.StorehouseOutbound{}).Error
-	if err != nil {
-		ctx.Logger.Error("Failed to delete outbound", err)
-		return errors.New("failed to delete outbound")
-	}
+
+	ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		err := tx.Where("outbound_order_no = ?", requuid).Delete(&model.StorehouseOutbound{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete outbound", err)
+			return errors.New("failed to delete outbound")
+		}
+
+		// 删除清单
+		err = tx.Where("outbound_order_no = ?", requuid).Delete(&model.StorehouseOutboundDetail{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete outbound detail", err)
+			return errors.New("failed to delete outbound detail")
+		}
+		return nil
+	})
+
 	return nil
 }
 
@@ -138,9 +171,18 @@ func (s *StorehouseOutboundService) ListOutbounds(ctx *app.Context, param *model
 		return
 	}
 
+	userUuids := make([]string, 0)
+
 	storehouseUuids := make([]string, 0)
 	for _, outbound := range outboundList {
 		storehouseUuids = append(storehouseUuids, outbound.StorehouseUuid)
+		userUuids = append(userUuids, outbound.OutboundBy)
+	}
+
+	userMap, err := NewUserService().GetUsersByUUIDs(ctx, userUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user list by UUIDs", err)
+		return
 	}
 
 	storehouseMap, err := NewStorehouseService().GetStorehousesByUUIDs(ctx, storehouseUuids)
@@ -156,6 +198,9 @@ func (s *StorehouseOutboundService) ListOutbounds(ctx *app.Context, param *model
 		}
 		if storehouse, ok := storehouseMap[outbound.StorehouseUuid]; ok {
 			outboundRes.Storehouse = *storehouse
+		}
+		if user, ok := userMap[outbound.OutboundBy]; ok {
+			outboundRes.OutboundByUser = *user
 		}
 		res = append(res, outboundRes)
 	}

@@ -147,3 +147,20 @@ func (s *UserService) GetUserList(ctx *app.Context, params *model.ReqUserQueryPa
 		PageSize: params.PageSize,
 	}, nil
 }
+
+// 根据用户UUID列表获取用户列表
+func (s *UserService) GetUsersByUUIDs(ctx *app.Context, uuids []string) (map[string]*model.User, error) {
+	users := make([]*model.User, 0)
+	err := ctx.DB.Where("uuid IN (?)", uuids).Find(&users).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get users by UUIDs", err)
+		return nil, errors.New("failed to get users by UUIDs")
+	}
+
+	userMap := make(map[string]*model.User)
+	for _, user := range users {
+		userMap[user.Uuid] = user
+	}
+
+	return userMap, nil
+}

@@ -18,7 +18,7 @@ func NewStorehouseProductService() *StorehouseProductService {
 	return &StorehouseProductService{}
 }
 
-func (s *StorehouseProductService) CreateProduct(ctx *app.Context, product *model.StorehouseProduct) error {
+func (s *StorehouseProductService) CreateProduct(ctx *app.Context, userId string, product *model.StorehouseProduct) error {
 	product.Uuid = uuid.New().String()
 	product.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	product.UpdatedAt = product.CreatedAt
@@ -37,11 +37,32 @@ func (s *StorehouseProductService) CreateProduct(ctx *app.Context, product *mode
 					ctx.Logger.Error("Failed to create product", err)
 					return errors.New("failed to create product")
 				}
+
+				// 创建库存记录
+				stockopLog := &model.StorehouseProductOpLog{
+					Uuid:                  uuid.New().String(),
+					StorehouseUuid:        product.StorehouseUuid,
+					StorehouseProductUuid: product.Uuid,
+					BeforeQuantity:        0,
+					Quantity:              product.Quantity,
+					OpQuantity:            product.Quantity,
+					OpType:                1,
+					OpDesc:                "入库",
+					OpBy:                  userId,
+					CreatedAt:             product.CreatedAt,
+				}
+				if err := tx.Create(stockopLog).Error; err != nil {
+					ctx.Logger.Error("Failed to create stockop log", err)
+					return errors.New("failed to create stockop log")
+				}
+				return nil
+
 			} else {
 				return err
 			}
 		}
 		// 存在则更新
+		beforQuantity := resProduct.Quantity
 		resProduct.Quantity += product.Quantity
 		resProduct.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 		err = tx.Where("uuid = ?", resProduct.Uuid).Updates(resProduct).Error
@@ -49,6 +70,25 @@ func (s *StorehouseProductService) CreateProduct(ctx *app.Context, product *mode
 			ctx.Logger.Error("Failed to update product", err)
 			return errors.New("failed to update product")
 		}
+
+		// 创建库存记录
+		stockopLog := &model.StorehouseProductOpLog{
+			Uuid:                  uuid.New().String(),
+			StorehouseProductUuid: product.Uuid,
+			StorehouseUuid:        product.StorehouseUuid,
+			BeforeQuantity:        beforQuantity,
+			Quantity:              resProduct.Quantity,
+			OpQuantity:            product.Quantity,
+			OpType:                1,
+			OpDesc:                "增加库存",
+			OpBy:                  userId,
+			CreatedAt:             product.CreatedAt,
+		}
+		if err := tx.Create(stockopLog).Error; err != nil {
+			ctx.Logger.Error("Failed to create stockop log", err)
+			return errors.New("failed to create stockop log")
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -71,13 +111,49 @@ func (s *StorehouseProductService) GetProduct(ctx *app.Context, uuid string) (*m
 	return product, nil
 }
 
-func (s *StorehouseProductService) UpdateProduct(ctx *app.Context, product *model.StorehouseProduct) error {
+func (s *StorehouseProductService) UpdateProduct(ctx *app.Context, userId string, product *model.StorehouseProduct) error {
 	product.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-	err := ctx.DB.Save(product).Error
-	if err != nil {
-		ctx.Logger.Error("Failed to update product", err)
-		return errors.New("failed to update product")
-	}
+
+	ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		// 先获取原来的库存
+		resProduct := &model.StorehouseProduct{}
+		err := tx.Where("uuid = ?", product.Uuid).First(resProduct).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get product by ID", err)
+			return errors.New("failed to get product by ID")
+		}
+
+		err = tx.Where("uuid = ?", product.Uuid).Updates(product).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to update product", err)
+			return errors.New("failed to update product")
+		}
+
+		if resProduct.Quantity == product.Quantity {
+			return nil
+		}
+
+		// 创建库存记录
+		stockopLog := &model.StorehouseProductOpLog{
+			Uuid:                  uuid.New().String(),
+			StorehouseProductUuid: product.Uuid,
+			StorehouseUuid:        product.StorehouseUuid,
+			BeforeQuantity:        resProduct.Quantity,
+			Quantity:              product.Quantity,
+			OpQuantity:            product.Quantity,
+			OpType:                1,
+			OpDesc:                "更新库存",
+			OpBy:                  userId,
+			CreatedAt:             product.CreatedAt,
+		}
+		if err := tx.Create(stockopLog).Error; err != nil {
+			ctx.Logger.Error("Failed to create stockop log", err)
+			return errors.New("failed to create stockop log")
+		}
+		return nil
+	})
+
 	return nil
 }
 

@@ -9,7 +9,7 @@ type Customer struct {
 	BankAccount  string  `json:"bank_account" gorm:"comment:'银行账号'"`              // 银行账号
 	CreditStatus string  `json:"credit_status" gorm:"comment:'信用状态'"`             // 信用状态
 	Discount     float64 `json:"discount" gorm:"comment:'折扣'"`                    // 折扣
-	Status       int     `json:"status" gorm:"comment:'状态'"`                      // 状态
+	Status       int     `json:"status" gorm:"comment:'状态'"`                      // 状态 1：正常 2：停用
 	CreatedAt    string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt    string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
