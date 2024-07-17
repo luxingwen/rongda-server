@@ -87,7 +87,62 @@ func (s *PurchaseOrderService) GetPurchaseOrder(ctx *app.Context, orderNo string
 		return nil, errors.New("failed to get supplier by uuid")
 	}
 
+	user, err := NewUserService().GetUserByUUID(ctx, order.Purchaser)
+	if err != nil && err.Error() != "user not found" {
+		ctx.Logger.Error("Failed to get user by UUID", err)
+		return nil, err
+	}
+	if user != nil {
+
+		order.PurchaserInfo = *user
+	}
 	return order, nil
+}
+
+// 获取采购单商品明细
+func (s *PurchaseOrderService) GetPurchaseOrderItems(ctx *app.Context, orderNo string) ([]*model.PurchaseOrderItemRes, error) {
+	var items []*model.PurchaseOrderItem
+	err := ctx.DB.Where("purchase_order_no = ?", orderNo).Find(&items).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order items", err)
+		return nil, errors.New("failed to get purchase order items")
+	}
+
+	productUuids := make([]string, 0)
+	skuUuids := make([]string, 0)
+	for _, item := range items {
+		productUuids = append(productUuids, item.ProductUuid)
+		skuUuids = append(skuUuids, item.SkuUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return nil, err
+
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by UUIDs", err)
+		return nil, err
+	}
+
+	res := make([]*model.PurchaseOrderItemRes, 0)
+	for _, item := range items {
+		purchaseOrderItem := &model.PurchaseOrderItemRes{
+			PurchaseOrderItem: *item,
+		}
+		if product, ok := productMap[item.ProductUuid]; ok {
+			purchaseOrderItem.Product = *product
+		}
+		if sku, ok := skuMap[item.SkuUuid]; ok {
+			purchaseOrderItem.Sku = *sku
+		}
+		res = append(res, purchaseOrderItem)
+	}
+
+	return res, nil
 }
 
 func (s *PurchaseOrderService) UpdatePurchaseOrder(ctx *app.Context, order *model.PurchaseOrder) error {

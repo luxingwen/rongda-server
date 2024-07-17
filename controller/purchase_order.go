@@ -47,13 +47,39 @@ func (t *PurchaseOrderController) CreatePurchaseOrder(ctx *app.Context) {
 // @Success 200 {object} model.PurchaseOrderRes
 // @Router /api/v1/purchase_order/{orderNo} [get]
 func (t *PurchaseOrderController) GetPurchaseOrder(ctx *app.Context) {
-	orderNo := ctx.Param("orderNo")
-	order, err := t.PurchaseOrderService.GetPurchaseOrder(ctx, orderNo)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	order, err := t.PurchaseOrderService.GetPurchaseOrder(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
 	ctx.JSONSuccess(order)
+}
+
+// @Summary 获取采购单商品列表
+// @Description 获取采购单商品列表
+// @Tags 采购单
+// @Accept  json
+// @Produce  json
+// @Param orderNo path string true "采购单号"
+// @Success 200 {object} model.PagedResponse
+// @Router /api/v1/purchase_order/{orderNo}/products [get]
+func (t *PurchaseOrderController) GetPurchaseOrderProducts(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	products, err := t.PurchaseOrderService.GetPurchaseOrderItems(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(products)
 }
 
 // @Summary 更新采购单

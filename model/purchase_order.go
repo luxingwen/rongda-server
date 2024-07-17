@@ -84,5 +84,12 @@ type PurchaseOrderItem struct {
 // PurchaseOrderResp 采购单响应
 type PurchaseOrderRes struct {
 	PurchaseOrder
-	Supplier Supplier `json:"supplier" gorm:"comment:'供应商'"` // 供应商
+	Supplier      Supplier `json:"supplier" gorm:"comment:'供应商'"`       // 供应商
+	PurchaserInfo User     `json:"purchaser_info" gorm:"comment:'采购人'"` // 采购人
+}
+
+type PurchaseOrderItemRes struct {
+	PurchaseOrderItem
+	Product Product `json:"product" gorm:"comment:'产品'"` // 产品
+	Sku     Sku     `json:"sku" gorm:"comment:'SKU'"`    // SKU
 }

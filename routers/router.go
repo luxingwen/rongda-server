@@ -114,6 +114,7 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 		v1.POST("/purchase_order/delete", purchaseOrderController.DeletePurchaseOrder)
 		v1.POST("/purchase_order/info", purchaseOrderController.GetPurchaseOrder)
 		v1.POST("/purchase_order/list", purchaseOrderController.GetPurchaseOrderList)
+		v1.POST("/purchase_order/item/list", purchaseOrderController.GetPurchaseOrderProducts)
 	}
 }
 
@@ -403,6 +404,7 @@ func InitPurchaseBillRouter(ctx *app.App) {
 		v1.POST("/purchase_bill/delete", purchaseBillController.DeletePurchaseBill)
 		v1.POST("/purchase_bill/info", purchaseBillController.GetPurchaseBill)
 		v1.POST("/purchase_bill/list", purchaseBillController.GetPurchaseBillList)
+
 	}
 }
 
