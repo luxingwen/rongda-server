@@ -47,13 +47,39 @@ func (t *SalesOrderController) CreateSalesOrder(ctx *app.Context) {
 // @Success 200 {object} model.SalesOrder
 // @Router /api/v1/sales_order/{orderNo} [get]
 func (t *SalesOrderController) GetSalesOrder(ctx *app.Context) {
-	orderNo := ctx.Param("orderNo")
-	order, err := t.SalesOrderService.GetSalesOrder(ctx, orderNo)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	order, err := t.SalesOrderService.GetSalesOrder(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
 	ctx.JSONSuccess(order)
+}
+
+// @Summary 获取订单商品列表
+// @Description 获取订单商品列表
+// @Tags 销售订单
+// @Accept  json
+// @Produce  json
+// @Param orderNo path string true "订单号"
+// @Success 200 {object} model.SalesOrder
+// @Router /api/v1/sales_order/{orderNo}/products [get]
+func (t *SalesOrderController) GetSalesOrderProducts(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	products, err := t.SalesOrderService.GetSalesOrderItems(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(products)
 }
 
 // @Summary 更新销售订单

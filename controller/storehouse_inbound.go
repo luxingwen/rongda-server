@@ -43,7 +43,7 @@ func (p *StorehouseInboundController) CreateInbound(ctx *app.Context) {
 // @Router /api/v1/inbound/info/{uuid} [get]
 func (p *StorehouseInboundController) GetInboundInfo(ctx *app.Context) {
 	var param model.ReqUuidParam
-	if err := ctx.ShouldBindUri(&param); err != nil {
+	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -53,6 +53,28 @@ func (p *StorehouseInboundController) GetInboundInfo(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(inbound)
+}
+
+// @Summary 获取入库明细
+// @Description 获取入库明细
+// @Tags 入库
+// @Accept  json
+// @Produce  json
+// @Param uuid path string true "入库UUID"
+// @Success 200 {object} model.StorehouseInboundDetail
+// @Router /api/v1/inbound/detail/{uuid} [get]
+func (p *StorehouseInboundController) GetInboundDetail(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	inboundDetail, err := p.InboundService.GetInboundDetail(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(inboundDetail)
 }
 
 // @Summary 更新入库

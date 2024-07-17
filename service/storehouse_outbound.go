@@ -86,7 +86,7 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 				BeforeQuantity:        beforQuantity,
 				Quantity:              stock.Quantity,
 				OpQuantity:            detailReq.Quantity,
-				OpType:                1,
+				OpType:                model.StorehouseProductOpLogOpTypeOutbound,
 				OpDesc:                "仓库出库，减少库存",
 				OpBy:                  userId,
 				CreatedAt:             nowstr,
@@ -107,9 +107,9 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 	return nil
 }
 
-func (s *StorehouseOutboundService) GetOutbound(ctx *app.Context, requuid string) (*model.StorehouseOutbound, error) {
+func (s *StorehouseOutboundService) GetOutbound(ctx *app.Context, requuid string) (*model.StorehouseOutboundRes, error) {
 	outbound := &model.StorehouseOutbound{}
-	err := ctx.DB.Where("uuid = ?", requuid).First(outbound).Error
+	err := ctx.DB.Where("outbound_order_no = ?", requuid).First(outbound).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.New("outbound not found")
@@ -117,7 +117,71 @@ func (s *StorehouseOutboundService) GetOutbound(ctx *app.Context, requuid string
 		ctx.Logger.Error("Failed to get outbound by ID", err)
 		return nil, errors.New("failed to get outbound by ID")
 	}
-	return outbound, nil
+
+	storehouse, err := NewStorehouseService().GetStorehouseByUUID(ctx, outbound.StorehouseUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get storehouse by UUID", err)
+		return nil, err
+	}
+
+	user, err := NewUserService().GetUserByUUID(ctx, outbound.OutboundBy)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user by UUID", err)
+		return nil, err
+	}
+
+	outboundRes := &model.StorehouseOutboundRes{
+		StorehouseOutbound: *outbound,
+		Storehouse:         *storehouse,
+		OutboundByUser:     *user,
+	}
+
+	return outboundRes, nil
+}
+
+// 获取出库明细
+func (s *StorehouseOutboundService) GetOutboundDetail(ctx *app.Context, requuid string) ([]*model.StorehouseOutboundDetailRes, error) {
+	details := make([]*model.StorehouseOutboundDetail, 0)
+	err := ctx.DB.Where("outbound_order_no = ?", requuid).Find(&details).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get outbound detail", err)
+		return nil, errors.New("failed to get outbound detail")
+	}
+
+	productUuids := make([]string, 0)
+	skuUuids := make([]string, 0)
+	for _, detail := range details {
+		productUuids = append(productUuids, detail.ProductUuid)
+		skuUuids = append(skuUuids, detail.SkuUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get products by UUIDs", err)
+		return nil, err
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get skus by UUIDs", err)
+		return nil, err
+	}
+
+	res := make([]*model.StorehouseOutboundDetailRes, 0)
+	for _, detail := range details {
+		detailRes := &model.StorehouseOutboundDetailRes{
+			StorehouseOutboundDetail: *detail,
+		}
+		if product, ok := productMap[detail.ProductUuid]; ok {
+			detailRes.Product = *product
+		}
+		if sku, ok := skuMap[detail.SkuUuid]; ok {
+			detailRes.Sku = *sku
+		}
+		res = append(res, detailRes)
+	}
+
+	return res, nil
 }
 
 func (s *StorehouseOutboundService) UpdateOutbound(ctx *app.Context, outbound *model.StorehouseOutbound) error {

@@ -51,6 +51,12 @@ type SalesOrder struct {
 	UpdatedAt     string  `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
 }
 
+type SalesOrderRes struct {
+	SalesOrder
+	CustomerInfo *Customer `json:"customer_info"`
+	SalesmanInfo *User     `json:"salesman_info"`
+}
+
 // 销售订单明细
 type SalesOrderItem struct {
 	ID              uint    `json:"id" gorm:"primaryKey"`
@@ -65,4 +71,10 @@ type SalesOrderItem struct {
 	ProductAmount   float64 `json:"product_amount" gorm:"comment:商品金额"`
 	CreatedAt       string  `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
 	UpdatedAt       string  `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
+}
+
+type SalesOrderItemRes struct {
+	SalesOrderItem
+	ProductInfo *Product `json:"product_info"`
+	SkuInfo     *Sku     `json:"sku_info"`
 }

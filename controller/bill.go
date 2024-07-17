@@ -47,8 +47,12 @@ func (t *BillController) CreateBill(ctx *app.Context) {
 // @Success 200 {object} model.Bill
 // @Router /api/v1/bill/{uuid} [get]
 func (t *BillController) GetBill(ctx *app.Context) {
-	uuid := ctx.Param("uuid")
-	bill, err := t.BillService.GetBill(ctx, uuid)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	bill, err := t.BillService.GetBill(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

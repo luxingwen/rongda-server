@@ -43,7 +43,7 @@ func (p *StorehouseProductController) CreateProduct(ctx *app.Context) {
 // @Router /api/v1/storehouse_product/info/{id} [get]
 func (p *StorehouseProductController) GetProductInfo(ctx *app.Context) {
 	var param model.ReqUuidParam
-	if err := ctx.ShouldBindUri(&param); err != nil {
+	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -53,6 +53,28 @@ func (p *StorehouseProductController) GetProductInfo(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(product)
+}
+
+// @Summary 获取物品库存操作记录
+// @Description 获取物品库存操作记录
+// @Tags 仓库物品
+// @Accept  json
+// @Produce  json
+// @Param param body model.ReqStorehouseProductOpLogQueryParam true "查询参数"
+// @Success 200 {object} model.PagedResponse
+// @Router /api/v1/storehouse_product/op_log [post]
+func (p *StorehouseProductController) GetProductOpLog(ctx *app.Context) {
+	param := &model.ReqStorehouseProductOpLogQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	opLogs, err := p.ProductService.GetProductOpLog(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(opLogs)
 }
 
 // @Summary 更新仓库物品

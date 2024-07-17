@@ -47,13 +47,40 @@ func (t *StorehouseInventoryCheckController) CreateInventoryCheck(ctx *app.Conte
 // @Success 200 {object} model.StorehouseInventoryCheck
 // @Router /api/v1/storehouse_inventory_check/{uuid} [get]
 func (t *StorehouseInventoryCheckController) GetInventoryCheck(ctx *app.Context) {
-	uuid := ctx.Param("uuid")
-	check, err := t.InventoryCheckService.GetInventoryCheck(ctx, uuid)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	check, err := t.InventoryCheckService.GetInventoryCheck(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
 	ctx.JSONSuccess(check)
+}
+
+// @Summary 获取盘点明细
+// @Description 获取盘点明细
+// @Tags 盘点
+// @Accept  json
+// @Produce  json
+// @Param uuid path string true "盘点UUID"
+// @Success 200 {object} model.StorehouseInventoryCheckDetailRes
+// @Router /api/v1/storehouse_inventory_check/detail/{uuid} [get]
+func (t *StorehouseInventoryCheckController) GetInventoryCheckDetail(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	details, err := t.InventoryCheckService.GetInventoryCheckDetail(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(details)
 }
 
 // @Summary 更新盘点

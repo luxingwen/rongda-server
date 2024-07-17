@@ -311,6 +311,7 @@ func InitStorehouseInboundRouter(ctx *app.App) {
 		v1.POST("/storehouse_inbound/delete", storehouseInboundController.DeleteInbound)
 		v1.POST("/storehouse_inbound/info", storehouseInboundController.GetInboundInfo)
 		v1.POST("/storehouse_inbound/list", storehouseInboundController.GetInboundList)
+		v1.POST("/storehouse_inbound/detail", storehouseInboundController.GetInboundDetail)
 	}
 }
 
@@ -326,6 +327,7 @@ func InitStorehouseProductRouter(ctx *app.App) {
 		v1.POST("/storehouse_product/delete", storehouseProductController.DeleteProduct)
 		v1.POST("/storehouse_product/info", storehouseProductController.GetProductInfo)
 		v1.POST("/storehouse_product/list", storehouseProductController.GetProductList)
+		v1.POST("/storehouse_product/op_log", storehouseProductController.GetProductOpLog)
 	}
 }
 
@@ -341,6 +343,7 @@ func InitStorehouseOutRouter(ctx *app.App) {
 		v1.POST("/storehouse_outbound/delete", storehouseOutController.DeleteOutbound)
 		v1.POST("/storehouse_outbound/info", storehouseOutController.GetOutboundInfo)
 		v1.POST("/storehouse_outbound/list", storehouseOutController.GetOutboundList)
+		v1.POST("/storehouse_outbound/detail", storehouseOutController.GetOutboundDetail)
 	}
 }
 
@@ -356,6 +359,7 @@ func InitStorehouseInventoryCheckRouter(ctx *app.App) {
 		v1.POST("/storehouse_inventory_check/delete", storehouseInventoryCheckController.DeleteInventoryCheck)
 		v1.POST("/storehouse_inventory_check/info", storehouseInventoryCheckController.GetInventoryCheck)
 		v1.POST("/storehouse_inventory_check/list", storehouseInventoryCheckController.GetInventoryCheckList)
+		v1.POST("/storehouse_inventory_check/detail", storehouseInventoryCheckController.GetInventoryCheckDetail)
 	}
 
 }
@@ -414,6 +418,7 @@ func InitSalesOrderRouter(ctx *app.App) {
 		v1.POST("/sales_order/info", salesOrderController.GetSalesOrder)
 		v1.POST("/sales_order/list", salesOrderController.GetSalesOrderList)
 		v1.POST("/sales_order/all", salesOrderController.GetAllSalesOrder)
+		v1.POST("/sales_order/product_item/list", salesOrderController.GetSalesOrderProducts)
 	}
 }
 

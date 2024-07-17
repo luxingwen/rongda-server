@@ -43,7 +43,7 @@ func (p *StorehouseOutboundController) CreateOutbound(ctx *app.Context) {
 // @Router /api/v1/storehouse_outbound/info/{id} [get]
 func (p *StorehouseOutboundController) GetOutboundInfo(ctx *app.Context) {
 	var param model.ReqUuidParam
-	if err := ctx.ShouldBindUri(&param); err != nil {
+	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -53,6 +53,28 @@ func (p *StorehouseOutboundController) GetOutboundInfo(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(outbound)
+}
+
+// @Summary 获取出库明细
+// @Description 获取出库明细
+// @Tags 仓库出库
+// @Accept  json
+// @Produce  json
+// @Param id path uint true "出库ID"
+// @Success 200 {object} model.StorehouseOutboundDetail
+// @Router /api/v1/storehouse_outbound/detail/{id} [get]
+func (p *StorehouseOutboundController) GetOutboundDetail(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	details, err := p.OutboundService.GetOutboundDetail(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(details)
 }
 
 // @Summary 更新出库信息

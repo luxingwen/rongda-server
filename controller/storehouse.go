@@ -42,7 +42,7 @@ func (p *StorehouseController) CreateStorehouse(ctx *app.Context) {
 // @Router /api/v1/storehouse/info/{uuid} [get]
 func (p *StorehouseController) GetStorehouseInfo(ctx *app.Context) {
 	var param model.ReqUuidParam
-	if err := ctx.ShouldBindUri(&param); err != nil {
+	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}

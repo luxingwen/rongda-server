@@ -228,3 +228,8 @@ type ReqBillQueryParam struct {
 	InvoiceCompany string `json:"order_no"`
 	Pagination
 }
+
+type ReqStorehouseProductOpLogQueryParam struct {
+	Uuid string `json:"uuid"`
+	Pagination
+}

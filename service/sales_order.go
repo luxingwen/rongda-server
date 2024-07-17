@@ -69,7 +69,7 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 	return nil
 }
 
-func (s *SalesOrderService) GetSalesOrder(ctx *app.Context, orderNo string) (*model.SalesOrder, error) {
+func (s *SalesOrderService) GetSalesOrder(ctx *app.Context, orderNo string) (*model.SalesOrderRes, error) {
 	salesOrder := &model.SalesOrder{}
 	err := ctx.DB.Where("order_no = ?", orderNo).First(salesOrder).Error
 	if err != nil {
@@ -79,7 +79,75 @@ func (s *SalesOrderService) GetSalesOrder(ctx *app.Context, orderNo string) (*mo
 		ctx.Logger.Error("Failed to get sales order by order number", err)
 		return nil, errors.New("failed to get sales order by order number")
 	}
-	return salesOrder, nil
+
+	customerInfo, err := NewCustomerService().GetCustomerByUUID(ctx, salesOrder.CustomerUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer info", err)
+		return nil, err
+	}
+
+	user, err := NewUserService().GetUserByUUID(ctx, salesOrder.Salesman)
+	if err != nil && err.Error() != "user not found" {
+		ctx.Logger.Error("Failed to get user by UUID", err)
+		return nil, err
+	}
+
+	salesOrderRes := &model.SalesOrderRes{
+		SalesOrder:   *salesOrder,
+		CustomerInfo: customerInfo,
+		SalesmanInfo: user,
+	}
+
+	return salesOrderRes, nil
+}
+
+// 获取订单商品
+func (s *SalesOrderService) GetSalesOrderItems(ctx *app.Context, orderNo string) (r []*model.SalesOrderItemRes, err error) {
+	var (
+		orderItems []*model.SalesOrderItem
+	)
+
+	db := ctx.DB.Model(&model.SalesOrderItem{})
+	if err = db.Where("order_no = ?", orderNo).Find(&orderItems).Error; err != nil {
+		return
+	}
+
+	productUuids := make([]string, 0)
+	skuUuids := make([]string, 0)
+
+	for _, item := range orderItems {
+		productUuids = append(productUuids, item.ProductUuid)
+		skuUuids = append(skuUuids, item.SkuUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by UUIDs", err)
+		return
+	}
+
+	res := make([]*model.SalesOrderItemRes, 0)
+	for _, item := range orderItems {
+		itemRes := &model.SalesOrderItemRes{
+			SalesOrderItem: *item,
+		}
+		if product, ok := productMap[item.ProductUuid]; ok {
+			itemRes.ProductInfo = product
+		}
+		if sku, ok := skuMap[item.SkuUuid]; ok {
+			itemRes.SkuInfo = sku
+		}
+		res = append(res, itemRes)
+	}
+
+	return res, nil
+
 }
 
 func (s *SalesOrderService) UpdateSalesOrder(ctx *app.Context, salesOrder *model.SalesOrder) error {

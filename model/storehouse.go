@@ -5,6 +5,15 @@ const (
 	StorehouseStatusDisabled = 2 // 仓库状态未启用
 )
 
+const (
+	StorehouseProductOpLogOpTypeInbound        = 1 // 入库
+	StorehouseProductOpLogOpTypeOutbound       = 2 // 出库
+	StorehouseProductOpLogOpTypeInventoryCheck = 3 // 盘点
+	StorehouseProductOpLogOpTypeTransfer       = 4 // 调拨
+	// 更新库存
+	StorehouseProductOpLogOpTypeUpdate = 5 // 更新库存
+)
+
 type Storehouse struct {
 	ID      uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
 	Uuid    string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
@@ -49,6 +58,11 @@ type StorehouseProductOpLog struct {
 	OpBy       string `json:"op_by" gorm:"comment:'操作人'"`                      // 操作人
 	OpDesc     string `json:"op_desc" gorm:"comment:'操作描述'"`                   // 操作描述
 	CreatedAt  string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+}
+
+type StorehouseProductOpLogRes struct {
+	StorehouseProductOpLog
+	OpByUser User `json:"op_by_user"`
 }
 
 type StorehouseProductRes struct {
@@ -121,6 +135,12 @@ type StorehouseInboundDetail struct {
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
+type StorehouseInboundDetailRes struct {
+	StorehouseInboundDetail
+	Product Product `json:"product"`
+	Sku     Sku     `json:"sku"`
+}
+
 // 请求出库信息
 type StorehouseOutboundReq struct {
 	StorehouseUuid string                        `json:"storehouse_uuid" binding:"required"` // 仓库UUID
@@ -173,6 +193,12 @@ type StorehouseOutboundDetail struct {
 	Quantity  int    `json:"quantity" gorm:"comment:'出库数量'"`                  // 出库数量
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+type StorehouseOutboundDetailRes struct {
+	StorehouseOutboundDetail
+	Product Product `json:"product"`
+	Sku     Sku     `json:"sku"`
 }
 
 // 仓库盘点请求
@@ -232,4 +258,10 @@ type StorehouseInventoryCheckDetail struct {
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+type StorehouseInventoryCheckDetailRes struct {
+	StorehouseInventoryCheckDetail
+	Product Product `json:"product"`
+	Sku     Sku     `json:"sku"`
 }

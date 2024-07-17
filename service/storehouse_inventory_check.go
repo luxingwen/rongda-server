@@ -97,7 +97,7 @@ func (s *StorehouseInventoryCheckService) CreateInventoryCheck(ctx *app.Context,
 					BeforeQuantity:        beforQuantity,
 					Quantity:              stock.Quantity,
 					OpQuantity:            differenceQuantity,
-					OpType:                1,
+					OpType:                model.StorehouseProductOpLogOpTypeInventoryCheck,
 					OpDesc:                opDesc,
 					OpBy:                  userId,
 					CreatedAt:             nowStr,
@@ -119,9 +119,9 @@ func (s *StorehouseInventoryCheckService) CreateInventoryCheck(ctx *app.Context,
 	return nil
 }
 
-func (s *StorehouseInventoryCheckService) GetInventoryCheck(ctx *app.Context, requuid string) (*model.StorehouseInventoryCheck, error) {
+func (s *StorehouseInventoryCheckService) GetInventoryCheck(ctx *app.Context, requuid string) (*model.StorehouseInventoryCheckRes, error) {
 	check := &model.StorehouseInventoryCheck{}
-	err := ctx.DB.Where("uuid = ?", requuid).First(check).Error
+	err := ctx.DB.Where("check_order_no = ?", requuid).First(check).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.New("inventory check not found")
@@ -129,7 +129,71 @@ func (s *StorehouseInventoryCheckService) GetInventoryCheck(ctx *app.Context, re
 		ctx.Logger.Error("Failed to get inventory check by ID", err)
 		return nil, errors.New("failed to get inventory check by ID")
 	}
-	return check, nil
+
+	storehouse, err := NewStorehouseService().GetStorehouseByUUID(ctx, check.StorehouseUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get storehouse by UUID", err)
+		return nil, errors.New("failed to get storehouse by UUID")
+	}
+
+	user, err := NewUserService().GetUserByUUID(ctx, check.CheckBy)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user by UUID", err)
+		return nil, errors.New("failed to get user by UUID")
+	}
+
+	checkRes := &model.StorehouseInventoryCheckRes{
+		StorehouseInventoryCheck: *check,
+		Storehouse:               *storehouse,
+		CheckByUser:              *user,
+	}
+
+	return checkRes, nil
+}
+
+// 获取盘点清单
+func (s *StorehouseInventoryCheckService) GetInventoryCheckDetail(ctx *app.Context, requuid string) ([]*model.StorehouseInventoryCheckDetailRes, error) {
+	details := make([]*model.StorehouseInventoryCheckDetail, 0)
+	err := ctx.DB.Where("check_order_no = ?", requuid).Find(&details).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get inventory check detail", err)
+		return nil, errors.New("failed to get inventory check detail")
+	}
+
+	productUuids := make([]string, 0)
+	skuUuids := make([]string, 0)
+	for _, detail := range details {
+		productUuids = append(productUuids, detail.ProductUuid)
+		skuUuids = append(skuUuids, detail.SkuUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return nil, errors.New("failed to get product list by UUIDs")
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by UUIDs", err)
+		return nil, errors.New("failed to get sku list by UUIDs")
+	}
+
+	res := make([]*model.StorehouseInventoryCheckDetailRes, 0)
+	for _, detail := range details {
+		detailRes := &model.StorehouseInventoryCheckDetailRes{
+			StorehouseInventoryCheckDetail: *detail,
+		}
+		if product, ok := productMap[detail.ProductUuid]; ok {
+			detailRes.Product = *product
+		}
+		if sku, ok := skuMap[detail.SkuUuid]; ok {
+			detailRes.Sku = *sku
+		}
+		res = append(res, detailRes)
+	}
+
+	return res, nil
 }
 
 func (s *StorehouseInventoryCheckService) UpdateInventoryCheck(ctx *app.Context, check *model.StorehouseInventoryCheck) error {

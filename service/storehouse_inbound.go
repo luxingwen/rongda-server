@@ -124,7 +124,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 	return nil
 }
 
-func (s *StorehouseInboundService) GetInbound(ctx *app.Context, uuid string) (*model.StorehouseInbound, error) {
+func (s *StorehouseInboundService) GetInbound(ctx *app.Context, uuid string) (*model.StorehouseInboundRes, error) {
 	inbound := &model.StorehouseInbound{}
 	err := ctx.DB.Where("inbound_order_no = ?", uuid).First(inbound).Error
 	if err != nil {
@@ -134,7 +134,71 @@ func (s *StorehouseInboundService) GetInbound(ctx *app.Context, uuid string) (*m
 		ctx.Logger.Error("Failed to get inbound by UUID", err)
 		return nil, errors.New("failed to get inbound by UUID")
 	}
-	return inbound, nil
+
+	storehouse, err := NewStorehouseService().GetStorehouseByUUID(ctx, inbound.StorehouseUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get storehouse by UUID", err)
+		return nil, errors.New("failed to get storehouse by UUID")
+	}
+
+	user, err := NewUserService().GetUserByUUID(ctx, inbound.InboundBy)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user by UUID", err)
+		return nil, errors.New("failed to get user by UUID")
+	}
+
+	inboundRes := &model.StorehouseInboundRes{
+		StorehouseInbound: *inbound,
+		Storehouse:        *storehouse,
+		InboundByUser:     *user,
+	}
+
+	return inboundRes, nil
+}
+
+// 获取入库明细
+func (s *StorehouseInboundService) GetInboundDetail(ctx *app.Context, uuid string) ([]*model.StorehouseInboundDetailRes, error) {
+	var inboundDetail []*model.StorehouseInboundDetail
+	err := ctx.DB.Where("inbound_order_no = ?", uuid).Find(&inboundDetail).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get inbound detail", err)
+		return nil, errors.New("failed to get inbound detail")
+	}
+
+	productUuids := make([]string, 0)
+	skuUuids := make([]string, 0)
+	for _, detail := range inboundDetail {
+		productUuids = append(productUuids, detail.ProductUuid)
+		skuUuids = append(skuUuids, detail.SkuUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return nil, errors.New("failed to get product list by UUIDs")
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by UUIDs", err)
+		return nil, errors.New("failed to get sku list by UUIDs")
+	}
+
+	res := make([]*model.StorehouseInboundDetailRes, 0)
+	for _, detail := range inboundDetail {
+		detailRes := &model.StorehouseInboundDetailRes{
+			StorehouseInboundDetail: *detail,
+		}
+		if product, ok := productMap[detail.ProductUuid]; ok {
+			detailRes.Product = *product
+		}
+		if sku, ok := skuMap[detail.SkuUuid]; ok {
+			detailRes.Sku = *sku
+		}
+		res = append(res, detailRes)
+	}
+
+	return res, nil
 }
 
 func (s *StorehouseInboundService) UpdateInbound(ctx *app.Context, req *model.StorehouseInboundUpdateReq) error {

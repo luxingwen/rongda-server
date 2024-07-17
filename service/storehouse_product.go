@@ -46,7 +46,7 @@ func (s *StorehouseProductService) CreateProduct(ctx *app.Context, userId string
 					BeforeQuantity:        0,
 					Quantity:              product.Quantity,
 					OpQuantity:            product.Quantity,
-					OpType:                1,
+					OpType:                model.StorehouseProductOpLogOpTypeInbound,
 					OpDesc:                "入库",
 					OpBy:                  userId,
 					CreatedAt:             product.CreatedAt,
@@ -79,7 +79,7 @@ func (s *StorehouseProductService) CreateProduct(ctx *app.Context, userId string
 			BeforeQuantity:        beforQuantity,
 			Quantity:              resProduct.Quantity,
 			OpQuantity:            product.Quantity,
-			OpType:                1,
+			OpType:                model.StorehouseProductOpLogOpTypeInbound,
 			OpDesc:                "增加库存",
 			OpBy:                  userId,
 			CreatedAt:             product.CreatedAt,
@@ -98,7 +98,7 @@ func (s *StorehouseProductService) CreateProduct(ctx *app.Context, userId string
 	return nil
 }
 
-func (s *StorehouseProductService) GetProduct(ctx *app.Context, uuid string) (*model.StorehouseProduct, error) {
+func (s *StorehouseProductService) GetProduct(ctx *app.Context, uuid string) (*model.StorehouseProductRes, error) {
 	product := &model.StorehouseProduct{}
 	err := ctx.DB.Where("uuid = ?", uuid).First(product).Error
 	if err != nil {
@@ -108,7 +108,80 @@ func (s *StorehouseProductService) GetProduct(ctx *app.Context, uuid string) (*m
 		ctx.Logger.Error("Failed to get product by ID", err)
 		return nil, errors.New("failed to get product by ID")
 	}
-	return product, nil
+
+	storehouseInfo, err := NewStorehouseService().GetStorehouseByUUID(ctx, product.StorehouseUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get storehouse by UUID", err)
+		return nil, errors.New("failed to get storehouse by UUID")
+	}
+
+	productInfo, err := NewProductService().GetProductByUUID(ctx, product.ProductUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product by UUID", err)
+		return nil, errors.New("failed to get product by UUID")
+	}
+	skuInfo, err := NewSkuService().GetSkuByUUID(ctx, product.SkuUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku by UUID", err)
+		return nil, errors.New("failed to get sku by UUID")
+	}
+
+	res := &model.StorehouseProductRes{
+		StorehouseProduct: *product,
+		Storehouse:        *storehouseInfo,
+		Product:           *productInfo,
+		Sku:               *skuInfo,
+	}
+
+	return res, nil
+}
+
+// 分页获取获取物品操作记录
+func (s *StorehouseProductService) GetProductOpLog(ctx *app.Context, param *model.ReqStorehouseProductOpLogQueryParam) (r *model.PagedResponse, err error) {
+	var (
+		opLogList []*model.StorehouseProductOpLog
+		total     int64
+	)
+
+	db := ctx.DB.Model(&model.StorehouseProductOpLog{})
+	if param.Uuid != "" {
+		db = db.Where("storehouse_product_uuid = ?", param.Uuid)
+	}
+
+	if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Order("id DESC").Find(&opLogList).Error; err != nil {
+		return
+	}
+	if err = db.Count(&total).Error; err != nil {
+		return
+	}
+
+	userUuids := make([]string, 0)
+	for _, v := range opLogList {
+		userUuids = append(userUuids, v.OpBy)
+	}
+	userMap, err := NewUserService().GetUsersByUUIDs(ctx, userUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user list by UUIDs", err)
+		return
+	}
+
+	res := make([]*model.StorehouseProductOpLogRes, 0)
+	for _, v := range opLogList {
+		opLogItem := &model.StorehouseProductOpLogRes{
+			StorehouseProductOpLog: *v,
+		}
+		if user, ok := userMap[v.OpBy]; ok {
+			opLogItem.OpByUser = *user
+		}
+		res = append(res, opLogItem)
+	}
+
+	return &model.PagedResponse{
+		Total:    total,
+		Current:  param.Current,
+		PageSize: param.PageSize,
+		Data:     res,
+	}, nil
 }
 
 func (s *StorehouseProductService) UpdateProduct(ctx *app.Context, userId string, product *model.StorehouseProduct) error {
@@ -142,7 +215,7 @@ func (s *StorehouseProductService) UpdateProduct(ctx *app.Context, userId string
 			BeforeQuantity:        resProduct.Quantity,
 			Quantity:              product.Quantity,
 			OpQuantity:            product.Quantity,
-			OpType:                1,
+			OpType:                model.StorehouseProductOpLogOpTypeUpdate,
 			OpDesc:                "更新库存",
 			OpBy:                  userId,
 			CreatedAt:             product.CreatedAt,
