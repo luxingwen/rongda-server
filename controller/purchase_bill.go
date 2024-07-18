@@ -47,8 +47,12 @@ func (t *PurchaseBillController) CreatePurchaseBill(ctx *app.Context) {
 // @Success 200 {object} model.PurchaseBill
 // @Router /api/v1/purchase_bill/{uuid} [get]
 func (t *PurchaseBillController) GetPurchaseBill(ctx *app.Context) {
-	uuid := ctx.Param("uuid")
-	bill, err := t.PurchaseBillService.GetPurchaseBill(ctx, uuid)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	bill, err := t.PurchaseBillService.GetPurchaseBill(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

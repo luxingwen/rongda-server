@@ -72,12 +72,23 @@ type StorehouseProductRes struct {
 	Sku        Sku        `json:"sku"`
 }
 
+const (
+	StorehouseInboundTypePurchaseInbound = 1 // 采购入库
+	StorehouseInboundTypeReturnInbound   = 2 // 退货入库
+	StorehouseInboundTypeManualInbound   = 3 // 手工入库
+
+	StorehouseInboundStatusPending   = 1 // 待处理
+	StorehouseInboundStatusHandled   = 2 // 已处理
+	StorehouseInboundStatusCanceled  = 3 // 已取消
+	StorehouseInboundStatusCompleted = 4 // 已完成
+)
+
 // 请求入库信息
 type StorehouseInboundReq struct {
 	StorehouseUuid string                       `json:"storehouse_uuid" binding:"required"` // 仓库UUID
 	Title          string                       `json:"title" binding:"required"`           // 标题
 	InboundType    string                       `json:"inbound_type" binding:"required"`    // 入库类型 1:采购入库 2:退货入库 3:手工入库
-	Status         int                          `json:"status" binding:"required"`          // 状态 1:已入库 2:未入库
+	Status         int                          `json:"status" binding:"-"`                 // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
 	Detail         []StorehouseInboundDetailReq `json:"detail" binding:"required"`          // 入库明细
 }
 
@@ -141,11 +152,22 @@ type StorehouseInboundDetailRes struct {
 	Sku     Sku     `json:"sku"`
 }
 
+const (
+	StorehouseOutboundTypeSalesOutbound  = 1 // 销售出库
+	StorehouseOutboundTypeReturnOutbound = 2 // 退货出库
+	StorehouseOutboundTypeManualOutbound = 3 // 手工出库
+
+	StorehouseOutboundStatusPending   = 1 // 待处理
+	StorehouseOutboundStatusHandled   = 2 // 已处理
+	StorehouseOutboundStatusCanceled  = 3 // 已取消
+	StorehouseOutboundStatusCompleted = 4 // 已完成
+)
+
 // 请求出库信息
 type StorehouseOutboundReq struct {
 	StorehouseUuid string                        `json:"storehouse_uuid" binding:"required"` // 仓库UUID
 	OutboundType   string                        `json:"outbound_type" binding:"required"`   // 出库类型 1:销售出库 2:退货出库 3:手工出库
-	Status         int                           `json:"status" binding:"required"`          // 状态 1:已出库 2:未出库
+	Status         int                           `json:"status" binding:"required"`          // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
 	Detail         []StorehouseOutboundDetailReq `json:"detail" binding:"required"`          // 出库明细
 }
 

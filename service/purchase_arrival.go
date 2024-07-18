@@ -75,7 +75,7 @@ func (s *PurchaseArrivalService) CreatePurchaseArrival(ctx *app.Context, userId 
 	return nil
 }
 
-func (s *PurchaseArrivalService) GetPurchaseArrival(ctx *app.Context, requuid string) (*model.PurchaseArrival, error) {
+func (s *PurchaseArrivalService) GetPurchaseArrival(ctx *app.Context, requuid string) (*model.PurchaseArrivalRes, error) {
 	arrival := &model.PurchaseArrival{}
 	err := ctx.DB.Where("uuid = ?", requuid).First(arrival).Error
 	if err != nil {
@@ -85,7 +85,79 @@ func (s *PurchaseArrivalService) GetPurchaseArrival(ctx *app.Context, requuid st
 		ctx.Logger.Error("Failed to get arrival by ID", err)
 		return nil, errors.New("failed to get arrival by ID")
 	}
-	return arrival, nil
+
+	user, err := NewUserService().GetUserByUUID(ctx, arrival.Acceptor)
+	if err != nil && err.Error() != "user not found" {
+		ctx.Logger.Error("Failed to get user by UUID", err)
+		return nil, err
+	}
+
+	supplier, err := NewSupplierService().GetSupplierByUUID(ctx, arrival.SupplierUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get supplier by UUID", err)
+		return nil, err
+	}
+
+	storage, err := NewStorehouseService().GetStorehouseByUUID(ctx, arrival.StorageUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get storage by UUID", err)
+		return nil, err
+	}
+
+	arrivalRes := &model.PurchaseArrivalRes{
+		PurchaseArrival: *arrival,
+		AcceptorInfo:    user,
+		SupplierInfo:    supplier,
+		StorageInfo:     storage,
+	}
+
+	return arrivalRes, nil
+}
+
+// 获取到货明细
+func (s *PurchaseArrivalService) GetPurchaseArrivalItems(ctx *app.Context, requuid string) ([]*model.PurchaseArrivalItemRes, error) {
+	var items []*model.PurchaseArrivalItem
+	err := ctx.DB.Where("purchase_arrival_no = ?", requuid).Find(&items).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get arrival items", err)
+		return nil, errors.New("failed to get arrival items")
+	}
+
+	productUuids := make([]string, 0)
+	skuUuids := make([]string, 0)
+	for _, item := range items {
+		productUuids = append(productUuids, item.ProductUuid)
+		skuUuids = append(skuUuids, item.SkuUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return nil, err
+
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by UUIDs", err)
+		return nil, err
+	}
+
+	res := make([]*model.PurchaseArrivalItemRes, 0)
+	for _, item := range items {
+		purchaseArrivalItem := &model.PurchaseArrivalItemRes{
+			PurchaseArrivalItem: *item,
+		}
+		if product, ok := productMap[item.ProductUuid]; ok {
+			purchaseArrivalItem.ProductInfo = product
+		}
+		if sku, ok := skuMap[item.SkuUuid]; ok {
+			purchaseArrivalItem.SkuInfo = sku
+		}
+		res = append(res, purchaseArrivalItem)
+	}
+
+	return res, nil
 }
 
 func (s *PurchaseArrivalService) UpdatePurchaseArrival(ctx *app.Context, arrival *model.PurchaseArrival) error {

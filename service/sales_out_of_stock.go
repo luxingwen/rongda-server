@@ -88,7 +88,7 @@ func (s *SalesOutOfStockService) CreateSalesOutOfStock(ctx *app.Context, userId 
 	return nil
 }
 
-func (s *SalesOutOfStockService) GetSalesOutOfStock(ctx *app.Context, uuid string) (*model.SalesOutOfStock, error) {
+func (s *SalesOutOfStockService) GetSalesOutOfStock(ctx *app.Context, uuid string) (*model.SalesOutOfStockRes, error) {
 	outOfStock := &model.SalesOutOfStock{}
 	err := ctx.DB.Where("uuid = ?", uuid).First(outOfStock).Error
 	if err != nil {
@@ -98,7 +98,78 @@ func (s *SalesOutOfStockService) GetSalesOutOfStock(ctx *app.Context, uuid strin
 		ctx.Logger.Error("Failed to get sales out of stock by ID", err)
 		return nil, errors.New("failed to get sales out of stock by ID")
 	}
-	return outOfStock, nil
+
+	user, err := NewUserService().GetUserByUUID(ctx, outOfStock.Registrant)
+
+	if err != nil && err.Error() != "user not found" {
+		ctx.Logger.Error("Failed to get user by UUID", err)
+		return nil, err
+	}
+
+	customer, err := NewCustomerService().GetCustomerByUUID(ctx, outOfStock.CustomerUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer by UUID", err)
+	}
+
+	storehouse, err := NewStorehouseService().GetStorehouseByUUID(ctx, outOfStock.StorehouseUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get storehouse by UUID", err)
+	}
+
+	outOfStockRes := &model.SalesOutOfStockRes{
+		SalesOutOfStock: *outOfStock,
+		RegistrantInfo:  user,
+		CustomerInfo:    customer,
+		StorehouseInfo:  storehouse,
+	}
+
+	return outOfStockRes, nil
+}
+
+// 获取出库单商品明细
+func (s *SalesOutOfStockService) GetSalesOutOfStockItems(ctx *app.Context, outOfStockNo string) ([]*model.SalesOutOfStockItemRes, error) {
+	var items []*model.SalesOutOfStockItem
+	err := ctx.DB.Where("sales_out_of_stock_no = ?", outOfStockNo).Find(&items).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get sales out of stock items", err)
+		return nil, errors.New("failed to get sales out of stock items")
+	}
+
+	productUuids := make([]string, 0)
+	skuUuids := make([]string, 0)
+	for _, item := range items {
+		productUuids = append(productUuids, item.ProductUuid)
+		skuUuids = append(skuUuids, item.SkuUuid)
+	}
+
+	products, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get products by UUIDs", err)
+		return nil, err
+	}
+
+	skus, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get skus by UUIDs", err)
+		return nil, err
+	}
+
+	res := make([]*model.SalesOutOfStockItemRes, 0)
+
+	for _, item := range items {
+		outOfStockItem := &model.SalesOutOfStockItemRes{
+			SalesOutOfStockItem: *item,
+		}
+		if product, ok := products[item.ProductUuid]; ok {
+			outOfStockItem.ProductInfo = product
+		}
+		if sku, ok := skus[item.SkuUuid]; ok {
+			outOfStockItem.SkuInfo = sku
+		}
+		res = append(res, outOfStockItem)
+	}
+
+	return res, nil
 }
 
 func (s *SalesOutOfStockService) UpdateSalesOutOfStock(ctx *app.Context, outOfStock *model.SalesOutOfStock) error {

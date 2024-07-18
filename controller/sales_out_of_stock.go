@@ -47,13 +47,41 @@ func (t *SalesOutOfStockController) CreateSalesOutOfStock(ctx *app.Context) {
 // @Success 200 {object} model.SalesOutOfStock
 // @Router /api/v1/sales_out_of_stock/{uuid} [get]
 func (t *SalesOutOfStockController) GetSalesOutOfStock(ctx *app.Context) {
-	uuid := ctx.Param("uuid")
-	outOfStock, err := t.SalesOutOfStockService.GetSalesOutOfStock(ctx, uuid)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	outOfStock, err := t.SalesOutOfStockService.GetSalesOutOfStock(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
 	ctx.JSONSuccess(outOfStock)
+}
+
+// @Summary 获取销售出库单明细
+// @Description 获取销售出库单明细
+// @Tags 销售出库
+// @Accept  json
+// @Produce  json
+// @Param uuid path string true "出库单UUID"
+// @Success 200 {object} model.SalesOutOfStockDetail
+// @Router /api/v1/sales_out_of_stock/detail/{uuid} [get]
+func (t *SalesOutOfStockController) GetSalesOutOfStocItems(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	outOfStockDetail, err := t.SalesOutOfStockService.GetSalesOutOfStockItems(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(outOfStockDetail)
 }
 
 // @Summary 更新销售出库单

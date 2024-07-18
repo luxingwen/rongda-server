@@ -52,6 +52,13 @@ type SalesOutOfStock struct {
 	UpdatedAt string `gorm:"autoUpdateTime" json:"updated_at"` // UpdatedAt 记录了最后更新的时间
 }
 
+type SalesOutOfStockRes struct {
+	SalesOutOfStock
+	CustomerInfo   *Customer   `json:"customer_info"`   // CustomerInfo 是客户信息
+	StorehouseInfo *Storehouse `json:"storehouse_info"` // StorehouseInfo 是仓库信息
+	RegistrantInfo *User       `json:"registrant_info"` // RegistrantInfo 是登记人信息
+}
+
 type SalesOutOfStockItem struct {
 	ID                uint   `gorm:"primary_key" json:"id"`                            // ID 主键
 	SalesOutOfStockNo string `gorm:"type:char(36);index" json:"sales_out_of_stock_no"` // SalesOutOfStockNo 是出库单号
@@ -71,4 +78,10 @@ type SalesOutOfStockItem struct {
 	CreatedAt string `gorm:"autoCreateTime" json:"created_at"` // CreatedAt 记录了创建的时间
 	// 更新时间
 	UpdatedAt string `gorm:"autoUpdateTime" json:"updated_at"` // UpdatedAt 记录了最后更新的时间
+}
+
+type SalesOutOfStockItemRes struct {
+	SalesOutOfStockItem
+	ProductInfo *Product `json:"product_info"` // ProductInfo 是产品信息
+	SkuInfo     *Sku     `json:"sku_info"`     // SkuInfo 是SKU信息
 }

@@ -26,6 +26,7 @@ func (p *StorehouseOutboundController) CreateOutbound(ctx *app.Context) {
 		return
 	}
 	userId := ctx.GetString("user_id")
+	param.Status = model.StorehouseOutboundStatusPending
 	if err := p.OutboundService.CreateOutbound(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

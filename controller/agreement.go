@@ -83,8 +83,12 @@ func (t *AgreementController) CreateAgreement(ctx *app.Context) {
 // @Success 200 {object} model.Agreement
 // @Router /api/v1/agreement/{uuid} [get]
 func (t *AgreementController) GetAgreement(ctx *app.Context) {
-	uuid := ctx.Param("uuid")
-	agreement, err := t.AgreementService.GetAgreement(ctx, uuid)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	agreement, err := t.AgreementService.GetAgreement(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

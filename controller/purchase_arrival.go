@@ -47,13 +47,39 @@ func (t *PurchaseArrivalController) CreatePurchaseArrival(ctx *app.Context) {
 // @Success 200 {object} model.PurchaseArrival
 // @Router /api/v1/purchase_arrival/{uuid} [get]
 func (t *PurchaseArrivalController) GetPurchaseArrival(ctx *app.Context) {
-	uuid := ctx.Param("uuid")
-	arrival, err := t.PurchaseArrivalService.GetPurchaseArrival(ctx, uuid)
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	arrival, err := t.PurchaseArrivalService.GetPurchaseArrival(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
 	ctx.JSONSuccess(arrival)
+}
+
+// @Summary 获取到货明细
+// @Description 获取到货明细
+// @Tags 到货
+// @Accept  json
+// @Produce  json
+// @Param uuid path string true "到货UUID"
+// @Success 200 {object} model.PagedResponse
+// @Router /api/v1/purchase_arrival/{uuid}/items [get]
+func (t *PurchaseArrivalController) GetPurchaseArrivalItems(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	items, err := t.PurchaseArrivalService.GetPurchaseArrivalItems(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(items)
 }
 
 // @Summary 更新到货

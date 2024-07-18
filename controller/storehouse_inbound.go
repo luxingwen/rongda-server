@@ -26,6 +26,7 @@ func (p *StorehouseInboundController) CreateInbound(ctx *app.Context) {
 		return
 	}
 	userId := ctx.GetString("user_id")
+	param.Status = model.StorehouseInboundStatusPending
 	if err := p.InboundService.CreateInbound(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

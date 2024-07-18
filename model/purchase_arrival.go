@@ -50,6 +50,13 @@ type PurchaseArrival struct {
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
+type PurchaseArrivalRes struct {
+	PurchaseArrival
+	AcceptorInfo *User       `json:"acceptor_info"` // 验收人信息
+	SupplierInfo *Supplier   `json:"supplier_info"` // 供应商信息
+	StorageInfo  *Storehouse `json:"storage_info"`  // 仓库信息
+}
+
 // 到货明细
 type PurchaseArrivalItem struct {
 	ID                uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`                           // 主键ID
@@ -68,4 +75,11 @@ type PurchaseArrivalItem struct {
 	TotalAmount float64 `json:"total_amount" gorm:"comment:'总金额'"`               // 总金额
 	CreatedAt   string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt   string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+// 到货明细
+type PurchaseArrivalItemRes struct {
+	PurchaseArrivalItem
+	ProductInfo *Product `json:"product_info"` // 产品信息
+	SkuInfo     *Sku     `json:"sku_info"`     // SKU信息
 }

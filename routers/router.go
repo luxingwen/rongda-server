@@ -42,7 +42,7 @@ func InitRouter(ctx *app.App) {
 	InitSalesOutOfStockRouter(ctx)
 	InitSalesSettlementRouter(ctx)
 	InitBillRouter(ctx)
-
+	InitUploadFileRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -115,6 +115,15 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 		v1.POST("/purchase_order/info", purchaseOrderController.GetPurchaseOrder)
 		v1.POST("/purchase_order/list", purchaseOrderController.GetPurchaseOrderList)
 		v1.POST("/purchase_order/item/list", purchaseOrderController.GetPurchaseOrderProducts)
+	}
+}
+
+func InitUploadFileRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		uploadController := &controller.UploadController{}
+		v1.POST("/upload", uploadController.UploadFile)
+		v1.POST("/upload/delete", uploadController.DeleteFile)
 	}
 }
 
@@ -390,6 +399,7 @@ func InitPurchaseArrivalRouter(ctx *app.App) {
 		v1.POST("/purchase_arrival/delete", purchaseArrivalController.DeletePurchaseArrival)
 		v1.POST("/purchase_arrival/info", purchaseArrivalController.GetPurchaseArrival)
 		v1.POST("/purchase_arrival/list", purchaseArrivalController.GetPurchaseArrivalList)
+		v1.POST("/purchase_arrival/item/list", purchaseArrivalController.GetPurchaseArrivalItems)
 	}
 }
 
@@ -435,6 +445,7 @@ func InitSalesOutOfStockRouter(ctx *app.App) {
 		v1.POST("/sales_out_of_stock/delete", salesOutOfStockController.DeleteSalesOutOfStock)
 		v1.POST("/sales_out_of_stock/info", salesOutOfStockController.GetSalesOutOfStock)
 		v1.POST("/sales_out_of_stock/list", salesOutOfStockController.GetSalesOutOfStockList)
+		v1.POST("/sales_out_of_stock/product_item/list", salesOutOfStockController.GetSalesOutOfStocItems)
 	}
 }
 
