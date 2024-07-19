@@ -23,11 +23,16 @@ type Storehouse struct {
 	ContactPerson string `json:"contact_person" gorm:"comment:'联系人'"` // 联系人
 	// 联系电话
 	ContactPhone string `json:"contact_phone" gorm:"comment:'联系电话'"` // 联系电话
-	Status       int    `json:"status" gorm:"comment:'状态'"`          // 状态 1:启用 2:未启用
+	// 银行账号
+	BankAccount string `json:"bank_account" gorm:"comment:'银行账号'"` // 银行账号
+	// 开户行
+	BankName string `json:"bank_name" gorm:"comment:'开户行'"` // 开户行
+	Status   int    `json:"status" gorm:"comment:'状态'"`     // 状态 1:启用 2:未启用
 	// 仓库类型
 	Type      string `json:"type" gorm:"comment:'仓库类型'"`                      // 仓库类型 1:自有仓库 2:第三方仓库
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+	IsDeleted int    `json:"is_deleted" gorm:"comment:'是否删除'"`                // 是否删除 1:删除 0:未删除
 }
 
 // 仓库物品信息

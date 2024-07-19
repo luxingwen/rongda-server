@@ -233,3 +233,8 @@ type ReqStorehouseProductOpLogQueryParam struct {
 	Uuid string `json:"uuid"`
 	Pagination
 }
+
+type ReqProductCategoryQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}

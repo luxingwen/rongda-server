@@ -57,7 +57,7 @@ func (s *SkuService) UpdateSku(ctx *app.Context, sku *model.Sku) error {
 }
 
 func (s *SkuService) DeleteSku(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Delete(&model.Sku{}).Error
+	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete SKU", err)
 		return errors.New("failed to delete SKU")
@@ -78,6 +78,8 @@ func (s *SkuService) GetSkuList(ctx *app.Context, param *model.ReqSkuQueryParam)
 	if param.Name != "" {
 		db = db.Where("name like ?", "%"+param.Name+"%")
 	}
+
+	db = db.Where("is_deleted = ?", 0)
 
 	if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&skuList).Error; err != nil {
 		return

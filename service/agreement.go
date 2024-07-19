@@ -45,7 +45,7 @@ func (s *AgreementService) GetAgreement(ctx *app.Context, uuid string) (*model.A
 
 func (s *AgreementService) UpdateAgreement(ctx *app.Context, agreement *model.Agreement) error {
 	agreement.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-	err := ctx.DB.Save(agreement).Error
+	err := ctx.DB.Where("uuid = ?", agreement.Uuid).Updates(agreement).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update agreement", err)
 		return errors.New("failed to update agreement")

@@ -55,7 +55,7 @@ func (s *ProductService) UpdateProduct(ctx *app.Context, product *model.Product)
 }
 
 func (s *ProductService) DeleteProduct(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Delete(&model.Product{}).Error
+	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete product", err)
 		return errors.New("failed to delete product")
@@ -75,6 +75,8 @@ func (s *ProductService) GetProductList(ctx *app.Context, param *model.ReqProduc
 	if param.Name != "" {
 		db = db.Where("name like ?", "%"+param.Name+"%")
 	}
+
+	db = db.Where("is_deleted = ?", 0)
 
 	if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&productList).Error; err != nil {
 		return

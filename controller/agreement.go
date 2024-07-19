@@ -37,25 +37,29 @@ func (t *AgreementController) CreateAgreement(ctx *app.Context) {
 		Uuid:    uuid.New().String(),
 		Date:    ctx.Request.FormValue("date"),
 		Content: ctx.Request.FormValue("content"),
-		Type:    model.AgreementTypePurchase,
+		Title:   ctx.Request.FormValue("title"),
+		Type:    ctx.Request.FormValue("type"),
 	}
 
 	// Handle file uploads
 	form := ctx.Request.MultipartForm
 	files := form.File["attachment"]
-	var attachments []string
+	var attachments []model.FileAttachment
 
 	for _, fileHeader := range files {
 
 		// Create a unique filename and save the file
 		filename := "/agreement/" + uuid.New().String() + filepath.Ext(fileHeader.Filename)
-
+		fileattachment := model.FileAttachment{
+			Name: fileHeader.Filename,
+			Url:  filename,
+		}
 		err := ctx.SaveUploadedFile(fileHeader, ctx.Config.Upload.Dir+filename)
 		if err != nil {
 			ctx.JSONError(http.StatusInternalServerError, "Cannot save file")
 			return
 		}
-		attachments = append(attachments, filename)
+		attachments = append(attachments, fileattachment)
 	}
 
 	battachments, _ := json.Marshal(attachments)
@@ -105,11 +109,51 @@ func (t *AgreementController) GetAgreement(ctx *app.Context) {
 // @Success 200 {object} model.Agreement
 // @Router /api/v1/agreement/update [post]
 func (t *AgreementController) UpdateAgreement(ctx *app.Context) {
-	var param model.Agreement
-	if err := ctx.ShouldBindJSON(&param); err != nil {
-		ctx.JSONError(http.StatusBadRequest, err.Error())
-		return
+
+	param := model.Agreement{
+		Uuid:    ctx.Request.FormValue("uuid"),
+		Date:    ctx.Request.FormValue("date"),
+		Content: ctx.Request.FormValue("content"),
+		Title:   ctx.Request.FormValue("title"),
+		Type:    ctx.Request.FormValue("type"),
 	}
+
+	var attachments []model.FileAttachment
+
+	existfiles := ctx.Request.FormValue("existfiles")
+	if existfiles != "" {
+		err := json.Unmarshal([]byte(existfiles), &attachments)
+		if err != nil {
+			ctx.Logger.Error("解析文件失败:", err)
+			ctx.JSONError(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	// Handle file uploads
+	form := ctx.Request.MultipartForm
+	files := form.File["attachment"]
+
+	for _, fileHeader := range files {
+
+		// Create a unique filename and save the file
+		filename := "/agreement/" + uuid.New().String() + filepath.Ext(fileHeader.Filename)
+		fileattachment := model.FileAttachment{
+			Name: fileHeader.Filename,
+			Url:  filename,
+		}
+		err := ctx.SaveUploadedFile(fileHeader, ctx.Config.Upload.Dir+filename)
+		if err != nil {
+			ctx.JSONError(http.StatusInternalServerError, "Cannot save file")
+			return
+		}
+		attachments = append(attachments, fileattachment)
+	}
+
+	battachments, _ := json.Marshal(attachments)
+
+	param.Attachment = string(battachments)
+
 	if err := t.AgreementService.UpdateAgreement(ctx, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

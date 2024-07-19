@@ -58,7 +58,7 @@ func (s *SupplierService) UpdateSupplier(ctx *app.Context, supplier *model.Suppl
 }
 
 func (s *SupplierService) DeleteSupplier(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Delete(&model.Supplier{}).Error
+	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete supplier", err)
 		return errors.New("failed to delete supplier")
@@ -79,6 +79,8 @@ func (s *SupplierService) GetSupplierList(ctx *app.Context, params *model.ReqSup
 	if params.Name != "" {
 		db = db.Where("name LIKE ?", "%"+params.Name+"%")
 	}
+
+	db = db.Where("is_deleted = ?", 0)
 
 	err := db.Count(&total).Error
 	if err != nil {
