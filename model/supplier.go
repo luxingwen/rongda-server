@@ -6,6 +6,7 @@ type Supplier struct {
 	Name               string  `json:"name" gorm:"comment:'企业名称'"`                      // 企业名称
 	Address            string  `json:"address" gorm:"comment:'地址'"`                     // 地址
 	CountryNo          string  `json:"country_no" gorm:"comment:'国家厂号'"`                // 国家
+	FactoryNo          string  `json:"factory_no" gorm:"comment:'厂号'"`                  // 厂号
 	ContactPerson      string  `json:"contact_person" gorm:"comment:'联系人'"`             // 联系人
 	Phone              string  `json:"contact_info" gorm:"comment:'联系方式'"`              // 联系方式
 	SettlementCurrency string  `json:"settlement_currency" gorm:"comment:'结算币种'"`       // 结算币种

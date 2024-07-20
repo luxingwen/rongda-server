@@ -111,7 +111,8 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 		purchaseOrderController := &controller.PurchaseOrderController{
 			PurchaseOrderService: &service.PurchaseOrderService{},
 		}
-		v1.POST("/purchase_order/create", purchaseOrderController.CreatePurchaseOrder)
+		v1.POST("/purchase_order/create_futures", purchaseOrderController.CreatePurchaseOrderFutures)
+		v1.POST("/purchase_order/create_spot", purchaseOrderController.CreatePurchaseOrderSpot)
 		v1.POST("/purchase_order/update", purchaseOrderController.UpdatePurchaseOrder)
 		v1.POST("/purchase_order/delete", purchaseOrderController.DeletePurchaseOrder)
 		v1.POST("/purchase_order/info", purchaseOrderController.GetPurchaseOrder)
@@ -124,7 +125,7 @@ func InitUploadFileRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	{
 		uploadController := &controller.UploadController{}
-		v1.POST("/upload", uploadController.UploadFile)
+		v1.POST("/upload/file/*path", uploadController.UploadFile)
 		v1.POST("/upload/delete", uploadController.DeleteFile)
 	}
 }

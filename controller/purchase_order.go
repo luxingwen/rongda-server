@@ -25,13 +25,26 @@ func NewPurchaseOrderController() *PurchaseOrderController {
 // @Param param body model.PurchaseOrderReq true "采购单参数"
 // @Success 200 {object} model.PurchaseOrder
 // @Router /api/v1/purchase_order/create [post]
-func (t *PurchaseOrderController) CreatePurchaseOrder(ctx *app.Context) {
+func (t *PurchaseOrderController) CreatePurchaseOrderFutures(ctx *app.Context) {
 	var param model.PurchaseOrderReq
 	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := t.PurchaseOrderService.CreatePurchaseOrder(ctx, ctx.GetString("userId"), &param); err != nil {
+	if err := t.PurchaseOrderService.CreatePurchaseOrderFutures(ctx, ctx.GetString("userId"), &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
+}
+
+func (t *PurchaseOrderController) CreatePurchaseOrderSpot(ctx *app.Context) {
+	var param model.PurchaseOrderReq
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := t.PurchaseOrderService.CreatePurchaseOrderSpot(ctx, ctx.GetString("userId"), &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}

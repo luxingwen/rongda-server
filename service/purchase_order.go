@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -18,20 +19,35 @@ func NewPurchaseOrderService() *PurchaseOrderService {
 	return &PurchaseOrderService{}
 }
 
-func (s *PurchaseOrderService) CreatePurchaseOrder(ctx *app.Context, userId string, req *model.PurchaseOrderReq) error {
+func (s *PurchaseOrderService) CreatePurchaseOrderFutures(ctx *app.Context, userId string, req *model.PurchaseOrderReq) error {
+
+	attachment := ""
+	if len(req.Attachment) > 0 {
+		bdata, _ := json.Marshal(req.Attachment)
+		attachment = string(bdata)
+	}
+
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 	order := &model.PurchaseOrder{
-		Title:        req.Title,
-		OrderNo:      uuid.New().String(), // Generating a unique order number
-		SupplierUuid: req.SupplierUuid,
-		Date:         req.Date,
-		Deposit:      req.Deposit,
-		Tax:          req.Tax,
-		TotalAmount:  req.TotalAmount,
-		Purchaser:    userId,
-		Status:       1, // Assuming 1 is the initial status
-		CreatedAt:    nowStr,
-		UpdatedAt:    nowStr,
+		Title:                 req.Title,
+		OrderNo:               uuid.New().String(), // Generating a unique order number
+		SupplierUuid:          req.SupplierUuid,
+		CustomerUuid:          req.CustomerUuid,
+		Date:                  req.Date,
+		PIAgreementNo:         req.PIAgreementNo,
+		OrderCurrency:         req.OrderCurrency,
+		SettlementCurrency:    req.SettlementCurrency,
+		Departure:             req.Departure,
+		Destination:           req.Destination,
+		EstimatedShippingDate: req.EstimatedShippingDate,
+		EstimatedWarehouse:    req.EstimatedWarehouse,
+
+		Purchaser:  userId,
+		Status:     1, // Assuming 1 is the initial status
+		CreatedAt:  nowStr,
+		UpdatedAt:  nowStr,
+		OrderType:  model.OrderTypeFutures,
+		Attachment: attachment,
 	}
 
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
@@ -50,8 +66,115 @@ func (s *PurchaseOrderService) CreatePurchaseOrder(ctx *app.Context, userId stri
 				Quantity:        detailReq.Quantity,
 				Price:           detailReq.Price,
 				TotalAmount:     detailReq.TotalAmount,
-				CreatedAt:       nowStr,
-				UpdatedAt:       nowStr,
+
+				PIBoxNum:             detailReq.PIBoxNum,
+				PIQuantity:           detailReq.PIQuantity,
+				PIUnitPrice:          detailReq.PIUnitPrice,
+				PITotalAmount:        detailReq.PITotalAmount,
+				CabinetNo:            detailReq.CabinetNo,
+				BillOfLadingNo:       detailReq.BillOfLadingNo,
+				ShipName:             detailReq.ShipName,
+				Voyage:               detailReq.Voyage,
+				CIInvoiceNo:          detailReq.CIInvoiceNo,
+				CIBoxNum:             detailReq.CIBoxNum,
+				CIQuantity:           detailReq.CIQuantity,
+				CIUnitPrice:          detailReq.CIUnitPrice,
+				CITotalAmount:        detailReq.CITotalAmount,
+				ProductionDate:       detailReq.ProductionDate,
+				EstimatedArrivalDate: detailReq.EstimatedArrivalDate,
+				Tariff:               detailReq.Tariff,
+				VAT:                  detailReq.VAT,
+				PaymentDate:          detailReq.PaymentDate,
+
+				CreatedAt: nowStr,
+				UpdatedAt: nowStr,
+			}
+
+			if err := tx.Create(detail).Error; err != nil {
+				ctx.Logger.Error("Failed to create purchase order item", err)
+				return errors.New("failed to create purchase order item")
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PurchaseOrderService) CreatePurchaseOrderSpot(ctx *app.Context, userId string, req *model.PurchaseOrderReq) error {
+
+	attachment := ""
+	if len(req.Attachment) > 0 {
+		bdata, _ := json.Marshal(req.Attachment)
+		attachment = string(bdata)
+	}
+
+	nowStr := time.Now().Format("2006-01-02 15:04:05")
+	order := &model.PurchaseOrder{
+		Title:                 req.Title,
+		OrderNo:               uuid.New().String(), // Generating a unique order number
+		SupplierUuid:          req.SupplierUuid,
+		CustomerUuid:          req.CustomerUuid,
+		Date:                  req.Date,
+		PIAgreementNo:         req.PIAgreementNo,
+		OrderCurrency:         req.OrderCurrency,
+		SettlementCurrency:    req.SettlementCurrency,
+		Departure:             req.Departure,
+		Destination:           req.Destination,
+		EstimatedShippingDate: req.EstimatedShippingDate,
+		EstimatedWarehouse:    req.EstimatedWarehouse,
+		ActualWarehouse:       req.ActualWarehouse,
+
+		Purchaser:  userId,
+		Status:     1, // Assuming 1 is the initial status
+		CreatedAt:  nowStr,
+		UpdatedAt:  nowStr,
+		OrderType:  model.OrderTypeSpot,
+		Attachment: attachment,
+	}
+
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(order).Error; err != nil {
+			ctx.Logger.Error("Failed to create purchase order", err)
+			return errors.New("failed to create purchase order")
+		}
+
+		for _, detailReq := range req.Details {
+			detail := &model.PurchaseOrderItem{
+				PurchaseOrderNo: order.OrderNo,
+				ProductUuid:     detailReq.ProductUuid,
+				SkuUuid:         detailReq.SkuUuid,
+				ProductName:     detailReq.ProductName,
+				SkuName:         detailReq.SkuName,
+				Quantity:        detailReq.Quantity,
+				Price:           detailReq.Price,
+				TotalAmount:     detailReq.TotalAmount,
+
+				PIBoxNum:             detailReq.PIBoxNum,
+				PIQuantity:           detailReq.PIQuantity,
+				PIUnitPrice:          detailReq.PIUnitPrice,
+				PITotalAmount:        detailReq.PITotalAmount,
+				CabinetNo:            detailReq.CabinetNo,
+				BillOfLadingNo:       detailReq.BillOfLadingNo,
+				ShipName:             detailReq.ShipName,
+				Voyage:               detailReq.Voyage,
+				CIInvoiceNo:          detailReq.CIInvoiceNo,
+				CIBoxNum:             detailReq.CIBoxNum,
+				CIQuantity:           detailReq.CIQuantity,
+				CIUnitPrice:          detailReq.CIUnitPrice,
+				CITotalAmount:        detailReq.CITotalAmount,
+				ProductionDate:       detailReq.ProductionDate,
+				EstimatedArrivalDate: detailReq.EstimatedArrivalDate,
+				Tariff:               detailReq.Tariff,
+				VAT:                  detailReq.VAT,
+				PaymentDate:          detailReq.PaymentDate,
+
+				CreatedAt: nowStr,
+				UpdatedAt: nowStr,
 			}
 
 			if err := tx.Create(detail).Error; err != nil {
@@ -92,6 +215,47 @@ func (s *PurchaseOrderService) GetPurchaseOrder(ctx *app.Context, orderNo string
 		ctx.Logger.Error("Failed to get user by UUID", err)
 		return nil, err
 	}
+
+	curuuids := make([]string, 0)
+	curuuids = append(curuuids, order.OrderCurrency)
+	curuuids = append(curuuids, order.SettlementCurrency)
+
+	currencyMap, err := NewSettlementCurrencyService().GetSettlementCurrencyByUuids(ctx, curuuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get settlement currency by uuids", err)
+		return nil, err
+	}
+
+	if currency, ok := currencyMap[order.OrderCurrency]; ok {
+		order.OrderCurrencyInfo = currency
+	}
+
+	if currency, ok := currencyMap[order.SettlementCurrency]; ok {
+		order.SettlementCurrencyInfo = currency
+	}
+
+	if order.EstimatedWarehouse != "" {
+		storehouse, err := NewStorehouseService().GetStorehouseByUUID(ctx, order.EstimatedWarehouse)
+		if err != nil {
+			ctx.Logger.Error("Failed to get storehouse by uuid", err)
+		}
+		order.EstimatedWarehouseInfo = storehouse
+	}
+
+	if order.ActualWarehouse != "" {
+		storehouse, err := NewStorehouseService().GetStorehouseByUUID(ctx, order.ActualWarehouse)
+		if err != nil {
+			ctx.Logger.Error("Failed to get storehouse by uuid", err)
+		}
+		order.ActualWarehouseInfo = storehouse
+	}
+
+	customer, err := NewCustomerService().GetCustomerByUUID(ctx, order.CustomerUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer by uuid", err)
+	}
+	order.CustomerInfo = customer
+
 	if user != nil {
 
 		order.PurchaserInfo = *user
@@ -184,14 +348,24 @@ func (s *PurchaseOrderService) ListPurchaseOrders(ctx *app.Context, param *model
 	}
 
 	supplierUuids := make([]string, 0)
+	customerUuids := make([]string, 0)
 	for _, order := range orderList {
 		supplierUuids = append(supplierUuids, order.SupplierUuid)
+		customerUuids = append(customerUuids, order.CustomerUuid)
 	}
 
 	supplierMap, err := NewSupplierService().GetSupplierListByUUIDs(ctx, supplierUuids)
 	if err != nil {
+		ctx.Logger.Error("Failed to get supplier list by UUIDs", err)
 		return
 	}
+
+	customerMap, err := NewCustomerService().GetCustomerListByUUIDs(ctx, customerUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer list by UUIDs", err)
+		return
+	}
+
 	res := make([]*model.PurchaseOrderRes, 0)
 	for _, order := range orderList {
 		purchaseOrderItem := &model.PurchaseOrderRes{
@@ -199,6 +373,9 @@ func (s *PurchaseOrderService) ListPurchaseOrders(ctx *app.Context, param *model
 		}
 		if supplier, ok := supplierMap[order.SupplierUuid]; ok {
 			purchaseOrderItem.Supplier = *supplier
+		}
+		if customer, ok := customerMap[order.CustomerUuid]; ok {
+			purchaseOrderItem.CustomerInfo = customer
 		}
 		res = append(res, purchaseOrderItem)
 	}

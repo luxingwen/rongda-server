@@ -110,3 +110,20 @@ func (s *CustomerService) GetAllCustomers(ctx *app.Context) ([]*model.Customer, 
 	}
 	return customers, nil
 }
+
+// 根据uuid列表获取客户列表
+func (s *CustomerService) GetCustomerListByUUIDs(ctx *app.Context, uuids []string) (map[string]*model.Customer, error) {
+	var customers []*model.Customer
+	err := ctx.DB.Where("uuid IN (?)", uuids).Find(&customers).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer list by UUIDs", err)
+		return nil, errors.New("failed to get customer list by UUIDs")
+	}
+
+	customerMap := make(map[string]*model.Customer)
+	for _, customer := range customers {
+		customerMap[customer.Uuid] = customer
+	}
+
+	return customerMap, nil
+}

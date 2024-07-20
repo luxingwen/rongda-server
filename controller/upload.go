@@ -3,8 +3,12 @@ package controller
 import (
 	"net/http"
 	"os"
+	"path/filepath"
 	"sgin/model"
 	"sgin/pkg/app"
+	"strings"
+
+	"github.com/google/uuid"
 )
 
 type UploadController struct {
@@ -21,6 +25,19 @@ type UploadController struct {
 // @Router /api/v1/upload [post]
 func (u *UploadController) UploadFile(ctx *app.Context) {
 	// Multipart form
+
+	dstpath := getFilePath(ctx)
+
+	const maxUploadSize = 100 * 1024 * 1024 // 100 MB
+	err := ctx.Request.ParseMultipartForm(maxUploadSize)
+	if err != nil {
+		ctx.Logger.Error("上传文件失败:", err)
+		ctx.JSONError(http.StatusBadRequest, "超过最大上传限制")
+		return
+	}
+
+	ctx.Logger.Info("上传文件:", dstpath)
+
 	form, err := ctx.MultipartForm()
 	if err != nil {
 		ctx.Logger.Error("上传文件失败:", err)
@@ -28,18 +45,36 @@ func (u *UploadController) UploadFile(ctx *app.Context) {
 		return
 	}
 
+	fileattachments := make([]model.FileAttachment, 0)
+
 	for _, files := range form.File {
 		for _, file := range files {
-			file.Filename = ctx.Config.Upload.Dir + "/" + file.Filename
-			if err := ctx.SaveUploadedFile(file, file.Filename); err != nil {
+			attatchment := model.FileAttachment{
+				Name: file.Filename,
+			}
+			filename := uuid.New().String() + filepath.Ext(file.Filename)
+			filename = filepath.Join(dstpath, filename)
+			attatchment.Url = filename
+
+			if err := ctx.SaveUploadedFile(file, filepath.Join(ctx.Config.Upload.Dir, filename)); err != nil {
 				ctx.Logger.Error("上传文件失败:", err)
 				ctx.JSONError(http.StatusBadRequest, "上传文件失败")
 				return
 			}
+			fileattachments = append(fileattachments, attatchment)
 		}
 	}
 
-	ctx.JSONSuccess("上传文件成功")
+	ctx.JSONSuccess(fileattachments)
+}
+
+func getFilePath(c *app.Context) (r string) {
+	dstpath := c.Param("path")
+	if !strings.HasPrefix(dstpath, "/") {
+		dstpath = "/" + dstpath
+	}
+	dstpath = filepath.Clean(dstpath)
+	return dstpath
 }
 
 // 删除文件
