@@ -18,18 +18,74 @@ func NewSkuService() *SkuService {
 	return &SkuService{}
 }
 
-func (s *SkuService) CreateSku(ctx *app.Context, sku *model.Sku) error {
-	sku.UUID = uuid.New().String()
+func (s *SkuService) CreateSku(ctx *app.Context, skureq *model.SkuReq) error {
+	// sku.UUID = uuid.New().String()
 
-	sku.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-	sku.UpdatedAt = sku.CreatedAt
+	// sku.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+	// sku.UpdatedAt = sku.CreatedAt
 
-	err := ctx.DB.Create(sku).Error
-	if err != nil {
-		ctx.Logger.Error("Failed to create SKU", err)
-		return errors.New("failed to create SKU")
+	sku := &model.Sku{
+		UUID:                uuid.New().String(),
+		ProductCategoryUuid: skureq.ProductCategoryUuid,
+		ProductName:         skureq.Name,
+		Code:                skureq.Code,
+		Specification:       skureq.Specification,
+		Unit:                skureq.Unit,
+		Country:             skureq.Country,
+		FactoryNo:           skureq.FactoryNo,
+		CreatedAt:           time.Now().Format("2006-01-02 15:04:05"),
+		UpdatedAt:           time.Now().Format("2006-01-02 15:04:05"),
+		IsDeleted:           0,
 	}
-	return nil
+
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		// 根据名称获取产品
+		var product model.Product
+		if err := tx.Where("name = ?", skureq.Name).First(&product).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				// 产品不存在，创建产品
+				product = model.Product{
+					Uuid:      uuid.New().String(),
+					Name:      skureq.Name,
+					Category:  "",
+					Creater:   "",
+					CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
+					UpdatedAt: time.Now().Format("2006-01-02 15:04:05"),
+					IsDeleted: 0,
+				}
+				if err := tx.Create(&product).Error; err != nil {
+					ctx.Logger.Error("Failed to create product", err)
+					return errors.New("failed to create product")
+				}
+			} else {
+				ctx.Logger.Error("Failed to get product by name", err)
+				return errors.New("failed to get product by name")
+			}
+		}
+		sku.ProductUuid = product.Uuid
+
+		// 先获取是否存在相同的SKU
+		var skures model.Sku
+		err := tx.Where("product_uuid = ? and product_category_uuid = ? and code = ? and specification = ? and unit = ? and country = ? and factory_no = ?", sku.ProductUuid, sku.ProductCategoryUuid, sku.Code, sku.Specification, sku.Unit, sku.Country, sku.FactoryNo).First(&skures).Error
+
+		if err == nil && skures.UUID != "" {
+			ctx.Logger.Error("SKU already exists")
+			return errors.New("SKU已经存在")
+		}
+
+		if err != nil && err != gorm.ErrRecordNotFound {
+			ctx.Logger.Error("Failed to get sku by product_uuid and product_category_uuid and code and specification and unit and country and factory_no", err)
+			return errors.New("failed to get sku by product_uuid and product_category_uuid and code and specification and unit and country and factory_no")
+		}
+		// 创建SKU
+		if err := tx.Create(sku).Error; err != nil {
+			ctx.Logger.Error("Failed to create SKU", err)
+			return errors.New("failed to create SKU")
+		}
+		return nil
+	})
+
+	return err
 }
 
 func (s *SkuService) GetSkuByUUID(ctx *app.Context, uuid string) (*model.Sku, error) {
@@ -57,7 +113,7 @@ func (s *SkuService) UpdateSku(ctx *app.Context, sku *model.Sku) error {
 }
 
 func (s *SkuService) DeleteSku(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.Sku{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete SKU", err)
 		return errors.New("failed to delete SKU")
@@ -89,14 +145,22 @@ func (s *SkuService) GetSkuList(ctx *app.Context, param *model.ReqSkuQueryParam)
 	}
 
 	productUuids := make([]string, 0)
+	categoryUuids := make([]string, 0)
 	for _, sku := range skuList {
 		productUuids = append(productUuids, sku.ProductUuid)
+		categoryUuids = append(categoryUuids, sku.ProductCategoryUuid)
 	}
 
 	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
 	if err != nil {
 		ctx.Logger.Error("Failed to get product list by UUIDs", err)
 		return nil, errors.New("failed to get product list by UUIDs")
+	}
+
+	categoryMap, err := NewProductCategoryService().GetProductCategoryListByUUIDs(ctx, categoryUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product category list by UUIDs", err)
+		return nil, errors.New("failed to get product category list by UUIDs")
 	}
 
 	res := make([]*model.SkuRes, 0)
@@ -107,6 +171,11 @@ func (s *SkuService) GetSkuList(ctx *app.Context, param *model.ReqSkuQueryParam)
 		if product, ok := productMap[sku.ProductUuid]; ok {
 			skuRes.Product = *product
 		}
+
+		if category, ok := categoryMap[sku.ProductCategoryUuid]; ok {
+			skuRes.ProductCategory = *category
+		}
+
 		res = append(res, skuRes)
 	}
 

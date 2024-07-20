@@ -20,7 +20,7 @@ type SkuController struct {
 // @Success 200 {object} model.SkuInfoResponse
 // @Router /api/v1/sku/create [post]
 func (s *SkuController) CreateSku(ctx *app.Context) {
-	var param model.Sku
+	var param model.SkuReq
 	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return

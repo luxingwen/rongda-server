@@ -1,11 +1,26 @@
 package model
 
+type SkuReq struct {
+	Name                string `json:"name" binding:"required"`                  // Name 是SKU的名称
+	ProductCategoryUuid string `json:"product_category_uuid" binding:"required"` // ProductCategoryUuid 是商品分类的UUID
+	Code                string `json:"code" binding:"-"`                         // Code 是SKU的编码
+	// 规格
+	Specification string `json:"specification" binding:"-"` // Specification 是SKU的规格
+	// 单位
+	Unit string `json:"unit" binding:"-"` // Unit 是SKU的单位
+	// 国家
+	Country string `json:"country" binding:"required"` // Country 是SKU的国家
+	// 厂号
+	FactoryNo string `json:"factory_no" binding:"required"` // FactoryNo 是SKU的厂号
+}
+
 type Sku struct {
 	Id                  uint   `gorm:"primary_key" json:"id"`                            // ID 是SKU的主键
 	UUID                string `gorm:"type:char(36);unique" json:"uuid"`                 // UUID 是SKU的唯一标识符
 	ProductUuid         string `gorm:"type:char(36);index" json:"product_uuid"`          // ProductUuid 是商品的UUID
+	ProductName         string `gorm:"type:varchar(100)" json:"product_name"`            // ProductName 是商品的名称
 	ProductCategoryUuid string `gorm:"type:char(36);index" json:"product_category_uuid"` // ProductCategoryUuid 是商品分类的UUID
-	Name                string `gorm:"type:varchar(100)" json:"name"`                    // Name 是SKU的名称
+	Code                string `gorm:"type:varchar(100)" json:"code"`                    // Name 是SKU的Code
 	// 规格
 	Specification string `gorm:"type:varchar(100)" json:"specification"` // Specification 是SKU的规格
 	// 单位
@@ -21,5 +36,6 @@ type Sku struct {
 
 type SkuRes struct {
 	Sku
-	Product Product `json:"product"`
+	Product         Product         `json:"product"`
+	ProductCategory ProductCategory `json:"product_category"`
 }

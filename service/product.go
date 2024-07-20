@@ -55,7 +55,7 @@ func (s *ProductService) UpdateProduct(ctx *app.Context, product *model.Product)
 }
 
 func (s *ProductService) DeleteProduct(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.Product{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete product", err)
 		return errors.New("failed to delete product")
@@ -85,33 +85,11 @@ func (s *ProductService) GetProductList(ctx *app.Context, param *model.ReqProduc
 		return
 	}
 
-	supplierUuids := make([]string, 0)
-	for _, product := range productList {
-		supplierUuids = append(supplierUuids, product.Supplier)
-	}
-
-	supplierMap, err := NewSupplierService().GetSupplierListByUUIDs(ctx, supplierUuids)
-	if err != nil {
-		ctx.Logger.Error("Failed to get supplier list by UUIDs", err)
-		return
-	}
-
-	res := make([]*model.ProductRes, 0)
-	for _, product := range productList {
-		productRes := &model.ProductRes{
-			Product: *product,
-		}
-		if supplier, ok := supplierMap[product.Supplier]; ok {
-			productRes.SupplierInfo = supplier
-		}
-		res = append(res, productRes)
-	}
-
 	r = &model.PagedResponse{
 		Total:    total,
 		Current:  param.Current,
 		PageSize: param.PageSize,
-		Data:     res,
+		Data:     productList,
 	}
 	return
 }

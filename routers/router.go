@@ -44,6 +44,7 @@ func InitRouter(ctx *app.App) {
 	InitBillRouter(ctx)
 	InitUploadFileRouter(ctx)
 	InitProductCategoryRouter(ctx)
+	InitProductManageRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -306,6 +307,21 @@ func InitProductCategoryRouter(ctx *app.App) {
 		v1.POST("/product_category/info", productCategoryController.GetProductCategoryInfo)
 		v1.POST("/product_category/list", productCategoryController.GetProductCategoryList)
 		v1.POST("/product_category/all", productCategoryController.GetAllProductCategories)
+	}
+}
+
+func InitProductManageRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		productManageController := &controller.ProductManageController{
+			ProductManageService: &service.ProductManageService{},
+			SkuService:           &service.SkuService{},
+		}
+		v1.POST("/product_manage/create", productManageController.CreateProduct)
+		v1.POST("/product_manage/update", productManageController.UpdateProduct)
+		v1.POST("/product_manage/delete", productManageController.DeleteProduct)
+		v1.POST("/product_manage/info", productManageController.GetProductInfo)
+		v1.POST("/product_manage/list", productManageController.GetProductList)
 	}
 }
 

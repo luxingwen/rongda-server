@@ -78,7 +78,7 @@ func (s *UserService) UpdateUser(ctx *app.Context, user *model.User) error {
 }
 
 func (s *UserService) DeleteUser(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.User{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete user", err)
 		return errors.New("failed to delete user")

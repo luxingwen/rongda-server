@@ -58,7 +58,7 @@ func (s *AgentService) UpdateAgent(ctx *app.Context, agent *model.Agent) error {
 }
 
 func (s *AgentService) DeleteAgent(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.Agent{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete agent", err)
 		return errors.New("failed to delete agent")

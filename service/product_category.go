@@ -58,7 +58,7 @@ func (s *ProductCategoryService) UpdateProductCategory(ctx *app.Context, categor
 }
 
 func (s *ProductCategoryService) DeleteProductCategory(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.ProductCategory{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete product category", err)
 		return errors.New("failed to delete product category")
@@ -109,4 +109,21 @@ func (s *ProductCategoryService) GetProductCategoryAll(ctx *app.Context) ([]*mod
 		return nil, errors.New("failed to get product category list")
 	}
 	return categories, nil
+}
+
+// 根据UUID批量获取产品分类
+func (s *ProductCategoryService) GetProductCategoryListByUUIDs(ctx *app.Context, uuids []string) (map[string]*model.ProductCategory, error) {
+	categories := make([]*model.ProductCategory, 0)
+	err := ctx.DB.Where("uuid in (?)", uuids).Find(&categories).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get product category list by UUIDs", err)
+		return nil, errors.New("failed to get product category list by UUIDs")
+	}
+
+	categoryMap := make(map[string]*model.ProductCategory)
+	for _, category := range categories {
+		categoryMap[category.Uuid] = category
+	}
+
+	return categoryMap, nil
 }
