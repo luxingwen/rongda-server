@@ -45,6 +45,8 @@ func InitRouter(ctx *app.App) {
 	InitUploadFileRouter(ctx)
 	InitProductCategoryRouter(ctx)
 	InitProductManageRouter(ctx)
+	InitSysBankInfoRouter(ctx)
+	InitSysLoginLogRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -121,6 +123,21 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 	}
 }
 
+func InitSysBankInfoRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		sysBankInfoController := &controller.SysBankInfoController{
+			SysBankInfoService: &service.SysBankInfoService{},
+		}
+		v1.POST("/bankinfo/create", sysBankInfoController.CreateSysBankInfo)
+		v1.POST("/bankinfo/update", sysBankInfoController.UpdateSysBankInfo)
+		v1.POST("/bankinfo/delete", sysBankInfoController.DeleteSysBankInfo)
+		v1.POST("/bankinfo/info", sysBankInfoController.GetSysBankInfo)
+		v1.POST("/bankinfo/list", sysBankInfoController.GetSysBankInfoList)
+		v1.POST("/bankinfo/all", sysBankInfoController.GetAvailableSysBankInfoList)
+	}
+}
+
 func InitUploadFileRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	{
@@ -156,7 +173,8 @@ func InitLoginRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	{
 		loginController := &controller.LoginController{
-			UserService: &service.UserService{},
+			UserService:        &service.UserService{},
+			SysLoginLogService: &service.SysLoginLogService{},
 		}
 		v1.POST("/login", loginController.Login)
 	}
@@ -507,6 +525,18 @@ func InitBillRouter(ctx *app.App) {
 		v1.POST("/bill/delete", billController.DeleteBill)
 		v1.POST("/bill/info", billController.GetBill)
 		v1.POST("/bill/list", billController.GetBillList)
+	}
+}
+
+func InitSysLoginLogRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	{
+		sysLoginLogController := &controller.SysLoginLogController{
+			LoginLogService: &service.SysLoginLogService{},
+		}
+
+		v1.POST("/sys_login_log/info", sysLoginLogController.GetLoginLog)
+		v1.POST("/sys_login_log/list", sysLoginLogController.GetLoginLogList)
 	}
 }
 

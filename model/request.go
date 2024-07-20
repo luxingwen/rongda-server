@@ -238,3 +238,13 @@ type ReqProductCategoryQueryParam struct {
 	Name string `json:"name"`
 	Pagination
 }
+
+type ReqSysBankInfoQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
+
+type ReqLoginLogQueryParam struct {
+	Username string `json:"username"`
+	Pagination
+}
