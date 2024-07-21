@@ -5,6 +5,9 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 	"sgin/service"
+	"strconv"
+
+	"github.com/xuri/excelize/v2"
 )
 
 type PurchaseOrderController struct {
@@ -49,6 +52,247 @@ func (t *PurchaseOrderController) CreatePurchaseOrderSpot(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(nil)
+}
+
+// 上传excel文件
+func (t *PurchaseOrderController) UploadFuturesItemsExcel(ctx *app.Context) {
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 读取excel文件
+	xlsx, err := excelize.OpenReader(f)
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 获取第一个工作表
+	sheetName := xlsx.GetSheetName(0)
+	// 获取列名
+	headers, err := xlsx.GetCols(sheetName)
+
+	if err != nil {
+		ctx.Logger.Error("读取excel文件失败", err)
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	columnIndexMap := make(map[string]int)
+	for colIndex, colValues := range headers {
+		if len(colValues) > 0 {
+			columnIndexMap[colValues[0]] = colIndex
+		}
+	}
+
+	// 读取数据
+	rows, err := xlsx.GetRows(sheetName)
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		ctx.Logger.Error("读取excel文件失败", err)
+		return
+	}
+
+	var purchaseOrderItems []model.PurchaseOrderItemReq
+
+	for rowIndex, row := range rows {
+		// Skip the header row
+		if rowIndex == 0 {
+			continue
+		}
+		var item model.PurchaseOrderItemReq
+
+		item.ProductName = safeGetCellString(row, columnIndexMap, "产品名称")
+		item.SkuCode = safeGetCellString(row, columnIndexMap, "SKU编码")
+		item.SkuSpec = safeGetCellString(row, columnIndexMap, "SKU规格")
+
+		item.Quantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "数量"))
+		if err != nil {
+			ctx.Logger.Error("数量转换失败", err)
+		}
+
+		item.Price, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "价格"), 64)
+		if err != nil {
+			ctx.Logger.Error("价格转换失败", err)
+		}
+		item.TotalAmount, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "总金额"), 64)
+		if err != nil {
+			ctx.Logger.Error("总金额转换失败", err)
+		}
+		item.PIBoxNum, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "PI箱数"))
+		if err != nil {
+			ctx.Logger.Error("PI箱数转换失败", err)
+		}
+
+		item.PIQuantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "PI数量"))
+		if err != nil {
+			ctx.Logger.Error("PI数量转换失败", err)
+		}
+		item.PIUnitPrice, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "PI单价"), 64)
+		if err != nil {
+			ctx.Logger.Error("PI单价转换失败", err)
+		}
+		item.PITotalAmount, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "PI总金额"), 64)
+		if err != nil {
+			ctx.Logger.Error("PI总金额转换失败", err)
+		}
+		item.CabinetNo = safeGetCellString(row, columnIndexMap, "柜号")
+		item.BillOfLadingNo = safeGetCellString(row, columnIndexMap, "提单号")
+		item.ShipName = safeGetCellString(row, columnIndexMap, "船名")
+		item.Voyage = safeGetCellString(row, columnIndexMap, "航次")
+		item.CIInvoiceNo = safeGetCellString(row, columnIndexMap, "CI发票号")
+		item.CIBoxNum, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "CI箱数"))
+		if err != nil {
+			ctx.Logger.Error("CI箱数转换失败", err)
+		}
+		item.CIQuantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "CI数量"))
+		if err != nil {
+			ctx.Logger.Error("CI数量转换失败", err)
+		}
+		item.CIUnitPrice, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "CI单价"), 64)
+		if err != nil {
+			ctx.Logger.Error("CI单价转换失败", err)
+		}
+		item.CITotalAmount, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "CI总金额"), 64)
+		if err != nil {
+			ctx.Logger.Error("CI总金额转换失败", err)
+		}
+		item.ProductionDate = safeGetCellString(row, columnIndexMap, "生产日期")
+		item.EstimatedArrivalDate = safeGetCellString(row, columnIndexMap, "预计到港日期")
+		item.Tariff, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "关税"), 64)
+		if err != nil {
+			ctx.Logger.Error("关税转换失败", err)
+		}
+		item.VAT, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "增值税"), 64)
+		if err != nil {
+			ctx.Logger.Error("增值税转换失败", err)
+		}
+
+		item.PaymentDate = safeGetCellString(row, columnIndexMap, "缴费日期")
+		purchaseOrderItems = append(purchaseOrderItems, item)
+	}
+
+	rPuchaseOrderItems, err := t.PurchaseOrderService.CompletePurchaseOrderItem(ctx, purchaseOrderItems)
+	if err != nil {
+		ctx.Logger.Error("Failed to complete purchase order items", err)
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(rPuchaseOrderItems)
+
+}
+
+func safeGetCellString(row []string, columnIndexMap map[string]int, keyname string) string {
+	if index, ok := columnIndexMap[keyname]; ok {
+		if len(row) > index {
+			return row[index]
+		}
+	}
+	return ""
+}
+
+func (t *PurchaseOrderController) UploadSpotItemsExcel(ctx *app.Context) {
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 读取excel文件
+	xlsx, err := excelize.OpenReader(f)
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 获取第一个工作表
+	sheetName := xlsx.GetSheetName(0)
+	// 获取列名
+	headers, err := xlsx.GetCols(sheetName)
+
+	if err != nil {
+		ctx.Logger.Error("读取excel文件失败", err)
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	columnIndexMap := make(map[string]int)
+	for colIndex, colValues := range headers {
+		if len(colValues) > 0 {
+			columnIndexMap[colValues[0]] = colIndex
+		}
+	}
+
+	// 读取数据
+	rows, err := xlsx.GetRows(sheetName)
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		ctx.Logger.Error("读取excel文件失败", err)
+		return
+	}
+
+	var purchaseOrderItems []model.PurchaseOrderItemReq
+
+	for rowIndex, row := range rows {
+		// Skip the header row
+		if rowIndex == 0 {
+			continue
+		}
+		var item model.PurchaseOrderItemReq
+		item.ProductName = safeGetCellString(row, columnIndexMap, "产品名称")
+		item.SkuCode = safeGetCellString(row, columnIndexMap, "SKU编码")
+		item.SkuSpec = safeGetCellString(row, columnIndexMap, "SKU规格")
+
+		item.Quantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "数量"))
+		if err != nil {
+			ctx.Logger.Error("数量转换失败", err)
+		}
+
+		item.BoxNum, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "箱数"))
+		if err != nil {
+			ctx.Logger.Error("箱数转换失败", err)
+		}
+
+		item.Price, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "价格"), 64)
+		if err != nil {
+			ctx.Logger.Error("价格转换失败", err)
+		}
+
+		item.TotalAmount, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "总金额"), 64)
+		if err != nil {
+			ctx.Logger.Error("总金额转换失败", err)
+		}
+
+		item.CabinetNo = safeGetCellString(row, columnIndexMap, "柜号")
+		item.ProductionDate = safeGetCellString(row, columnIndexMap, "生产日期")
+		item.Desc = safeGetCellString(row, columnIndexMap, "描述")
+		purchaseOrderItems = append(purchaseOrderItems, item)
+	}
+
+	rPuchaseOrderItems, err := t.PurchaseOrderService.CompletePurchaseOrderItem(ctx, purchaseOrderItems)
+	if err != nil {
+		ctx.Logger.Error("Failed to complete purchase order items", err)
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(rPuchaseOrderItems)
+
 }
 
 // @Summary 获取采购单
@@ -153,6 +397,17 @@ func (t *PurchaseOrderController) GetPurchaseOrderList(ctx *app.Context) {
 	}
 
 	orders, err := t.PurchaseOrderService.ListPurchaseOrders(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(orders)
+}
+
+func (t *PurchaseOrderController) GetAvailablePurchaseOrderList(ctx *app.Context) {
+
+	orders, err := t.PurchaseOrderService.GetAvailablePurchaseOrderList(ctx)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

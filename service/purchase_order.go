@@ -41,9 +41,11 @@ func (s *PurchaseOrderService) CreatePurchaseOrderFutures(ctx *app.Context, user
 		Destination:           req.Destination,
 		EstimatedShippingDate: req.EstimatedShippingDate,
 		EstimatedWarehouse:    req.EstimatedWarehouse,
+		DepositAmount:         req.DepositAmount,
+		DepositRatio:          req.DepositRatio,
 
 		Purchaser:  userId,
-		Status:     1, // Assuming 1 is the initial status
+		Status:     model.PurchaseOrderStatusPending, // Assuming 1 is the initial status
 		CreatedAt:  nowStr,
 		UpdatedAt:  nowStr,
 		OrderType:  model.OrderTypeFutures,
@@ -128,9 +130,11 @@ func (s *PurchaseOrderService) CreatePurchaseOrderSpot(ctx *app.Context, userId 
 		EstimatedShippingDate: req.EstimatedShippingDate,
 		EstimatedWarehouse:    req.EstimatedWarehouse,
 		ActualWarehouse:       req.ActualWarehouse,
+		DepositAmount:         req.DepositAmount,
+		DepositRatio:          req.DepositRatio,
 
 		Purchaser:  userId,
-		Status:     1, // Assuming 1 is the initial status
+		Status:     model.PurchaseOrderStatusPending, // Assuming 1 is the initial status
 		CreatedAt:  nowStr,
 		UpdatedAt:  nowStr,
 		OrderType:  model.OrderTypeSpot,
@@ -151,6 +155,7 @@ func (s *PurchaseOrderService) CreatePurchaseOrderSpot(ctx *app.Context, userId 
 				ProductName:     detailReq.ProductName,
 				SkuName:         detailReq.SkuName,
 				Quantity:        detailReq.Quantity,
+				BoxNum:          detailReq.BoxNum,
 				Price:           detailReq.Price,
 				TotalAmount:     detailReq.TotalAmount,
 
@@ -172,6 +177,7 @@ func (s *PurchaseOrderService) CreatePurchaseOrderSpot(ctx *app.Context, userId 
 				Tariff:               detailReq.Tariff,
 				VAT:                  detailReq.VAT,
 				PaymentDate:          detailReq.PaymentDate,
+				Desc:                 detailReq.Desc,
 
 				CreatedAt: nowStr,
 				UpdatedAt: nowStr,
@@ -340,7 +346,7 @@ func (s *PurchaseOrderService) ListPurchaseOrders(ctx *app.Context, param *model
 		db = db.Where("supplier_uuid = ?", param.SupplierUuid)
 	}
 
-	if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&orderList).Error; err != nil {
+	if err = db.Order("id DESC").Offset(param.GetOffset()).Limit(param.PageSize).Find(&orderList).Error; err != nil {
 		return
 	}
 	if err = db.Count(&total).Error; err != nil {
@@ -385,6 +391,76 @@ func (s *PurchaseOrderService) ListPurchaseOrders(ctx *app.Context, param *model
 		Current:  param.Current,
 		PageSize: param.PageSize,
 		Data:     res,
+	}
+	return
+}
+
+// 获取所有可用的采购订单
+func (s *PurchaseOrderService) GetAvailablePurchaseOrderList(ctx *app.Context) (r []*model.PurchaseOrder, err error) {
+	err = ctx.DB.Find(&r).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get available purchase order list", err)
+		return nil, errors.New("failed to get available purchase order list")
+	}
+	return
+}
+
+// 补全model.PurchaseOrderItemReq 信息
+func (s *PurchaseOrderService) CompletePurchaseOrderItem(ctx *app.Context, item []model.PurchaseOrderItemReq) (r []model.PurchaseOrderItemReq, err error) {
+	produckNames := make([]string, 0)
+	skuCodes := make([]string, 0)
+	skuSpecs := make([]string, 0)
+	for _, v := range item {
+		produckNames = append(produckNames, v.ProductName)
+		skuCodes = append(skuCodes, v.SkuCode)
+		skuSpecs = append(skuSpecs, v.SkuSpec)
+	}
+
+	productlist, err := NewProductService().GetProductListByNames(ctx, produckNames)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by names", err)
+		return
+	}
+
+	skulist, err := NewSkuService().GetSkuListByCodesSpecs(ctx, skuCodes, skuSpecs)
+
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by names", err)
+		return
+	}
+
+	findproduct := func(item model.PurchaseOrderItemReq) (*model.Product, error) {
+		for _, v := range productlist {
+			if v.Name == item.ProductName {
+				return v, nil
+			}
+		}
+		return nil, errors.New("product not found")
+	}
+
+	findsku := func(productUuid string, item model.PurchaseOrderItemReq) (*model.Sku, error) {
+		for _, v := range skulist {
+			if v.ProductUuid == productUuid && v.Code == item.SkuCode && v.Specification == item.SkuSpec {
+				return v, nil
+			}
+		}
+		return nil, errors.New("sku not found")
+	}
+
+	for _, v := range item {
+		product, err := findproduct(v)
+		if err != nil {
+			ctx.Logger.Error("Failed to find product", err)
+			return nil, err
+		}
+		sku, err := findsku(product.Uuid, v)
+		if err != nil {
+			ctx.Logger.Error("Failed to find sku", err)
+			return nil, err
+		}
+		v.ProductUuid = product.Uuid
+		v.SkuUuid = sku.UUID
+		r = append(r, v)
 	}
 	return
 }

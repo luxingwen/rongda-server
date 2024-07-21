@@ -121,3 +121,13 @@ func (s *ProductService) GetProductListByUUIDs(ctx *app.Context, uuids []string)
 
 	return
 }
+
+// 根据产品名称获取产品列表
+func (s *ProductService) GetProductListByNames(ctx *app.Context, names []string) (r []*model.Product, err error) {
+	err = ctx.DB.Where("name IN(?)", names).Find(&r).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by name", err)
+		return nil, errors.New("failed to get product list by name")
+	}
+	return
+}

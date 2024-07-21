@@ -22,15 +22,16 @@ func NewStorehouseInboundService() *StorehouseInboundService {
 func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string, req *model.StorehouseInboundReq) error {
 	nowstr := time.Now().Format("2006-01-02 15:04:05")
 	inbound := &model.StorehouseInbound{
-		StorehouseUuid: req.StorehouseUuid,
-		Title:          req.Title,
-		InboundType:    req.InboundType,
-		Status:         req.Status,
-		InboundOrderNo: utils.GenerateOrderID(),
-		InboundDate:    time.Now().Format("2006-01-02"),
-		InboundBy:      userId,
-		CreatedAt:      nowstr,
-		UpdatedAt:      nowstr,
+		StorehouseUuid:  req.StorehouseUuid,
+		Title:           req.Title,
+		InboundType:     req.InboundType,
+		Status:          req.Status,
+		InboundOrderNo:  utils.GenerateOrderID(),
+		InboundDate:     time.Now().Format("2006-01-02"),
+		InboundBy:       userId,
+		PurchaseOrderNo: req.PurchaseOrderNo,
+		CreatedAt:       nowstr,
+		UpdatedAt:       nowstr,
 	}
 
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
@@ -44,6 +45,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 				ProductUuid:    detailReq.ProductUuid,
 				SkuUuid:        detailReq.SkuUuid,
 				Quantity:       detailReq.Quantity,
+				BoxNum:         detailReq.BoxNum,
 				CreatedAt:      nowstr,
 				UpdatedAt:      nowstr,
 			}
@@ -62,6 +64,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 					stock.ProductUuid = detailReq.ProductUuid
 					stock.SkuUuid = detailReq.SkuUuid
 					stock.Quantity = detailReq.Quantity
+					stock.BoxNum = detailReq.BoxNum
 					stock.CreatedAt = nowstr
 					stock.UpdatedAt = nowstr
 					if err := tx.Create(stock).Error; err != nil {
@@ -90,6 +93,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 			} else {
 				beforQuantity := stock.Quantity
 				stock.Quantity += detailReq.Quantity
+				stock.BoxNum += detailReq.BoxNum
 				stock.UpdatedAt = nowstr
 				if err := tx.Where("storehouse_uuid = ? AND product_uuid = ? AND sku_uuid = ?", req.StorehouseUuid, detailReq.ProductUuid, detailReq.SkuUuid).Updates(stock).Error; err != nil {
 					return err
@@ -324,5 +328,73 @@ func (s *StorehouseInboundService) ListInbounds(ctx *app.Context, param *model.R
 		PageSize: param.PageSize,
 		Data:     res,
 	}
+	return
+}
+
+// 根据入库单号 获取
+// func (s *StorehouseInboundService)
+
+func (s *StorehouseInboundService) ListInbounds2(ctx *app.Context, param *model.ReqStorehouseInboundQueryParam) (r *model.PagedResponse, err error) {
+	// var (
+	// 	inboundDetailList []*model.StorehouseInboundDetail
+	// 	total             int64
+	// )
+
+	// db := ctx.DB.Model(&model.StorehouseInboundDetail{})
+
+	// if param.StorehouseUuid != "" {
+	// 	db = db.Where("storehouse_uuid = ?", param.StorehouseUuid)
+	// }
+
+	// if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&inboundDetailList).Error; err != nil {
+	// 	return
+	// }
+	// if err = db.Count(&total).Error; err != nil {
+	// 	return
+	// }
+
+	// userUuids := make([]string, 0)
+	// for _, inbound := range inboundList {
+	// 	userUuids = append(userUuids, inbound.InboundBy)
+	// }
+
+	// userMap, err := NewUserService().GetUsersByUUIDs(ctx, userUuids)
+	// if err != nil {
+	// 	ctx.Logger.Error("Failed to get user list by UUIDs", err)
+	// 	return
+	// }
+
+	// storehouseUuids := make([]string, 0)
+	// for _, inbound := range inboundList {
+	// 	storehouseUuids = append(storehouseUuids, inbound.StorehouseUuid)
+	// }
+
+	// storehouseMap, err := NewStorehouseService().GetStorehousesByUUIDs(ctx, storehouseUuids)
+	// if err != nil {
+	// 	ctx.Logger.Error("Failed to get storehouse list by UUIDs", err)
+	// 	return
+	// }
+	// res := make([]*model.StorehouseInboundItemRes, 0)
+	// // for _, inbound := range inboundList {
+	// // 	inboundRes := &model.StorehouseInboundRes{
+	// // 		StorehouseInbound: *inbound,
+	// // 	}
+	// // 	if storehouse, ok := storehouseMap[inbound.StorehouseUuid]; ok {
+	// // 		inboundRes.Storehouse = *storehouse
+	// // 	}
+
+	// // 	if user, ok := userMap[inbound.InboundBy]; ok {
+	// // 		inboundRes.InboundByUser = *user
+	// // 	}
+
+	// // 	res = append(res, inboundRes)
+	// // }
+
+	// r = &model.PagedResponse{
+	// 	Total:    total,
+	// 	Current:  param.Current,
+	// 	PageSize: param.PageSize,
+	// 	Data:     res,
+	// }
 	return
 }

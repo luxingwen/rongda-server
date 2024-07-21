@@ -32,6 +32,12 @@ type PurchaseOrderReq struct {
 	// 实际入库仓库
 	ActualWarehouse string `json:"actual_warehouse" gorm:"comment:'实际入库仓库'"` // 实际入库仓库
 
+	// 定金金额
+	DepositAmount float64 `json:"deposit_amount" gorm:"comment:'定金金额'"` // 定金金额
+
+	// 定金比例
+	DepositRatio float64 `json:"deposit_ratio" gorm:"comment:'定金比例'"` // 定金比例
+
 	// 附件
 	Attachment []FileAttachment `json:"attachment" gorm:"comment:'附件'"` // 附件
 
@@ -47,8 +53,17 @@ type PurchaseOrderItemReq struct {
 	ProductName string `json:"product_name" gorm:"comment:'产品名称'"` // 产品名称
 	// SKU名称
 	SkuName string `json:"sku_name" gorm:"comment:'SKU名称'"` // SKU名称
+
+	// SKUCode
+	SkuCode string `json:"sku_code" gorm:"comment:'SKU编码'"` // SKU编码
+
+	// SKU规格
+	SkuSpec string `json:"sku_spec" gorm:"comment:'SKU规格'"` // SKU规格
+
 	// 数量
 	Quantity int `json:"quantity" gorm:"comment:'数量'"` // 数量
+
+	BoxNum int `json:"box_num" gorm:"comment:'箱数'"` // 箱数
 	// 价格
 	Price float64 `json:"price" gorm:"comment:'价格'"` // 价格
 	// 总金额
@@ -107,11 +122,18 @@ type PurchaseOrderItemReq struct {
 
 	// 缴费日期
 	PaymentDate string `json:"payment_date" gorm:"comment:'缴费日期'"` // 缴费日期
+
+	Desc string `json:"desc" gorm:"comment:'备注'"` // 备注
 }
 
 const (
 	OrderTypeFutures = "1"
 	OrderTypeSpot    = "2"
+
+	PurchaseOrderStatusPending  = 1 // 待处理
+	PurchaseOrderStatusHandled  = 2 // 已处理
+	PurchaseOrderStatusCanceled = 3 // 已取消
+	PurchaseOrderStatusDone     = 4 // 已完成
 )
 
 // PurchaseOrder 采购单
@@ -151,6 +173,12 @@ type PurchaseOrder struct {
 	// 实际入库仓库
 	ActualWarehouse string `json:"actual_warehouse" gorm:"comment:'实际入库仓库'"` // 实际入库仓库
 
+	// 定金金额
+	DepositAmount float64 `json:"deposit_amount" gorm:"comment:'定金金额'"` // 定金金额
+
+	// 定金比例
+	DepositRatio float64 `json:"deposit_ratio" gorm:"comment:'定金比例'"` // 定金比例
+
 	// 采购人
 	Purchaser string `json:"purchaser" gorm:"comment:'采购人'"` // 采购人
 
@@ -173,6 +201,7 @@ type PurchaseOrderItem struct {
 	SkuUuid              string  `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`       // SKU UUID
 	SkuName              string  `json:"sku_name" gorm:"comment:'SKU名称'"`                              // SKU名称
 	Quantity             int     `json:"quantity" gorm:"comment:'数量'"`                                 // 数量
+	BoxNum               int     `json:"box_num" gorm:"comment:'箱数'"`                                  // 箱数
 	Price                float64 `json:"price" gorm:"comment:'价格'"`                                    // 价格
 	TotalAmount          float64 `json:"total_amount" gorm:"comment:'总金额'"`                            // 总金额
 	PIBoxNum             int     `json:"pi_box_num" gorm:"comment:'PI箱数'"`                             // PI箱数
@@ -193,6 +222,7 @@ type PurchaseOrderItem struct {
 	Tariff               float64 `json:"tariff" gorm:"comment:'关税'"`                                   // 关税
 	VAT                  float64 `json:"vat" gorm:"comment:'增值税'"`                                     // 增值税
 	PaymentDate          string  `json:"payment_date" gorm:"comment:'缴费日期'"`                           // 缴费日期
+	Desc                 string  `json:"desc" gorm:"comment:'备注'"`                                     // 备注
 	CreatedAt            string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"`              // 创建时间
 	UpdatedAt            string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"`              // 更新时间
 }

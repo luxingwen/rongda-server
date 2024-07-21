@@ -215,3 +215,38 @@ func (s *SkuService) GetSkuListByProductUUID(ctx *app.Context, productUUID strin
 	}
 	return
 }
+
+// 根据sku名称获取sku列表
+func (s *SkuService) GetSkuListByCodesSpecs(ctx *app.Context, codes []string, specs []string) (r []*model.Sku, err error) {
+	var rcodes []*model.Sku
+	var rspecs []*model.Sku
+	if len(codes) > 0 {
+		err = ctx.DB.Where("code IN(?)", codes).Find(&rcodes).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get sku list by code", err)
+			return nil, errors.New("failed to get sku list by code")
+		}
+	}
+	if len(specs) > 0 {
+		err = ctx.DB.Where("specification IN(?)", specs).Find(&rspecs).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get sku list by specification", err)
+			return nil, errors.New("failed to get sku list by specification")
+		}
+	}
+
+	// 去重
+	skuMap := make(map[string]*model.Sku)
+	for _, sku := range rcodes {
+		skuMap[sku.UUID] = sku
+	}
+	for _, sku := range rspecs {
+		skuMap[sku.UUID] = sku
+	}
+
+	r = make([]*model.Sku, 0)
+	for _, sku := range skuMap {
+		r = append(r, sku)
+	}
+	return
+}

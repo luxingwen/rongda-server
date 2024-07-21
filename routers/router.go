@@ -127,7 +127,10 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 		v1.POST("/purchase_order/delete", purchaseOrderController.DeletePurchaseOrder)
 		v1.POST("/purchase_order/info", purchaseOrderController.GetPurchaseOrder)
 		v1.POST("/purchase_order/list", purchaseOrderController.GetPurchaseOrderList)
+		v1.POST("/purchase_order/all", purchaseOrderController.GetAvailablePurchaseOrderList)
 		v1.POST("/purchase_order/item/list", purchaseOrderController.GetPurchaseOrderProducts)
+		v1.POST("/purchase_order/items/excel/upload_futures", purchaseOrderController.UploadFuturesItemsExcel)
+		v1.POST("/purchase_order/items/excel/upload_spot", purchaseOrderController.UploadSpotItemsExcel)
 	}
 }
 
