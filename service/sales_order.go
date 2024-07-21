@@ -6,6 +6,7 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -20,7 +21,7 @@ func NewSalesOrderService() *SalesOrderService {
 
 func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, req *model.SalesOrderReq) error {
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
-	orderNo := uuid.New().String()
+	orderNo := utils.GenerateOrderID()
 	salesOrder := &model.SalesOrder{
 		OrderNo:       orderNo,
 		OrderType:     req.OrderType,

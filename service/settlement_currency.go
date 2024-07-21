@@ -86,7 +86,7 @@ func (s *SettlementCurrencyService) GetSettlementCurrencyList(ctx *app.Context, 
 		return nil, errors.New("failed to get settlement currency count")
 	}
 
-	err = db.Find(&currencies).Error
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&currencies).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get settlement currency list", err)
 		return nil, errors.New("failed to get settlement currency list")

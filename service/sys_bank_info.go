@@ -86,7 +86,7 @@ func (s *SysBankInfoService) GetSysBankInfoList(ctx *app.Context, params *model.
 		return nil, errors.New("failed to get bank info count")
 	}
 
-	err = db.Find(&bankInfos).Error
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&bankInfos).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get bank info list", err)
 		return nil, errors.New("failed to get bank info list")

@@ -88,7 +88,7 @@ func (s *SupplierService) GetSupplierList(ctx *app.Context, params *model.ReqSup
 		return nil, errors.New("failed to get supplier count")
 	}
 
-	err = db.Find(&suppliers).Error
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&suppliers).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get supplier list", err)
 		return nil, errors.New("failed to get supplier list")

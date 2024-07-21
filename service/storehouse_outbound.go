@@ -6,6 +6,7 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -25,7 +26,7 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 		StorehouseUuid:  req.StorehouseUuid,
 		OutboundType:    req.OutboundType,
 		Status:          req.Status,
-		OutboundOrderNo: uuid.New().String(), // Generating a unique order number
+		OutboundOrderNo: utils.GenerateOrderID(), // Generating a unique order number
 		OutboundDate:    time.Now().Format("2006-01-02"),
 		OutboundBy:      userId, // Assuming the user ID is available in the context
 		CreatedAt:       time.Now().Format("2006-01-02 15:04:05"),

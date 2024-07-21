@@ -248,3 +248,22 @@ type ReqLoginLogQueryParam struct {
 	Username string `json:"username"`
 	Pagination
 }
+
+type ReqAPIQueryParam struct {
+	Name   string `json:"name"`
+	Module string `json:"module"`
+	Status int    `json:"status"`
+	Pagination
+}
+
+type ReqOpLogQueryParam struct {
+	UserName string `form:"user_name"`
+	Path     string `form:"path"`
+	Method   string `form:"method"`
+	Status   int    `form:"status"`
+	Pagination
+}
+
+type ReqIdParam struct {
+	Id int64 `json:"id"`
+}

@@ -9,6 +9,7 @@ func MigrateDbTable(db *gorm.DB) {
 		&App{},
 		&Log{},
 		&Menu{},
+		&MenuAPI{},
 		&Role{},
 		&User{},
 		&RoleMenuPermission{},
@@ -48,6 +49,7 @@ func MigrateDbTable(db *gorm.DB) {
 		&ProductManage{},
 		&SysBankInfo{},
 		&SysLoginLog{},
+		&SysOpLog{},
 	)
 	if err != nil {
 		panic(err)

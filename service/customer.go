@@ -88,7 +88,7 @@ func (s *CustomerService) GetCustomerList(ctx *app.Context, params *model.ReqCus
 		return nil, errors.New("failed to get customer count")
 	}
 
-	err = db.Find(&customers).Error
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&customers).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get customer list", err)
 		return nil, errors.New("failed to get customer list")

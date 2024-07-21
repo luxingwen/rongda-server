@@ -6,6 +6,7 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -25,7 +26,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 		Title:          req.Title,
 		InboundType:    req.InboundType,
 		Status:         req.Status,
-		InboundOrderNo: uuid.New().String(),
+		InboundOrderNo: utils.GenerateOrderID(),
 		InboundDate:    time.Now().Format("2006-01-02"),
 		InboundBy:      userId,
 		CreatedAt:      nowstr,

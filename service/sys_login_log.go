@@ -79,7 +79,7 @@ func (s *SysLoginLogService) GetLoginLogList(ctx *app.Context, params *model.Req
 		return nil, errors.New("failed to get login log count")
 	}
 
-	err = db.Order("id DESC").Find(&loginLogs).Error
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Order("id DESC").Find(&loginLogs).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get login log list", err)
 		return nil, errors.New("failed to get login log list")

@@ -6,6 +6,7 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,7 +23,7 @@ func (s *StorehouseInventoryCheckService) CreateInventoryCheck(ctx *app.Context,
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 	check := &model.StorehouseInventoryCheck{
 		StorehouseUuid: req.StorehouseUuid,
-		CheckOrderNo:   uuid.New().String(),
+		CheckOrderNo:   utils.GenerateOrderID(),
 		CheckDate:      req.CheckDate,
 		Status:         req.Status,
 		CheckBy:        userId,

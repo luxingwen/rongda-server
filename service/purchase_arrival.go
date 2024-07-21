@@ -6,8 +6,8 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +21,7 @@ func NewPurchaseArrivalService() *PurchaseArrivalService {
 func (s *PurchaseArrivalService) CreatePurchaseArrival(ctx *app.Context, userId string, req *model.PurchaseArrivalReq) error {
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 	arrival := &model.PurchaseArrival{
-		Uuid:             uuid.New().String(),
+		Uuid:             utils.GenerateOrderID(),
 		PurchaseOrderNo:  req.PurchaseOrderNo,
 		SupplierUuid:     req.SupplierUuid,
 		Batch:            req.Batch,

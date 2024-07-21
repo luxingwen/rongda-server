@@ -88,7 +88,7 @@ func (s *AgentService) GetAgentList(ctx *app.Context, params *model.ReqAgentQuer
 		return nil, errors.New("failed to get agent count")
 	}
 
-	err = db.Find(&agents).Error
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&agents).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get agent list", err)
 		return nil, errors.New("failed to get agent list")

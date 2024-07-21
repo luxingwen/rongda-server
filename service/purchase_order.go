@@ -7,8 +7,8 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +30,7 @@ func (s *PurchaseOrderService) CreatePurchaseOrderFutures(ctx *app.Context, user
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 	order := &model.PurchaseOrder{
 		Title:                 req.Title,
-		OrderNo:               uuid.New().String(), // Generating a unique order number
+		OrderNo:               utils.GenerateOrderID(), // Generating a unique order number
 		SupplierUuid:          req.SupplierUuid,
 		CustomerUuid:          req.CustomerUuid,
 		Date:                  req.Date,
@@ -116,7 +116,7 @@ func (s *PurchaseOrderService) CreatePurchaseOrderSpot(ctx *app.Context, userId 
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 	order := &model.PurchaseOrder{
 		Title:                 req.Title,
-		OrderNo:               uuid.New().String(), // Generating a unique order number
+		OrderNo:               utils.GenerateOrderID(), // Generating a unique order number
 		SupplierUuid:          req.SupplierUuid,
 		CustomerUuid:          req.CustomerUuid,
 		Date:                  req.Date,

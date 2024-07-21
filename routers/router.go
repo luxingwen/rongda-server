@@ -47,11 +47,14 @@ func InitRouter(ctx *app.App) {
 	InitProductManageRouter(ctx)
 	InitSysBankInfoRouter(ctx)
 	InitSysLoginLogRouter(ctx)
+	InitSysApiRouter(ctx)
+	InitSysOpLogRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		userController := &controller.UserController{
 			Service: &service.UserService{},
@@ -76,12 +79,13 @@ func InitUserRouter(ctx *app.App) {
 		v1.POST("/role/list", roleController.GetRoleList)
 		v1.POST("/role/update", roleController.UpdateRole)
 		v1.POST("/role/delete", roleController.DeleteRole)
-
 	}
 }
 
 func InitMenuRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		menuController := &controller.MenuController{
 			MenuService: &service.MenuService{},
@@ -95,6 +99,8 @@ func InitMenuRouter(ctx *app.App) {
 
 func InitAppRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		appController := &controller.AppController{
 			AppService: &service.AppService{},
@@ -109,6 +115,8 @@ func InitAppRouter(ctx *app.App) {
 
 func InitPurchaseOrderRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		purchaseOrderController := &controller.PurchaseOrderController{
 			PurchaseOrderService: &service.PurchaseOrderService{},
@@ -125,6 +133,8 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 
 func InitSysBankInfoRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		sysBankInfoController := &controller.SysBankInfoController{
 			SysBankInfoService: &service.SysBankInfoService{},
@@ -140,6 +150,7 @@ func InitSysBankInfoRouter(ctx *app.App) {
 
 func InitUploadFileRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
 	{
 		uploadController := &controller.UploadController{}
 		v1.POST("/upload/file/*path", uploadController.UploadFile)
@@ -149,6 +160,7 @@ func InitUploadFileRouter(ctx *app.App) {
 
 func InitVerificationCodeRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+
 	{
 		verificationCodeController := &controller.VerificationCodeController{
 			VerificationCodeService: &service.VerificationCodeService{},
@@ -160,6 +172,7 @@ func InitVerificationCodeRouter(ctx *app.App) {
 // 注册的路由
 func InitRegisterRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+
 	{
 		registerController := &controller.RegisterController{
 			UserService:             &service.UserService{},
@@ -183,6 +196,8 @@ func InitLoginRouter(ctx *app.App) {
 // 服务的路由
 func InitServerRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		serverController := &controller.ServerController{
 			ServerService: &service.ServerService{},
@@ -198,6 +213,8 @@ func InitServerRouter(ctx *app.App) {
 // 团队的路由
 func InitTeamRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		teamController := &controller.TeamController{
 			TeamService: &service.TeamService{},
@@ -213,6 +230,8 @@ func InitTeamRouter(ctx *app.App) {
 func InitCustomerRouter(ctx *app.App) {
 
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		customerController := &controller.CustomerController{
 			CustomerService: &service.CustomerService{},
@@ -227,6 +246,8 @@ func InitCustomerRouter(ctx *app.App) {
 }
 func InitAgentRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		agentController := &controller.AgentController{
 			AgentService: &service.AgentService{},
@@ -241,6 +262,8 @@ func InitAgentRouter(ctx *app.App) {
 
 func InitSupplierRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		suppliersController := &controller.SupplierController{
 			SupplierService: &service.SupplierService{},
@@ -256,6 +279,8 @@ func InitSupplierRouter(ctx *app.App) {
 
 func InitSettlementCurrencyRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		settlementController := &controller.SettlementCurrencyController{
 			SettlementCurrencyService: &service.SettlementCurrencyService{},
@@ -271,6 +296,8 @@ func InitSettlementCurrencyRouter(ctx *app.App) {
 
 func InitSkuRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		skuController := &controller.SkuController{
 			SkuService: &service.SkuService{},
@@ -285,6 +312,8 @@ func InitSkuRouter(ctx *app.App) {
 
 func InitDepartmentRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		departmentController := &controller.DepartmentController{
 			DepartmentService: &service.DepartmentService{},
@@ -299,6 +328,8 @@ func InitDepartmentRouter(ctx *app.App) {
 
 func InitProductRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		productController := &controller.ProductController{
 			ProductService: &service.ProductService{},
@@ -316,6 +347,8 @@ func InitProductRouter(ctx *app.App) {
 
 func InitProductCategoryRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		productCategoryController := &controller.ProductCategoryController{
 			ProductCategoryService: &service.ProductCategoryService{},
@@ -331,6 +364,8 @@ func InitProductCategoryRouter(ctx *app.App) {
 
 func InitProductManageRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		productManageController := &controller.ProductManageController{
 			ProductManageService: &service.ProductManageService{},
@@ -347,6 +382,7 @@ func InitProductManageRouter(ctx *app.App) {
 func InitStorehouseRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		storehouseController := &controller.StorehouseController{
 			StorehouseService: &service.StorehouseService{},
@@ -363,6 +399,7 @@ func InitStorehouseRouter(ctx *app.App) {
 func InitStorehouseInboundRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		storehouseInboundController := &controller.StorehouseInboundController{
 			InboundService: &service.StorehouseInboundService{},
@@ -379,6 +416,7 @@ func InitStorehouseInboundRouter(ctx *app.App) {
 func InitStorehouseProductRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		storehouseProductController := &controller.StorehouseProductController{
 			ProductService: &service.StorehouseProductService{},
@@ -395,6 +433,7 @@ func InitStorehouseProductRouter(ctx *app.App) {
 func InitStorehouseOutRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		storehouseOutController := &controller.StorehouseOutboundController{
 			OutboundService: &service.StorehouseOutboundService{},
@@ -411,6 +450,7 @@ func InitStorehouseOutRouter(ctx *app.App) {
 func InitStorehouseInventoryCheckRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
 	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		storehouseInventoryCheckController := &controller.StorehouseInventoryCheckController{
 			InventoryCheckService: &service.StorehouseInventoryCheckService{},
@@ -427,6 +467,8 @@ func InitStorehouseInventoryCheckRouter(ctx *app.App) {
 
 func InitAgreementRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		agreementController := &controller.AgreementController{
 			AgreementService: &service.AgreementService{},
@@ -441,6 +483,8 @@ func InitAgreementRouter(ctx *app.App) {
 
 func InitPurchaseArrivalRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		purchaseArrivalController := &controller.PurchaseArrivalController{
 			PurchaseArrivalService: &service.PurchaseArrivalService{},
@@ -456,6 +500,8 @@ func InitPurchaseArrivalRouter(ctx *app.App) {
 
 func InitPurchaseBillRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		purchaseBillController := &controller.PurchaseBillController{
 			PurchaseBillService: &service.PurchaseBillService{},
@@ -471,6 +517,8 @@ func InitPurchaseBillRouter(ctx *app.App) {
 
 func InitSalesOrderRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		salesOrderController := &controller.SalesOrderController{
 			SalesOrderService: &service.SalesOrderService{},
@@ -487,6 +535,8 @@ func InitSalesOrderRouter(ctx *app.App) {
 
 func InitSalesOutOfStockRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		salesOutOfStockController := &controller.SalesOutOfStockController{
 			SalesOutOfStockService: &service.SalesOutOfStockService{},
@@ -502,6 +552,8 @@ func InitSalesOutOfStockRouter(ctx *app.App) {
 
 func InitSalesSettlementRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		salesSettlementController := &controller.SalesSettlementController{
 			SalesSettlementService: &service.SalesSettlementService{},
@@ -516,6 +568,8 @@ func InitSalesSettlementRouter(ctx *app.App) {
 
 func InitBillRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		billController := &controller.BillController{
 			BillService: &service.BillService{},
@@ -530,6 +584,8 @@ func InitBillRouter(ctx *app.App) {
 
 func InitSysLoginLogRouter(ctx *app.App) {
 	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		sysLoginLogController := &controller.SysLoginLogController{
 			LoginLogService: &service.SysLoginLogService{},
@@ -537,6 +593,38 @@ func InitSysLoginLogRouter(ctx *app.App) {
 
 		v1.POST("/sys_login_log/info", sysLoginLogController.GetLoginLog)
 		v1.POST("/sys_login_log/list", sysLoginLogController.GetLoginLogList)
+	}
+}
+
+func InitSysApiRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
+	{
+		apiController := &controller.APIController{
+			APIService: &service.APIService{},
+		}
+		v1.POST("/sys_api/create", apiController.CreateAPI)
+		v1.POST("/sys_api/update", apiController.UpdateAPI)
+		v1.POST("/sys_api/delete", apiController.DeleteAPI)
+		v1.POST("/sys_api/list", apiController.GetAPIList)
+		v1.POST("/sys_api/info", apiController.GetAPIInfo)
+
+	}
+}
+
+func InitSysOpLogRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
+	{
+		sysOpLogController := &controller.SysOpLogController{
+			SysOpLogService: &service.SysOpLogService{},
+		}
+
+		v1.POST("/sysoplog/delete", sysOpLogController.DeleteSysOpLog)
+		v1.POST("/sysoplog/info", sysOpLogController.GetSysOpLogInfo)
+		v1.POST("/sysoplog/list", sysOpLogController.GetSysOpLogList)
 	}
 }
 

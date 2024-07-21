@@ -88,7 +88,7 @@ func (s *ProductCategoryService) GetProductCategoryList(ctx *app.Context, params
 		return nil, errors.New("failed to get product category count")
 	}
 
-	err = db.Find(&categories).Error
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&categories).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get product category list", err)
 		return nil, errors.New("failed to get product category list")
