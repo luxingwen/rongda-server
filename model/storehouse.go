@@ -95,6 +95,7 @@ type StorehouseInboundReq struct {
 	Title          string `json:"title" binding:"required"`           // 标题
 	// 采购订单
 	PurchaseOrderNo string                       `json:"purchase_order_no" binding:"-"`   // 采购订单
+	CustomerUuid    string                       `json:"customer_uuid" binding:"-"`       // 客户UUID
 	InboundType     string                       `json:"inbound_type" binding:"required"` // 入库类型 1:采购入库 2:退货入库 3:手工入库
 	Status          int                          `json:"status" binding:"-"`              // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
 	Detail          []StorehouseInboundDetailReq `json:"detail" binding:"required"`       // 入库明细
@@ -111,6 +112,8 @@ type StorehouseInboundDetailReq struct {
 	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
 	Quantity    int    `json:"quantity" binding:"required"`     // 入库数量
 	BoxNum      int    `json:"box_num" binding:"-"`             // 箱数
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
 }
 
 // 入库
@@ -121,6 +124,8 @@ type StorehouseInbound struct {
 
 	// 采购订单
 	PurchaseOrderNo string `json:"purchase_order_no" gorm:"comment:'采购订单'"`
+
+	CustomerUuid string `json:"customer_uuid" gorm:"type:char(36);index;comment:'客户UUID'"` //
 
 	// 入库单号
 	InboundOrderNo string `json:"inbound_order_no" gorm:"comment:'入库单号'"` // 入库单号
@@ -148,21 +153,26 @@ type StorehouseInboundRes struct {
 type StorehouseInboundItemRes struct {
 	StorehouseInbound
 	StorehouseInboundDetailRes
+	CustomerInfo  Customer   `json:"customer_info"`
 	Storehouse    Storehouse `json:"storehouse"`
 	InboundByUser User       `json:"inbound_by_user"`
 }
 
 // 入库明细
 type StorehouseInboundDetail struct {
-	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
+	ID   uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
+	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
 	// 入库单号
 	InboundOrderNo string `json:"inbound_order_no" gorm:"comment:'入库单号'"` // 入库单号
 	// 商品uuid
 	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
 	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
 	// 入库数量
-	Quantity  int    `json:"quantity" gorm:"comment:'入库数量'"`                  // 入库数量
-	BoxNum    int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
+	Quantity int `json:"quantity" gorm:"comment:'入库数量'"` // 入库数量
+	BoxNum   int `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
+
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }

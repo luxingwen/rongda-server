@@ -134,7 +134,7 @@ func (p *StorehouseInboundController) GetInboundList(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	inbounds, err := p.InboundService.ListInbounds(ctx, param)
+	inbounds, err := p.InboundService.ListInbounds2(ctx, param)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
