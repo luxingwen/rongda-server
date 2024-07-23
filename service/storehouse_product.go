@@ -251,16 +251,27 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 		db = db.Where("storehouse_uuid = ?", param.StorehouseUuid)
 	}
 
-	if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&productList).Error; err != nil {
+	if param.ProductUuid != "" {
+		db = db.Where("product_uuid = ?", param.ProductUuid)
+	}
+
+	if param.CustomerUuid != "" {
+		db = db.Where("customer_uuid = ?", param.CustomerUuid)
+	}
+
+	if err = db.Order("id DESC").Offset(param.GetOffset()).Limit(param.PageSize).Find(&productList).Error; err != nil {
 		return
 	}
 	if err = db.Count(&total).Error; err != nil {
 		return
 	}
-
+	skuUuids := make([]string, 0)
 	productUuids := make([]string, 0)
+	customerUuids := make([]string, 0)
 	for _, v := range productList {
 		productUuids = append(productUuids, v.ProductUuid)
+		skuUuids = append(skuUuids, v.SkuUuid)
+		customerUuids = append(customerUuids, v.CustomerUuid)
 	}
 	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
 	if err != nil {
@@ -268,10 +279,6 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 		return
 	}
 
-	skuUuids := make([]string, 0)
-	for _, v := range productList {
-		skuUuids = append(skuUuids, v.SkuUuid)
-	}
 	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
 	if err != nil {
 		ctx.Logger.Error("Failed to get sku list by UUIDs", err)
@@ -285,6 +292,12 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 	storehouseMap, err := NewStorehouseService().GetStorehousesByUUIDs(ctx, storehouseUuids)
 	if err != nil {
 		ctx.Logger.Error("Failed to get storehouse list by UUIDs", err)
+		return
+	}
+
+	customerMap, err := NewCustomerService().GetCustomerListByUUIDs(ctx, customerUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer list by UUIDs", err)
 		return
 	}
 
@@ -302,6 +315,21 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 		if storehouse, ok := storehouseMap[v.StorehouseUuid]; ok {
 			productItem.Storehouse = *storehouse
 		}
+		if customer, ok := customerMap[v.CustomerUuid]; ok {
+			productItem.CustomerInfo = *customer
+		}
+
+		// 计算库存天数
+		if v.InDate != "" {
+			indate, err := time.ParseInLocation("2006-01-02", v.InDate, time.Local)
+			if err != nil {
+				ctx.Logger.Error("Failed to parse in date", err)
+
+			} else {
+				productItem.StockDays = int(time.Now().Sub(indate).Hours() / 24)
+			}
+		}
+
 		res = append(res, productItem)
 	}
 

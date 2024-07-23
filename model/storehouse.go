@@ -40,25 +40,47 @@ type StorehouseProduct struct {
 	ID             uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`                         // 主键ID
 	Uuid           string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`              // UUID
 	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` //
-	ProductUuid    string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"`    // 商品UUID
-	SkuUuid        string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`      // SKU UUID
+
+	PurchaseOrderNo string `json:"purchase_order_no" gorm:"comment:'采购订单'"` // 采购订单
+	// 采购订单物品类型
+	PurchaseOrderProductType string `json:"purchase_order_product_type" gorm:"comment:'采购订单物品类型'"` // 采购订单物品类型 1：期货 2：现货
+	// 客户uuid
+	CustomerUuid string `json:"customer_uuid" gorm:"type:char(36);index;comment:'客户UUID'"` //
+	// 物品类型
+
+	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
+	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID
 	// 库存数量
-	Quantity  int    `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
-	BoxNum    int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
+	Quantity int `json:"quantity" gorm:"comment:'库存数量'"` // 库存数量
+	BoxNum   int `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"`                  // 柜号
+	InDate    string `json:"in_date" gorm:"comment:'入库日期'"`                   // 入库日期
+	MaxDate   string `json:"max_date" gorm:"comment:'最大日期'"`                  // 最大库存日期
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
 // 仓库物品操作日志
 type StorehouseProductOpLog struct {
-	ID                    uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`                                   // 主键ID
-	Uuid                  string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`                        // UUID
+	ID   uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
+	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
+	// 采购订单
+	PurchaseOrderNo string `json:"purchase_order_no" gorm:"comment:'采购订单'"` // 采购订单
+	// 入库单号
+	InboundOrderNo        string `json:"inbound_order_no" gorm:"comment:'入库单号'"`            // 入库单号
+	InboudItemDdetailUuid string `json:"inboud_item_detail_uuid" gorm:"comment:'入库明细UUID'"` // 入库明细UUID
+	// 出库单号
+	OutboundOrderNo       string `json:"outbound_order_no" gorm:"comment:'出库单号'"`        // 出库单号
+	InventoryCheckOrderNo string `json:"inventory_check_order_no" gorm:"comment:'盘点单号'"` // 盘点单号
+
 	StorehouseUuid        string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"`           //
 	StorehouseProductUuid string `json:"storehouse_product_uuid" gorm:"type:char(36);index;comment:'仓库物品UUID'"` // 仓库物品UUID
 	// 操作之前库存数量
 	BeforeQuantity int `json:"before_quantity" gorm:"comment:'操作之前库存数量'"` // 操作之前库存数量
 	// 库存数量
 	Quantity   int    `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
+	BoxNum     int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
 	OpType     int    `json:"op_type" gorm:"comment:'操作类型'"`                   // 操作类型 1:入库 2:出库 3:盘点 4:调拨
 	OpQuantity int    `json:"op_quantity" gorm:"comment:'操作数量'"`               // 操作数量
 	OpBy       string `json:"op_by" gorm:"comment:'操作人'"`                      // 操作人
@@ -73,9 +95,12 @@ type StorehouseProductOpLogRes struct {
 
 type StorehouseProductRes struct {
 	StorehouseProduct
-	Storehouse Storehouse `json:"storehouse"`
-	Product    Product    `json:"product"`
-	Sku        Sku        `json:"sku"`
+	Storehouse   Storehouse `json:"storehouse"`
+	Product      Product    `json:"product"`
+	Sku          Sku        `json:"sku"`
+	CustomerInfo Customer   `json:"customer_info"`
+	// 库存天数
+	StockDays int `json:"stock_days"` // 库存天数
 }
 
 const (
@@ -94,11 +119,14 @@ type StorehouseInboundReq struct {
 	StorehouseUuid string `json:"storehouse_uuid" binding:"required"` // 仓库UUID
 	Title          string `json:"title" binding:"required"`           // 标题
 	// 采购订单
-	PurchaseOrderNo string                       `json:"purchase_order_no" binding:"-"`   // 采购订单
-	CustomerUuid    string                       `json:"customer_uuid" binding:"-"`       // 客户UUID
-	InboundType     string                       `json:"inbound_type" binding:"required"` // 入库类型 1:采购入库 2:退货入库 3:手工入库
-	Status          int                          `json:"status" binding:"-"`              // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
-	Detail          []StorehouseInboundDetailReq `json:"detail" binding:"required"`       // 入库明细
+	PurchaseOrderNo string `json:"purchase_order_no" binding:"-"` // 采购订单
+	// 订单类型
+	PurchaseOrderProductType string                       `json:"purchase_order_product_type" binding:"-"` // 采购订单物品类型 1：期货 2：现货
+	CustomerUuid             string                       `json:"customer_uuid" binding:"-"`               // 客户UUID
+	InboundType              string                       `json:"inbound_type" binding:"required"`         // 入库类型 1:采购入库 2:退货入库 3:手工入库
+	Status                   int                          `json:"status" binding:"-"`                      // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
+	InDate                   string                       `json:"in_date" binding:"-"`                     // 入库日期
+	Detail                   []StorehouseInboundDetailReq `json:"detail" binding:"required"`               // 入库明细
 }
 
 type StorehouseInboundUpdateReq struct {
@@ -162,8 +190,12 @@ type StorehouseInboundItemRes struct {
 type StorehouseInboundDetail struct {
 	ID   uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
 	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
+
+	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
 	// 入库单号
 	InboundOrderNo string `json:"inbound_order_no" gorm:"comment:'入库单号'"` // 入库单号
+	// 采购订单物品类型
+	PurchaseOrderProductType string `json:"purchase_order_product_type" gorm:"comment:'采购订单物品类型'"` // 采购订单物品类型 1：期货 2：现货
 	// 商品uuid
 	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
 	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID

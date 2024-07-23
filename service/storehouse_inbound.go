@@ -21,13 +21,18 @@ func NewStorehouseInboundService() *StorehouseInboundService {
 
 func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string, req *model.StorehouseInboundReq) error {
 	nowstr := time.Now().Format("2006-01-02 15:04:05")
+
+	if req.InDate == "" {
+		req.InDate = time.Now().Format("2006-01-02")
+	}
+
 	inbound := &model.StorehouseInbound{
 		StorehouseUuid:  req.StorehouseUuid,
 		Title:           req.Title,
 		InboundType:     req.InboundType,
 		Status:          req.Status,
 		InboundOrderNo:  utils.GenerateOrderID(),
-		InboundDate:     time.Now().Format("2006-01-02"),
+		InboundDate:     req.InDate,
 		InboundBy:       userId,
 		PurchaseOrderNo: req.PurchaseOrderNo,
 		CustomerUuid:    req.CustomerUuid,
@@ -42,84 +47,65 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 
 		for _, detailReq := range req.Detail {
 			detail := &model.StorehouseInboundDetail{
-				Uuid:           uuid.New().String(),
-				InboundOrderNo: inbound.InboundOrderNo,
-				ProductUuid:    detailReq.ProductUuid,
-				SkuUuid:        detailReq.SkuUuid,
-				Quantity:       detailReq.Quantity,
-				BoxNum:         detailReq.BoxNum,
-				CabinetNo:      detailReq.CabinetNo,
-				CreatedAt:      nowstr,
-				UpdatedAt:      nowstr,
+				Uuid:                     uuid.New().String(),
+				StorehouseUuid:           req.StorehouseUuid,
+				InboundOrderNo:           inbound.InboundOrderNo,
+				ProductUuid:              detailReq.ProductUuid,
+				SkuUuid:                  detailReq.SkuUuid,
+				Quantity:                 detailReq.Quantity,
+				BoxNum:                   detailReq.BoxNum,
+				CabinetNo:                detailReq.CabinetNo,
+				PurchaseOrderProductType: req.PurchaseOrderProductType,
+				CreatedAt:                nowstr,
+				UpdatedAt:                nowstr,
 			}
 			if err := tx.Create(detail).Error; err != nil {
 				return err
 			}
 
-			// 更新库存
-			// 先获取库存
+			// 创建库存
 			stock := &model.StorehouseProduct{}
-			err := tx.Where("storehouse_uuid = ? AND product_uuid = ? AND sku_uuid = ?", req.StorehouseUuid, detailReq.ProductUuid, detailReq.SkuUuid).First(stock).Error
-			if err != nil {
-				if err == gorm.ErrRecordNotFound {
-					stock.Uuid = uuid.New().String()
-					stock.StorehouseUuid = req.StorehouseUuid
-					stock.ProductUuid = detailReq.ProductUuid
-					stock.SkuUuid = detailReq.SkuUuid
-					stock.Quantity = detailReq.Quantity
-					stock.BoxNum = detailReq.BoxNum
-					stock.CreatedAt = nowstr
-					stock.UpdatedAt = nowstr
-					if err := tx.Create(stock).Error; err != nil {
-						return err
-					}
 
-					// 创建库存记录
-					stockopLog := &model.StorehouseProductOpLog{
-						Uuid:                  uuid.New().String(),
-						StorehouseProductUuid: stock.Uuid,
-						StorehouseUuid:        inbound.StorehouseUuid,
-						BeforeQuantity:        0,
-						Quantity:              detail.Quantity,
-						OpQuantity:            detail.Quantity,
-						OpType:                1,
-						OpDesc:                "仓库第一次入库",
-						OpBy:                  userId,
-						CreatedAt:             nowstr,
-					}
-					if err := tx.Create(stockopLog).Error; err != nil {
-						ctx.Logger.Error("Failed to create stockop log", err)
-						return errors.New("failed to create stockop log")
-					}
-
-				}
-			} else {
-				beforQuantity := stock.Quantity
-				stock.Quantity += detailReq.Quantity
-				stock.BoxNum += detailReq.BoxNum
-				stock.UpdatedAt = nowstr
-				if err := tx.Where("storehouse_uuid = ? AND product_uuid = ? AND sku_uuid = ?", req.StorehouseUuid, detailReq.ProductUuid, detailReq.SkuUuid).Updates(stock).Error; err != nil {
-					return err
-				}
-
-				// 创建库存记录
-				stockopLog := &model.StorehouseProductOpLog{
-					Uuid:                  uuid.New().String(),
-					StorehouseProductUuid: stock.Uuid,
-					StorehouseUuid:        inbound.StorehouseUuid,
-					BeforeQuantity:        beforQuantity,
-					Quantity:              stock.Quantity,
-					OpQuantity:            detailReq.Quantity,
-					OpType:                1,
-					OpDesc:                "仓库入库,增加库存",
-					OpBy:                  userId,
-					CreatedAt:             nowstr,
-				}
-				if err := tx.Create(stockopLog).Error; err != nil {
-					ctx.Logger.Error("Failed to create stockop log", err)
-					return errors.New("failed to create stockop log")
-				}
+			stock.Uuid = uuid.New().String()
+			stock.StorehouseUuid = req.StorehouseUuid
+			stock.ProductUuid = detailReq.ProductUuid
+			stock.PurchaseOrderNo = req.PurchaseOrderNo
+			stock.SkuUuid = detailReq.SkuUuid
+			stock.Quantity = detailReq.Quantity
+			stock.BoxNum = detailReq.BoxNum
+			stock.CabinetNo = detailReq.CabinetNo
+			stock.InDate = req.InDate
+			stock.CustomerUuid = req.CustomerUuid
+			stock.PurchaseOrderProductType = req.PurchaseOrderProductType
+			stock.CreatedAt = nowstr
+			stock.UpdatedAt = nowstr
+			if err := tx.Create(stock).Error; err != nil {
+				ctx.Logger.Error("Failed to create stock", err)
+				return err
 			}
+
+			// 创建库存记录
+			stockopLog := &model.StorehouseProductOpLog{
+				Uuid:                  uuid.New().String(),
+				InboundOrderNo:        inbound.InboundOrderNo,
+				InboudItemDdetailUuid: detail.Uuid,
+				StorehouseProductUuid: stock.Uuid,
+				StorehouseUuid:        inbound.StorehouseUuid,
+				BeforeQuantity:        0,
+				Quantity:              detail.Quantity,
+				OpQuantity:            detail.Quantity,
+				OpType:                1,
+				BoxNum:                detail.BoxNum,
+				OpDesc:                "采购入库",
+				OpBy:                  userId,
+				CreatedAt:             nowstr,
+			}
+
+			if err := tx.Create(stockopLog).Error; err != nil {
+				ctx.Logger.Error("Failed to create stockopLog", err)
+				return err
+			}
+
 		}
 		return nil
 	})
@@ -362,6 +348,24 @@ func (s *StorehouseInboundService) ListInbounds2(ctx *app.Context, param *model.
 
 	if param.StorehouseUuid != "" {
 		db = db.Where("storehouse_uuid = ?", param.StorehouseUuid)
+	}
+	if param.PurchaseOrderProductType != "" {
+		db = db.Where("purchase_order_product_type = ?", param.PurchaseOrderProductType)
+	}
+
+	if param.CustomerUuid != "" {
+
+		var inboundOrders []string
+		err = ctx.DB.Model(&model.StorehouseInbound{}).Where("customer_uuid = ?", param.CustomerUuid).Pluck("inbound_order_no", &inboundOrders).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get inbound order no by customer uuid", err)
+			return
+		}
+		db = db.Where("inbound_order_no IN ?", inboundOrders)
+	}
+
+	if param.ProductUuid != "" {
+		db = db.Where("product_uuid = ?", param.ProductUuid)
 	}
 
 	if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&inboundDetailList).Error; err != nil {

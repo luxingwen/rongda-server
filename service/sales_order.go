@@ -23,18 +23,20 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 	orderNo := utils.GenerateOrderID()
 	salesOrder := &model.SalesOrder{
-		OrderNo:       orderNo,
-		OrderType:     req.OrderType,
-		OrderDate:     req.OrderDate,
-		DepositAmount: float64(req.Deposit),
-		OrderAmount:   float64(req.OrderAmount),
-		Salesman:      userId,
-		CustomerUuid:  req.CustomerUuid,
-		TaxAmount:     req.TaxAmount,
-		Remarks:       req.Remarks,
-		OrderStatus:   "待支付",
-		CreatedAt:     nowStr,
-		UpdatedAt:     nowStr,
+		OrderNo:         orderNo,
+		OrderType:       req.OrderType,
+		Title:           req.Title,
+		OrderDate:       req.OrderDate,
+		DepositAmount:   float64(req.Deposit),
+		OrderAmount:     float64(req.OrderAmount),
+		Salesman:        userId,
+		CustomerUuid:    req.CustomerUuid,
+		TaxAmount:       req.TaxAmount,
+		Remarks:         req.Remarks,
+		OrderStatus:     model.OrderStatusPending,
+		PurchaseOrderNo: req.PurchaseOrderNo,
+		CreatedAt:       nowStr,
+		UpdatedAt:       nowStr,
 	}
 
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
@@ -52,6 +54,7 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 				ProductQuantity: float64(itemReq.ProductQuantity),
 				ProductPrice:    float64(itemReq.ProductPrice),
 				ProductAmount:   float64(itemReq.ProductAmount),
+				BoxNum:          itemReq.BoxNum,
 				CreatedAt:       nowStr,
 				UpdatedAt:       nowStr,
 			}

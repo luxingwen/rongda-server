@@ -165,12 +165,18 @@ type ReqStorehouseQueryParam struct {
 }
 
 type ReqStorehouseInboundQueryParam struct {
-	StorehouseUuid string `json:"storehouse_uuid"`
+	StorehouseUuid           string `json:"storehouse_uuid"`
+	PurchaseOrderProductType string `json:"purchase_order_product_type" binding:"-"` // 采购订单物品类型 1：期货 2：现货
+	CustomerUuid             string `json:"customer_uuid" binding:"-"`               // 客户uuid
+	ProductUuid              string `json:"product_uuid" binding:"-"`                // 商品UUID
 	Pagination
 }
 
 type ReqStorehouseProductQueryParam struct {
-	StorehouseUuid string `json:"storehouse_uuid"`
+	StorehouseUuid           string `json:"storehouse_uuid"`
+	PurchaseOrderProductType string `json:"purchase_order_product_type" binding:"-"` // 采购订单物品类型 1：期货 2：现货
+	CustomerUuid             string `json:"customer_uuid" binding:"-"`               // 客户uuid
+	ProductUuid              string `json:"product_uuid" binding:"-"`                // 商品UUID
 	Pagination
 }
 
