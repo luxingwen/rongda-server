@@ -234,6 +234,7 @@ type StorehouseOutboundReq struct {
 	Status         int    `json:"status" binding:"-"`                 // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
 	// 订单类型
 	SalesOrderProductType string                        `json:"sales_order_product_type" binding:"-"` // 销售订单物品类型 1：期货 2：现货
+	CustomerUuid          string                        `json:"customer_uuid" binding:"-"`            // 客户UUID
 	Detail                []StorehouseOutboundDetailReq `json:"detail" binding:"required"`            // 出库明细
 }
 
@@ -253,6 +254,7 @@ type StorehouseOutbound struct {
 	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
 	// 出库单号
 	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
+
 	// 出库日期
 	OutboundDate string `json:"outbound_date" gorm:"comment:'出库日期'"` // 出库日期
 	// 出库类型
@@ -282,9 +284,12 @@ type StorehouseOutboundRes struct {
 type StorehouseOutboundDetail struct {
 	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
 
-	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
+	Uuid           string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`              // UUID
+	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
+	SalesOrderType string `json:"sales_order_type" gorm:"comment:'销售订单类型'"`                    // 销售订单类型 1:期货 2:现货
 	// 出库单号
 	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
+
 	// 商品uuid
 	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
 	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID

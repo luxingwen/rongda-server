@@ -35,6 +35,7 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 		OutboundBy:            userId, // Assuming the user ID is available in the context
 		CreatedAt:             time.Now().Format("2006-01-02 15:04:05"),
 		UpdatedAt:             time.Now().Format("2006-01-02 15:04:05"),
+		CustomerUuid:          req.CustomerUuid,
 		SalesOrderProductType: req.SalesOrderProductType,
 	}
 
@@ -47,12 +48,14 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 		for _, detailReq := range req.Detail {
 			detail := &model.StorehouseOutboundDetail{
 				Uuid:            uuid.New().String(),
+				StorehouseUuid:  req.StorehouseUuid,
 				OutboundOrderNo: outbound.OutboundOrderNo,
 				ProductUuid:     detailReq.ProductUuid,
 				SkuUuid:         detailReq.SkuUuid,
 				Quantity:        detailReq.Quantity,
 				BoxNum:          detailReq.BoxNum,
 				CabinetNo:       detailReq.CabinetNo,
+				SalesOrderType:  req.SalesOrderProductType,
 				CreatedAt:       time.Now().Format("2006-01-02 15:04:05"),
 				UpdatedAt:       time.Now().Format("2006-01-02 15:04:05"),
 			}
@@ -315,9 +318,9 @@ func (s *StorehouseOutboundService) ListOutbounds2(ctx *app.Context, param *mode
 	if param.StorehouseUuid != "" {
 		db = db.Where("storehouse_uuid = ?", param.StorehouseUuid)
 	}
-	// if param.PurchaseOrderProductType != "" {
-	// 	db = db.Where("purchase_order_product_type = ?", param.PurchaseOrderProductType)
-	// }
+	if param.SalesOrderProductType != "" {
+		db = db.Where("sales_order_product_type = ?", param.SalesOrderProductType)
+	}
 
 	if param.CustomerUuid != "" {
 
