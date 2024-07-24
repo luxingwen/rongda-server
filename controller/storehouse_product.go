@@ -142,3 +142,18 @@ func (p *StorehouseProductController) GetProductList(ctx *app.Context) {
 	}
 	ctx.JSONSuccess(products)
 }
+
+// 获取订单库存商品
+func (p *StorehouseProductController) GetProductBySalesOrder(ctx *app.Context) {
+	param := &model.ReqStorehouseProductSalesOrderQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	products, err := p.ProductService.GetProductBySalesOrder(ctx, param.StorehouseUuid, param.SalesOrderNo)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(products)
+}

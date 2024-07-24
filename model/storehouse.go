@@ -228,16 +228,22 @@ const (
 
 // 请求出库信息
 type StorehouseOutboundReq struct {
-	StorehouseUuid string                        `json:"storehouse_uuid" binding:"required"` // 仓库UUID
-	OutboundType   string                        `json:"outbound_type" binding:"required"`   // 出库类型 1:销售出库 2:退货出库 3:手工出库
-	Status         int                           `json:"status" binding:"required"`          // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
-	Detail         []StorehouseOutboundDetailReq `json:"detail" binding:"required"`          // 出库明细
+	StorehouseUuid string `json:"storehouse_uuid" binding:"required"` // 仓库UUID
+	OutboundType   string `json:"outbound_type" binding:"-"`          // 出库类型 1:销售出库 2:退货出库 3:手工出库
+	OutboundDate   string `json:"outbound_date" binding:"-"`          // 出库日期
+	Status         int    `json:"status" binding:"-"`                 // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
+	// 订单类型
+	SalesOrderProductType string                        `json:"sales_order_product_type" binding:"-"` // 销售订单物品类型 1：期货 2：现货
+	Detail                []StorehouseOutboundDetailReq `json:"detail" binding:"required"`            // 出库明细
 }
 
 type StorehouseOutboundDetailReq struct {
 	ProductUuid string `json:"product_uuid" binding:"required"` // 商品UUID
 	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
 	Quantity    int    `json:"quantity" binding:"required"`     // 入库数量
+	BoxNum      int    `json:"box_num" binding:"-"`             // 箱数
+	// 柜号
+	CabinetNo string `json:"cabinet_no"` // 柜号
 }
 
 // 出库
@@ -251,8 +257,12 @@ type StorehouseOutbound struct {
 	OutboundDate string `json:"outbound_date" gorm:"comment:'出库日期'"` // 出库日期
 	// 出库类型
 	OutboundType string `json:"outbound_type" gorm:"comment:'出库类型'"` // 出库类型
+
+	SalesOrderProductType string `json:"sales_order_product_type" gorm:"comment:'销售订单物品类型'"` // 销售订单物品类型 1：期货 2：现货
+
 	// 出库状态
-	Status int `json:"status" gorm:"comment:'状态'"` // 状态 1:已出库 2:未出库
+	Status       int    `json:"status" gorm:"comment:'状态'"`                                // 状态 1:已出库 2:未出库
+	CustomerUuid string `json:"customer_uuid" gorm:"type:char(36);index;comment:'客户UUID'"` // 客户UUID
 	// 出库人
 	OutboundBy string `json:"outbound_by" gorm:"comment:'出库人'"`                // 出库人
 	CreatedAt  string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
@@ -262,20 +272,27 @@ type StorehouseOutbound struct {
 
 type StorehouseOutboundRes struct {
 	StorehouseOutbound
+	StorehouseOutboundDetailRes
 	Storehouse     Storehouse `json:"storehouse"`
+	CustomerInfo   Customer   `json:"customer_info"`
 	OutboundByUser User       `json:"outbound_by_user"`
 }
 
 // 出库明细
 type StorehouseOutboundDetail struct {
 	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
+
+	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
 	// 出库单号
 	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
 	// 商品uuid
 	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
 	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
 	// 出库数量
 	Quantity  int    `json:"quantity" gorm:"comment:'出库数量'"`                  // 出库数量
+	BoxNum    int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }

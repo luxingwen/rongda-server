@@ -180,8 +180,16 @@ type ReqStorehouseProductQueryParam struct {
 	Pagination
 }
 
-type ReqStorehouseOutboundQueryParam struct {
+type ReqStorehouseProductSalesOrderQueryParam struct {
 	StorehouseUuid string `json:"storehouse_uuid"`
+	SalesOrderNo   string `json:"sales_order_no"`
+}
+
+type ReqStorehouseOutboundQueryParam struct {
+	StorehouseUuid        string `json:"storehouse_uuid"`
+	SalesOrderProductType string `json:"sales_order_product_type" binding:"-"` // 销售订单物品类型 1：期货 2：现货
+	CustomerUuid          string `json:"customer_uuid" binding:"-"`            // 客户uuid
+	ProductUuid           string `json:"product_uuid" binding:"-"`             // 商品UUID
 	Pagination
 }
 

@@ -430,6 +430,7 @@ func InitStorehouseProductRouter(ctx *app.App) {
 		v1.POST("/storehouse_product/info", storehouseProductController.GetProductInfo)
 		v1.POST("/storehouse_product/list", storehouseProductController.GetProductList)
 		v1.POST("/storehouse_product/op_log", storehouseProductController.GetProductOpLog)
+		v1.POST("/storehouse_product/sales_order/list_item", storehouseProductController.GetProductBySalesOrder)
 	}
 }
 

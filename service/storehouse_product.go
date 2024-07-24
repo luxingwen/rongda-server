@@ -239,6 +239,74 @@ func (s *StorehouseProductService) DeleteProduct(ctx *app.Context, uuid string) 
 	return nil
 }
 
+// 根据仓库uuid 产品uuid skuuuid 获取库存信息
+func (s *StorehouseProductService) GetProductByStorehouseProduct(ctx *app.Context, storehouseUuid string, productUuid, skuUuid []string) ([]*model.StorehouseProduct, error) {
+	var productList []*model.StorehouseProduct
+	err := ctx.DB.Where("storehouse_uuid = ? AND product_uuid IN ? AND sku_uuid IN ?", storehouseUuid, productUuid, skuUuid).Find(&productList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get product by storehouse uuid", err)
+		return nil, errors.New("failed to get product by storehouse uuid")
+	}
+	return productList, nil
+}
+
+// 根据销售订单获取库存信息
+func (s *StorehouseProductService) GetProductBySalesOrder(ctx *app.Context, storehouseUuid string, orderNo string) ([]*model.StorehouseProductRes, error) {
+	var productList []*model.StorehouseProduct
+	err := ctx.DB.Table("storehouse_products").Joins("LEFT JOIN sales_order_items ON storehouse_products.product_uuid = sales_order_items.product_uuid AND storehouse_products.sku_uuid = sales_order_items.sku_uuid").Where("storehouse_products.storehouse_uuid = ? AND sales_order_items.order_no = ?", storehouseUuid, orderNo).Find(&productList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get product by sales order", err)
+		return nil, errors.New("failed to get product by sales order")
+	}
+
+	skuUuids := make([]string, 0)
+	productUuids := make([]string, 0)
+
+	for _, v := range productList {
+		productUuids = append(productUuids, v.ProductUuid)
+		skuUuids = append(skuUuids, v.SkuUuid)
+	}
+
+	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
+	if err != nil {
+
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return nil, errors.New("failed to get product list by UUIDs")
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by UUIDs", err)
+		return nil, errors.New("failed to get sku list by UUIDs")
+	}
+
+	res := make([]*model.StorehouseProductRes, 0)
+	for _, v := range productList {
+		productItem := &model.StorehouseProductRes{
+			StorehouseProduct: *v,
+		}
+		if product, ok := productMap[v.ProductUuid]; ok {
+			productItem.Product = *product
+		}
+		if sku, ok := skuMap[v.SkuUuid]; ok {
+			productItem.Sku = *sku
+		}
+		// 计算库存天数
+		if v.InDate != "" {
+			indate, err := time.ParseInLocation("2006-01-02", v.InDate, time.Local)
+			if err != nil {
+				ctx.Logger.Error("Failed to parse in date", err)
+
+			} else {
+				productItem.StockDays = int(time.Now().Sub(indate).Hours() / 24)
+			}
+		}
+		res = append(res, productItem)
+	}
+
+	return res, nil
+}
+
 func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.ReqStorehouseProductQueryParam) (r *model.PagedResponse, err error) {
 	var (
 		productList []*model.StorehouseProduct
