@@ -31,7 +31,7 @@ func (t *SalesOrderController) CreateSalesOrder(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := t.SalesOrderService.CreateSalesOrder(ctx, ctx.GetString("userId"), &param); err != nil {
+	if err := t.SalesOrderService.CreateSalesOrder(ctx, ctx.GetString("user_id"), &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -162,4 +162,18 @@ func (t *SalesOrderController) GetAllSalesOrder(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(orders)
+}
+
+// 更新订单状态
+func (t *SalesOrderController) UpdateSalesOrderStatus(ctx *app.Context) {
+	var param model.ReqUpdateOrderStatus
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := t.SalesOrderService.UpdateSalesOrderStatus(ctx, param.OrderNo, param.Status); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
 }

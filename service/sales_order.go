@@ -156,10 +156,20 @@ func (s *SalesOrderService) GetSalesOrderItems(ctx *app.Context, orderNo string)
 
 func (s *SalesOrderService) UpdateSalesOrder(ctx *app.Context, salesOrder *model.SalesOrder) error {
 	salesOrder.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-	err := ctx.DB.Save(salesOrder).Error
+	err := ctx.DB.Where("order_no = ?", salesOrder.OrderNo).Updates(salesOrder).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update sales order", err)
 		return errors.New("failed to update sales order")
+	}
+	return nil
+}
+
+// 更新订单状态
+func (s *SalesOrderService) UpdateSalesOrderStatus(ctx *app.Context, orderNo string, status string) error {
+	err := ctx.DB.Model(&model.SalesOrder{}).Where("order_no = ?", orderNo).Update("order_status", status).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update sales order status", err)
+		return errors.New("failed to update sales order status")
 	}
 	return nil
 }
@@ -192,11 +202,45 @@ func (s *SalesOrderService) ListSalesOrders(ctx *app.Context, param *model.ReqSa
 		return
 	}
 
+	customerUuids := make([]string, 0)
+	userUuids := make([]string, 0)
+
+	for _, order := range orderList {
+		customerUuids = append(customerUuids, order.CustomerUuid)
+		userUuids = append(userUuids, order.Salesman)
+	}
+
+	customerMap, err := NewCustomerService().GetCustomerListByUUIDs(ctx, customerUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer list by UUIDs", err)
+		return
+	}
+
+	userMap, err := NewUserService().GetUsersByUUIDs(ctx, userUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user list by UUIDs", err)
+		return
+	}
+
+	res := make([]*model.SalesOrderRes, 0)
+	for _, order := range orderList {
+		orderRes := &model.SalesOrderRes{
+			SalesOrder: *order,
+		}
+		if customer, ok := customerMap[order.CustomerUuid]; ok {
+			orderRes.CustomerInfo = customer
+		}
+		if user, ok := userMap[order.Salesman]; ok {
+			orderRes.SalesmanInfo = user
+		}
+		res = append(res, orderRes)
+	}
+
 	r = &model.PagedResponse{
 		Total:    total,
 		Current:  param.Current,
 		PageSize: param.PageSize,
-		Data:     orderList,
+		Data:     res,
 	}
 	return
 }
@@ -209,7 +253,7 @@ func (s *SalesOrderService) ListAllSalesOrders(ctx *app.Context) (r []*model.Sal
 
 	db := ctx.DB.Model(&model.SalesOrder{})
 
-	if err = db.Find(&orderList).Error; err != nil {
+	if err = db.Where("order_status = ?", model.OrderStatusPendingShipped).Find(&orderList).Error; err != nil {
 		return
 	}
 

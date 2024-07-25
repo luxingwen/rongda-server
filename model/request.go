@@ -281,3 +281,17 @@ type ReqOpLogQueryParam struct {
 type ReqIdParam struct {
 	Id int64 `json:"id"`
 }
+
+type PurchaseOrderStatusReq struct {
+	OrderNo string `json:"order_no"`
+	Status  string `json:"status"`
+}
+
+type ReqUpdateOrderStatus struct {
+	OrderNo string `json:"order_no"`
+	Status  string `json:"status"`
+}
+
+type ReqPurchaseOrderStatusParam struct {
+	StatusList []string `json:"status_list"`
+}

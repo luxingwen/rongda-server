@@ -415,3 +415,32 @@ func (t *PurchaseOrderController) GetAvailablePurchaseOrderList(ctx *app.Context
 
 	ctx.JSONSuccess(orders)
 }
+
+// 更改订单状态
+func (t *PurchaseOrderController) UpdatePurchaseOrderStatus(ctx *app.Context) {
+	var param model.PurchaseOrderStatusReq
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := t.PurchaseOrderService.UpdatePurchaseOrderStatus(ctx, param.OrderNo, param.Status); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
+}
+
+// 根据订单状态获取订单列表
+func (t *PurchaseOrderController) GetPurchaseOrderByStatus(ctx *app.Context) {
+	var param model.ReqPurchaseOrderStatusParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	orders, err := t.PurchaseOrderService.GetPurchaseOrderListByStatus(ctx, param.StatusList)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(orders)
+}

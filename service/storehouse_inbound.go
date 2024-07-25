@@ -48,6 +48,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 		for _, detailReq := range req.Detail {
 			detail := &model.StorehouseInboundDetail{
 				Uuid:                     uuid.New().String(),
+				PurchaseOrderProductNo:   detailReq.PurchaseOrderProductNo,
 				StorehouseUuid:           req.StorehouseUuid,
 				InboundOrderNo:           inbound.InboundOrderNo,
 				ProductUuid:              detailReq.ProductUuid,
@@ -77,6 +78,7 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 			stock.InDate = req.InDate
 			stock.CustomerUuid = req.CustomerUuid
 			stock.PurchaseOrderProductType = req.PurchaseOrderProductType
+			stock.PurchaseOrderProductNo = detailReq.PurchaseOrderProductNo
 			stock.CreatedAt = nowstr
 			stock.UpdatedAt = nowstr
 			if err := tx.Create(stock).Error; err != nil {
@@ -107,6 +109,15 @@ func (s *StorehouseInboundService) CreateInbound(ctx *app.Context, userId string
 			}
 
 		}
+
+		// 更新采购单状态
+
+		err := tx.Model(&model.PurchaseOrder{}).Where("order_no = ?", req.PurchaseOrderNo).Update("status", model.PurchaseOrderStatusInStore).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to update purchase order status", err)
+			return err
+		}
+
 		return nil
 	})
 

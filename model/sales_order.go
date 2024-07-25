@@ -43,9 +43,12 @@ type SalesOrderItemReq struct {
 const (
 	// 订单状态
 	// 待处理
-	OrderStatusPending        = "待处理"
+	OrderStatusPending = "待处理"
+	// 处理中
+	OrderStatusProcessing     = "处理中"
 	OrderStatusPendingPayment = "待支付"
 	OrderStatusPaid           = "已支付"
+	OrderStatusPendingShipped = "待发货"
 	OrderStatusShipped        = "已发货"
 	OrderStatusCompleted      = "已完成"
 	OrderStatusCancelled      = "已取消"

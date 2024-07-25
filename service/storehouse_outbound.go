@@ -27,6 +27,7 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 
 	nowstr := time.Now().Format("2006-01-02 15:04:05")
 	outbound := &model.StorehouseOutbound{
+		SalesOrderNo:          req.SalesOrderNo,
 		StorehouseUuid:        req.StorehouseUuid,
 		OutboundType:          req.OutboundType,
 		Status:                req.Status,
@@ -47,24 +48,26 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 
 		for _, detailReq := range req.Detail {
 			detail := &model.StorehouseOutboundDetail{
-				Uuid:            uuid.New().String(),
-				StorehouseUuid:  req.StorehouseUuid,
-				OutboundOrderNo: outbound.OutboundOrderNo,
-				ProductUuid:     detailReq.ProductUuid,
-				SkuUuid:         detailReq.SkuUuid,
-				Quantity:        detailReq.Quantity,
-				BoxNum:          detailReq.BoxNum,
-				CabinetNo:       detailReq.CabinetNo,
-				SalesOrderType:  req.SalesOrderProductType,
-				CreatedAt:       time.Now().Format("2006-01-02 15:04:05"),
-				UpdatedAt:       time.Now().Format("2006-01-02 15:04:05"),
+				Uuid:                  uuid.New().String(),
+				StorehouseProductUuid: detailReq.StorehouseProductUuid,
+				SalesOrderNo:          req.SalesOrderNo,
+				StorehouseUuid:        req.StorehouseUuid,
+				OutboundOrderNo:       outbound.OutboundOrderNo,
+				ProductUuid:           detailReq.ProductUuid,
+				SkuUuid:               detailReq.SkuUuid,
+				Quantity:              detailReq.Quantity,
+				BoxNum:                detailReq.BoxNum,
+				CabinetNo:             detailReq.CabinetNo,
+				SalesOrderType:        req.SalesOrderProductType,
+				CreatedAt:             time.Now().Format("2006-01-02 15:04:05"),
+				UpdatedAt:             time.Now().Format("2006-01-02 15:04:05"),
 			}
 
 			// 获取库存
 
 			// 先获取库存
 			stock := &model.StorehouseProduct{}
-			err := tx.Where("storehouse_uuid = ? AND product_uuid = ? AND sku_uuid = ?", req.StorehouseUuid, detailReq.ProductUuid, detailReq.SkuUuid).First(stock).Error
+			err := tx.Where("uuid = ? AND storehouse_uuid = ? AND product_uuid = ? AND sku_uuid = ?", detailReq.StorehouseProductUuid, req.StorehouseUuid, detailReq.ProductUuid, detailReq.SkuUuid).First(stock).Error
 			if err != nil {
 				if err == gorm.ErrRecordNotFound {
 					return errors.New("仓库中没有该商品")
@@ -86,7 +89,11 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 
 			stock.Quantity -= detailReq.Quantity
 			stock.UpdatedAt = nowstr
-			if err := tx.Where("uuid = ?", stock.Uuid).Updates(stock).Error; err != nil {
+			if err := tx.Model(&model.StorehouseProduct{}).Where("uuid = ?", stock.Uuid).Updates(map[string]interface{}{
+				"quantity":   stock.Quantity,
+				"updated_at": nowstr,
+				"box_num":    stock.BoxNum,
+			}).Error; err != nil {
 				return err
 			}
 
@@ -106,6 +113,13 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 			if err := tx.Create(stockopLog).Error; err != nil {
 				ctx.Logger.Error("Failed to create stockop log", err)
 				return errors.New("failed to create stockop log")
+			}
+
+			// 更新订单状态
+			err = tx.Model(&model.SalesOrder{}).Where("order_no = ?", req.SalesOrderNo).Update("order_status", model.OrderStatusShipped).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update sales order status", err)
+				return errors.New("failed to update sales order status")
 			}
 
 		}

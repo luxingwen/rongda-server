@@ -131,6 +131,8 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 		v1.POST("/purchase_order/item/list", purchaseOrderController.GetPurchaseOrderProducts)
 		v1.POST("/purchase_order/items/excel/upload_futures", purchaseOrderController.UploadFuturesItemsExcel)
 		v1.POST("/purchase_order/items/excel/upload_spot", purchaseOrderController.UploadSpotItemsExcel)
+		v1.POST("/purchase_order/update_status", purchaseOrderController.UpdatePurchaseOrderStatus)
+		v1.POST("/purchase_order/status_list", purchaseOrderController.GetPurchaseOrderByStatus)
 	}
 }
 
@@ -534,6 +536,7 @@ func InitSalesOrderRouter(ctx *app.App) {
 		v1.POST("/sales_order/list", salesOrderController.GetSalesOrderList)
 		v1.POST("/sales_order/all", salesOrderController.GetAllSalesOrder)
 		v1.POST("/sales_order/product_item/list", salesOrderController.GetSalesOrderProducts)
+		v1.POST("/sales_order/update_status", salesOrderController.UpdateSalesOrderStatus)
 	}
 }
 

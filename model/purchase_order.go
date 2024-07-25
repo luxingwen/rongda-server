@@ -45,7 +45,8 @@ type PurchaseOrderReq struct {
 }
 
 type PurchaseOrderItemReq struct {
-	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'产品UUID'"` // 产品UUID
+	PurchaseOrderProductNo string `json:"purchase_order_product_no" gorm:"type:char(36);index;comment:'采购单产品单号'"` // 采购单产品单号
+	ProductUuid            string `json:"product_uuid" gorm:"type:char(36);index;comment:'产品UUID'"`               // 产品UUID
 	// SKU UUID
 	SkuUuid string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"` // SKU UUID
 
@@ -130,10 +131,15 @@ const (
 	OrderTypeFutures = "1"
 	OrderTypeSpot    = "2"
 
-	PurchaseOrderStatusPending  = 1 // 待处理
-	PurchaseOrderStatusHandled  = 2 // 已处理
-	PurchaseOrderStatusCanceled = 3 // 已取消
-	PurchaseOrderStatusDone     = 4 // 已完成
+	PurchaseOrderStatusPending = "待处理" // 待处理
+	// 处理中
+	PurchaseOrderStatusProcessing = "处理中"
+	PurchaseOrderStatusHandled    = "已处理" // 已处理
+	// 已审核
+	PurchaseOrderStatusReviewed = "已审核"
+	PurchaseOrderStatusCanceled = "已取消" // 已取消
+	PurchaseOrderStatusDone     = "已完成" // 已完成
+	PurchaseOrderStatusInStore  = "已入库" // 已入库
 )
 
 // PurchaseOrder 采购单
@@ -186,7 +192,7 @@ type PurchaseOrder struct {
 	Attachment string `json:"attachment" gorm:"comment:'附件'"` // 附件
 
 	// 采购单状态
-	Status int `json:"status" gorm:"comment:'采购单状态'"` // 采购单状态 1： 待处理 2：已处理 3：已取消 4：已完成
+	Status string `json:"status" gorm:"comment:'采购单状态'"` // 采购单状态 1： 待处理 2：已处理 3：已取消 4：已完成 5: 已入库
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
@@ -194,37 +200,38 @@ type PurchaseOrder struct {
 
 // PurchaseOrderItem 采购单明细
 type PurchaseOrderItem struct {
-	ID                   uint    `json:"id" gorm:"primaryKey;comment:'主键ID'"`                          // 主键ID
-	PurchaseOrderNo      string  `json:"purchase_order_no" gorm:"type:char(36);index;comment:'采购单单号'"` // 采购单号
-	ProductUuid          string  `json:"product_uuid" gorm:"type:char(36);index;comment:'产品UUID'"`     // 产品UUID
-	ProductName          string  `json:"product_name" gorm:"comment:'产品名称'"`                           // 产品名称
-	SkuUuid              string  `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`       // SKU UUID
-	SkuName              string  `json:"sku_name" gorm:"comment:'SKU名称'"`                              // SKU名称
-	Quantity             int     `json:"quantity" gorm:"comment:'数量'"`                                 // 数量
-	BoxNum               int     `json:"box_num" gorm:"comment:'箱数'"`                                  // 箱数
-	Price                float64 `json:"price" gorm:"comment:'价格'"`                                    // 价格
-	TotalAmount          float64 `json:"total_amount" gorm:"comment:'总金额'"`                            // 总金额
-	PIBoxNum             int     `json:"pi_box_num" gorm:"comment:'PI箱数'"`                             // PI箱数
-	PIQuantity           int     `json:"pi_quantity" gorm:"comment:'PI数量'"`                            // PI数量
-	PIUnitPrice          float64 `json:"pi_unit_price" gorm:"comment:'PI单价'"`                          // PI单价
-	PITotalAmount        float64 `json:"pi_total_amount" gorm:"comment:'PI总金额'"`                       // PI总金额
-	CabinetNo            string  `json:"cabinet_no" gorm:"comment:'柜号'"`                               // 柜号
-	BillOfLadingNo       string  `json:"bill_of_lading_no" gorm:"comment:'提单号'"`                       // 提单号
-	ShipName             string  `json:"ship_name" gorm:"comment:'船名'"`                                // 船名
-	Voyage               string  `json:"voyage" gorm:"comment:'航次'"`                                   // 航次
-	CIInvoiceNo          string  `json:"ci_invoice_no" gorm:"comment:'CI发票号'"`                         // CI发票号
-	CIBoxNum             int     `json:"ci_box_num" gorm:"comment:'CI箱数'"`                             // CI箱数
-	CIQuantity           int     `json:"ci_quantity" gorm:"comment:'CI数量'"`                            // CI数量
-	CIUnitPrice          float64 `json:"ci_unit_price" gorm:"comment:'CI单价'"`                          // CI单价
-	CITotalAmount        float64 `json:"ci_total_amount" gorm:"comment:'CI总金额'"`                       // CI总金额
-	ProductionDate       string  `json:"production_date" gorm:"comment:'生产日期'"`                        // 生产日期
-	EstimatedArrivalDate string  `json:"estimated_arrival_date" gorm:"comment:'预计到港日期'"`               // 预计到港日期
-	Tariff               float64 `json:"tariff" gorm:"comment:'关税'"`                                   // 关税
-	VAT                  float64 `json:"vat" gorm:"comment:'增值税'"`                                     // 增值税
-	PaymentDate          string  `json:"payment_date" gorm:"comment:'缴费日期'"`                           // 缴费日期
-	Desc                 string  `json:"desc" gorm:"comment:'备注'"`                                     // 备注
-	CreatedAt            string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"`              // 创建时间
-	UpdatedAt            string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"`              // 更新时间
+	ID                     uint    `json:"id" gorm:"primaryKey;comment:'主键ID'"`                                    // 主键ID
+	PurchaseOrderNo        string  `json:"purchase_order_no" gorm:"type:char(36);index;comment:'采购单单号'"`           // 采购单号
+	PurchaseOrderProductNo string  `json:"purchase_order_product_no" gorm:"type:char(36);index;comment:'采购单产品单号'"` // 采购单产品单号
+	ProductUuid            string  `json:"product_uuid" gorm:"type:char(36);index;comment:'产品UUID'"`               // 产品UUID
+	ProductName            string  `json:"product_name" gorm:"comment:'产品名称'"`                                     // 产品名称
+	SkuUuid                string  `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`                 // SKU UUID
+	SkuName                string  `json:"sku_name" gorm:"comment:'SKU名称'"`                                        // SKU名称
+	Quantity               int     `json:"quantity" gorm:"comment:'数量'"`                                           // 数量
+	BoxNum                 int     `json:"box_num" gorm:"comment:'箱数'"`                                            // 箱数
+	Price                  float64 `json:"price" gorm:"comment:'价格'"`                                              // 价格
+	TotalAmount            float64 `json:"total_amount" gorm:"comment:'总金额'"`                                      // 总金额
+	PIBoxNum               int     `json:"pi_box_num" gorm:"comment:'PI箱数'"`                                       // PI箱数
+	PIQuantity             int     `json:"pi_quantity" gorm:"comment:'PI数量'"`                                      // PI数量
+	PIUnitPrice            float64 `json:"pi_unit_price" gorm:"comment:'PI单价'"`                                    // PI单价
+	PITotalAmount          float64 `json:"pi_total_amount" gorm:"comment:'PI总金额'"`                                 // PI总金额
+	CabinetNo              string  `json:"cabinet_no" gorm:"comment:'柜号'"`                                         // 柜号
+	BillOfLadingNo         string  `json:"bill_of_lading_no" gorm:"comment:'提单号'"`                                 // 提单号
+	ShipName               string  `json:"ship_name" gorm:"comment:'船名'"`                                          // 船名
+	Voyage                 string  `json:"voyage" gorm:"comment:'航次'"`                                             // 航次
+	CIInvoiceNo            string  `json:"ci_invoice_no" gorm:"comment:'CI发票号'"`                                   // CI发票号
+	CIBoxNum               int     `json:"ci_box_num" gorm:"comment:'CI箱数'"`                                       // CI箱数
+	CIQuantity             int     `json:"ci_quantity" gorm:"comment:'CI数量'"`                                      // CI数量
+	CIUnitPrice            float64 `json:"ci_unit_price" gorm:"comment:'CI单价'"`                                    // CI单价
+	CITotalAmount          float64 `json:"ci_total_amount" gorm:"comment:'CI总金额'"`                                 // CI总金额
+	ProductionDate         string  `json:"production_date" gorm:"comment:'生产日期'"`                                  // 生产日期
+	EstimatedArrivalDate   string  `json:"estimated_arrival_date" gorm:"comment:'预计到港日期'"`                         // 预计到港日期
+	Tariff                 float64 `json:"tariff" gorm:"comment:'关税'"`                                             // 关税
+	VAT                    float64 `json:"vat" gorm:"comment:'增值税'"`                                               // 增值税
+	PaymentDate            string  `json:"payment_date" gorm:"comment:'缴费日期'"`                                     // 缴费日期
+	Desc                   string  `json:"desc" gorm:"comment:'备注'"`                                               // 备注
+	CreatedAt              string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"`                        // 创建时间
+	UpdatedAt              string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"`                        // 更新时间
 }
 
 // PurchaseOrderResp 采购单响应

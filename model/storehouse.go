@@ -42,6 +42,8 @@ type StorehouseProduct struct {
 	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` //
 
 	PurchaseOrderNo string `json:"purchase_order_no" gorm:"comment:'采购订单'"` // 采购订单
+
+	PurchaseOrderProductNo string `json:"purchase_order_product_no" gorm:"comment:'采购订单物品编号'"` // 采购订单物品编号
 	// 采购订单物品类型
 	PurchaseOrderProductType string `json:"purchase_order_product_type" gorm:"comment:'采购订单物品类型'"` // 采购订单物品类型 1：期货 2：现货
 	// 客户uuid
@@ -120,6 +122,7 @@ type StorehouseInboundReq struct {
 	Title          string `json:"title" binding:"required"`           // 标题
 	// 采购订单
 	PurchaseOrderNo string `json:"purchase_order_no" binding:"-"` // 采购订单
+
 	// 订单类型
 	PurchaseOrderProductType string                       `json:"purchase_order_product_type" binding:"-"` // 采购订单物品类型 1：期货 2：现货
 	CustomerUuid             string                       `json:"customer_uuid" binding:"-"`               // 客户UUID
@@ -136,12 +139,14 @@ type StorehouseInboundUpdateReq struct {
 
 // 请求入库明细信息
 type StorehouseInboundDetailReq struct {
-	ProductUuid string `json:"product_uuid" binding:"required"` // 商品UUID
-	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
-	Quantity    int    `json:"quantity" binding:"required"`     // 入库数量
-	BoxNum      int    `json:"box_num" binding:"-"`             // 箱数
+	PurchaseOrderProductNo string `json:"purchase_order_product_no" binding:"-"` // 采购订单物品编号
+	ProductUuid            string `json:"product_uuid" binding:"required"`       // 商品UUID
+	SkuUuid                string `json:"sku_uuid" binding:"required"`           // SKU UUID
+	Quantity               int    `json:"quantity" binding:"required"`           // 入库数量
+	BoxNum                 int    `json:"box_num" binding:"-"`                   // 箱数
 	// 柜号
 	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
+
 }
 
 // 入库
@@ -191,7 +196,9 @@ type StorehouseInboundDetail struct {
 	ID   uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
 	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
 
-	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
+	StorehouseUuid         string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
+	PurchaseOrderProductNo string `json:"purchase_order_product_no" gorm:"comment:'采购订单物品编号'"`         // 采购订单物品编号
+
 	// 入库单号
 	InboundOrderNo string `json:"inbound_order_no" gorm:"comment:'入库单号'"` // 入库单号
 	// 采购订单物品类型
@@ -232,6 +239,8 @@ type StorehouseOutboundReq struct {
 	OutboundType   string `json:"outbound_type" binding:"-"`          // 出库类型 1:销售出库 2:退货出库 3:手工出库
 	OutboundDate   string `json:"outbound_date" binding:"-"`          // 出库日期
 	Status         int    `json:"status" binding:"-"`                 // 状态 1:待处理 2: 已处理 3:已取消 4:已完成
+	// 销售订单
+	SalesOrderNo string `json:"sales_order_no" binding:"-"` // 销售订单
 	// 订单类型
 	SalesOrderProductType string                        `json:"sales_order_product_type" binding:"-"` // 销售订单物品类型 1：期货 2：现货
 	CustomerUuid          string                        `json:"customer_uuid" binding:"-"`            // 客户UUID
@@ -239,10 +248,11 @@ type StorehouseOutboundReq struct {
 }
 
 type StorehouseOutboundDetailReq struct {
-	ProductUuid string `json:"product_uuid" binding:"required"` // 商品UUID
-	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
-	Quantity    int    `json:"quantity" binding:"required"`     // 入库数量
-	BoxNum      int    `json:"box_num" binding:"-"`             // 箱数
+	StorehouseProductUuid string `json:"storehouse_product_uuid" binding:"required"` // 仓库物品UUID
+	ProductUuid           string `json:"product_uuid" binding:"required"`            // 商品UUID
+	SkuUuid               string `json:"sku_uuid" binding:"required"`                // SKU UUID
+	Quantity              int    `json:"quantity" binding:"required"`                // 入库数量
+	BoxNum                int    `json:"box_num" binding:"-"`                        // 箱数
 	// 柜号
 	CabinetNo string `json:"cabinet_no"` // 柜号
 }
@@ -252,6 +262,9 @@ type StorehouseOutbound struct {
 	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
 	// 仓库uuid
 	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
+
+	// 销售订单
+	SalesOrderNo string `json:"sales_order_no" gorm:"comment:'销售订单'"`
 	// 出库单号
 	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
 
@@ -287,8 +300,13 @@ type StorehouseOutboundDetail struct {
 	Uuid           string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`              // UUID
 	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
 	SalesOrderType string `json:"sales_order_type" gorm:"comment:'销售订单类型'"`                    // 销售订单类型 1:期货 2:现货
+	// 销售订单
+	SalesOrderNo string `json:"sales_order_no" gorm:"comment:'销售订单'"`
 	// 出库单号
 	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
+
+	// 产品库存uuid
+	StorehouseProductUuid string `json:"storehouse_product_uuid" gorm:"type:char(36);index;comment:'仓库物品UUID'"` // 仓库物品UUID
 
 	// 商品uuid
 	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID

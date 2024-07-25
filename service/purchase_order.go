@@ -9,6 +9,7 @@ import (
 	"sgin/pkg/app"
 	"sgin/pkg/utils"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -60,14 +61,15 @@ func (s *PurchaseOrderService) CreatePurchaseOrderFutures(ctx *app.Context, user
 
 		for _, detailReq := range req.Details {
 			detail := &model.PurchaseOrderItem{
-				PurchaseOrderNo: order.OrderNo,
-				ProductUuid:     detailReq.ProductUuid,
-				SkuUuid:         detailReq.SkuUuid,
-				ProductName:     detailReq.ProductName,
-				SkuName:         detailReq.SkuName,
-				Quantity:        detailReq.Quantity,
-				Price:           detailReq.Price,
-				TotalAmount:     detailReq.TotalAmount,
+				PurchaseOrderNo:        order.OrderNo,
+				PurchaseOrderProductNo: uuid.New().String(),
+				ProductUuid:            detailReq.ProductUuid,
+				SkuUuid:                detailReq.SkuUuid,
+				ProductName:            detailReq.ProductName,
+				SkuName:                detailReq.SkuName,
+				Quantity:               detailReq.Quantity,
+				Price:                  detailReq.Price,
+				TotalAmount:            detailReq.TotalAmount,
 
 				PIBoxNum:             detailReq.PIBoxNum,
 				PIQuantity:           detailReq.PIQuantity,
@@ -149,15 +151,16 @@ func (s *PurchaseOrderService) CreatePurchaseOrderSpot(ctx *app.Context, userId 
 
 		for _, detailReq := range req.Details {
 			detail := &model.PurchaseOrderItem{
-				PurchaseOrderNo: order.OrderNo,
-				ProductUuid:     detailReq.ProductUuid,
-				SkuUuid:         detailReq.SkuUuid,
-				ProductName:     detailReq.ProductName,
-				SkuName:         detailReq.SkuName,
-				Quantity:        detailReq.Quantity,
-				BoxNum:          detailReq.BoxNum,
-				Price:           detailReq.Price,
-				TotalAmount:     detailReq.TotalAmount,
+				PurchaseOrderNo:        order.OrderNo,
+				PurchaseOrderProductNo: uuid.New().String(),
+				ProductUuid:            detailReq.ProductUuid,
+				SkuUuid:                detailReq.SkuUuid,
+				ProductName:            detailReq.ProductName,
+				SkuName:                detailReq.SkuName,
+				Quantity:               detailReq.Quantity,
+				BoxNum:                 detailReq.BoxNum,
+				Price:                  detailReq.Price,
+				TotalAmount:            detailReq.TotalAmount,
 
 				PIBoxNum:             detailReq.PIBoxNum,
 				PIQuantity:           detailReq.PIQuantity,
@@ -317,10 +320,19 @@ func (s *PurchaseOrderService) GetPurchaseOrderItems(ctx *app.Context, orderNo s
 
 func (s *PurchaseOrderService) UpdatePurchaseOrder(ctx *app.Context, order *model.PurchaseOrder) error {
 	order.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-	err := ctx.DB.Save(order).Error
+	err := ctx.DB.Where("order_no = ?", order.OrderNo).Updates(order).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update purchase order", err)
 		return errors.New("failed to update purchase order")
+	}
+	return nil
+}
+
+func (s *PurchaseOrderService) UpdatePurchaseOrderStatus(ctx *app.Context, orderNo string, status string) error {
+	err := ctx.DB.Model(&model.PurchaseOrder{}).Where("order_no = ?", orderNo).Update("status", status).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update purchase order status", err)
+		return errors.New("failed to update purchase order status")
 	}
 	return nil
 }
@@ -397,10 +409,20 @@ func (s *PurchaseOrderService) ListPurchaseOrders(ctx *app.Context, param *model
 
 // 获取所有可用的采购订单
 func (s *PurchaseOrderService) GetAvailablePurchaseOrderList(ctx *app.Context) (r []*model.PurchaseOrder, err error) {
-	err = ctx.DB.Find(&r).Error
+	err = ctx.DB.Where("status = ?", model.PurchaseOrderStatusDone).Find(&r).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get available purchase order list", err)
 		return nil, errors.New("failed to get available purchase order list")
+	}
+	return
+}
+
+// 根据订单状态获取采购订单列表
+func (s *PurchaseOrderService) GetPurchaseOrderListByStatus(ctx *app.Context, status []string) (r []*model.PurchaseOrder, err error) {
+	err = ctx.DB.Where("status IN ?", status).Find(&r).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order list by status", err)
+		return nil, errors.New("failed to get purchase order list by status")
 	}
 	return
 }
