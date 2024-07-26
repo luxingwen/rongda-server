@@ -222,6 +222,15 @@ type StorehouseInboundDetailRes struct {
 	Sku     Sku     `json:"sku"`
 }
 
+type StorehouseInboundDetailInfoRes struct {
+	StorehouseInboundDetail
+	StorehouseInbound StorehouseInboundRes `json:"storehouse_inbound"`
+	PurchaseOrderInfo PurchaseOrder        `json:"purchase_order_info"`
+	Product           Product              `json:"product"`
+	Sku               Sku                  `json:"sku"`
+	CustomerInfo      Customer             `json:"customer_info"`
+}
+
 const (
 	StorehouseOutboundTypeSalesOutbound  = 1 // 销售出库
 	StorehouseOutboundTypeReturnOutbound = 2 // 退货出库

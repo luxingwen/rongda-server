@@ -415,6 +415,7 @@ func InitStorehouseInboundRouter(ctx *app.App) {
 		v1.POST("/storehouse_inbound/info", storehouseInboundController.GetInboundInfo)
 		v1.POST("/storehouse_inbound/list", storehouseInboundController.GetInboundList)
 		v1.POST("/storehouse_inbound/detail", storehouseInboundController.GetInboundDetail)
+		v1.POST("/storehouse_inbound/detail_info", storehouseInboundController.GetInboundDetailInfo)
 	}
 }
 

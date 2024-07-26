@@ -162,7 +162,7 @@ func (s *StorehouseInboundService) GetInbound(ctx *app.Context, uuid string) (*m
 }
 
 // 获取入库明细
-func (s *StorehouseInboundService) GetInboundDetail(ctx *app.Context, uuid string) ([]*model.StorehouseInboundDetailRes, error) {
+func (s *StorehouseInboundService) GetInboundDetailByInboundOrderNo(ctx *app.Context, uuid string) ([]*model.StorehouseInboundDetailRes, error) {
 	var inboundDetail []*model.StorehouseInboundDetail
 	err := ctx.DB.Where("inbound_order_no = ?", uuid).Find(&inboundDetail).Error
 	if err != nil {
@@ -201,6 +201,57 @@ func (s *StorehouseInboundService) GetInboundDetail(ctx *app.Context, uuid strin
 			detailRes.Sku = *sku
 		}
 		res = append(res, detailRes)
+	}
+
+	return res, nil
+}
+
+// 获取入库明细
+func (s *StorehouseInboundService) GetInboundDetailInfo(ctx *app.Context, uuid string) (*model.StorehouseInboundDetailInfoRes, error) {
+	var inboundDetail model.StorehouseInboundDetail
+	err := ctx.DB.Where("uuid = ?", uuid).First(&inboundDetail).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get inbound detail", err)
+		return nil, errors.New("failed to get inbound detail")
+	}
+
+	product, err := NewProductService().GetProductByUUID(ctx, inboundDetail.ProductUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get product by UUID", err)
+		return nil, errors.New("failed to get product by UUID")
+	}
+
+	sku, err := NewSkuService().GetSkuByUUID(ctx, inboundDetail.SkuUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku by UUID", err)
+		return nil, errors.New("failed to get sku by UUID")
+	}
+
+	storehouseInboud, err := s.GetInbound(ctx, inboundDetail.InboundOrderNo)
+	if err != nil {
+		ctx.Logger.Error("Failed to get inbound by UUID", err)
+		return nil, errors.New("failed to get inbound by UUID")
+	}
+
+	purchaseOrder, err := NewPurchaseOrderService().GetPurchaseOrderRecord(ctx, storehouseInboud.StorehouseInbound.PurchaseOrderNo)
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order by UUID", err)
+		return nil, errors.New("failed to get purchase order by UUID")
+	}
+
+	customer, err := NewCustomerService().GetCustomerByUUID(ctx, storehouseInboud.StorehouseInbound.CustomerUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer by UUID", err)
+		return nil, errors.New("failed to get customer by UUID")
+	}
+
+	res := &model.StorehouseInboundDetailInfoRes{
+		StorehouseInboundDetail: inboundDetail,
+		Product:                 *product,
+		Sku:                     *sku,
+		StorehouseInbound:       *storehouseInboud,
+		PurchaseOrderInfo:       *purchaseOrder,
+		CustomerInfo:            *customer,
 	}
 
 	return res, nil

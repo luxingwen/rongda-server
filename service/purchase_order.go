@@ -201,6 +201,19 @@ func (s *PurchaseOrderService) CreatePurchaseOrderSpot(ctx *app.Context, userId 
 	return nil
 }
 
+func (s *PurchaseOrderService) GetPurchaseOrderRecord(ctx *app.Context, orderNo string) (*model.PurchaseOrder, error) {
+	order := &model.PurchaseOrder{}
+	err := ctx.DB.Where("order_no = ?", orderNo).First(order).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("purchase order not found")
+		}
+		ctx.Logger.Error("Failed to get purchase order by order no", err)
+		return nil, errors.New("failed to get purchase order by order no")
+	}
+	return order, nil
+}
+
 func (s *PurchaseOrderService) GetPurchaseOrder(ctx *app.Context, orderNo string) (*model.PurchaseOrderRes, error) {
 	order := &model.PurchaseOrderRes{}
 	err := ctx.DB.Where("order_no = ?", orderNo).First(&order.PurchaseOrder).Error

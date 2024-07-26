@@ -70,7 +70,21 @@ func (p *StorehouseInboundController) GetInboundDetail(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	inboundDetail, err := p.InboundService.GetInboundDetail(ctx, param.Uuid)
+	inboundDetail, err := p.InboundService.GetInboundDetailByInboundOrderNo(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(inboundDetail)
+}
+
+func (p *StorehouseInboundController) GetInboundDetailInfo(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	inboundDetail, err := p.InboundService.GetInboundDetailInfo(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
