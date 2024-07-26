@@ -195,7 +195,7 @@ func (s *SalesOrderService) ListSalesOrders(ctx *app.Context, param *model.ReqSa
 		db = db.Where("customer_uuid = ?", param.CustomerUuid)
 	}
 
-	if err = db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&orderList).Error; err != nil {
+	if err = db.Order("id DESC").Offset(param.GetOffset()).Limit(param.PageSize).Find(&orderList).Error; err != nil {
 		return
 	}
 	if err = db.Count(&total).Error; err != nil {
