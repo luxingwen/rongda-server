@@ -91,12 +91,17 @@ func (t *SalesOrderController) GetSalesOrderProducts(ctx *app.Context) {
 // @Success 200 {object} model.SalesOrder
 // @Router /api/v1/sales_order/update [post]
 func (t *SalesOrderController) UpdateSalesOrder(ctx *app.Context) {
-	var param model.SalesOrder
+	var param model.SalesOrderReq
 	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := t.SalesOrderService.UpdateSalesOrder(ctx, &param); err != nil {
+	userId := ctx.GetString("user_id")
+	if userId == "" {
+		ctx.JSONError(http.StatusUnauthorized, "用户未登录")
+		return
+	}
+	if err := t.SalesOrderService.UpdateSalesOrder(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}

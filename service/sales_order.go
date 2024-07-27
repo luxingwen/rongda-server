@@ -23,20 +23,22 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 	orderNo := utils.GenerateOrderID()
 	salesOrder := &model.SalesOrder{
-		OrderNo:         orderNo,
-		OrderType:       req.OrderType,
-		Title:           req.Title,
-		OrderDate:       req.OrderDate,
-		DepositAmount:   float64(req.Deposit),
-		OrderAmount:     float64(req.OrderAmount),
-		Salesman:        userId,
-		CustomerUuid:    req.CustomerUuid,
-		TaxAmount:       req.TaxAmount,
-		Remarks:         req.Remarks,
-		OrderStatus:     model.OrderStatusPending,
-		PurchaseOrderNo: req.PurchaseOrderNo,
-		CreatedAt:       nowStr,
-		UpdatedAt:       nowStr,
+		OrderNo:            orderNo,
+		OrderType:          req.OrderType,
+		Title:              req.Title,
+		OrderDate:          req.OrderDate,
+		DepositAmount:      float64(req.Deposit),
+		OrderAmount:        float64(req.OrderAmount),
+		Salesman:           userId,
+		CustomerUuid:       req.CustomerUuid,
+		SettlementCurrency: req.SettlementCurrency,
+		DepositRatio:       req.DepositRatio,
+		FinalPaymentAmount: req.FinalPaymentAmount,
+		Remarks:            req.Remarks,
+		OrderStatus:        model.OrderStatusPending,
+		PurchaseOrderNo:    req.PurchaseOrderNo,
+		CreatedAt:          nowStr,
+		UpdatedAt:          nowStr,
 	}
 
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
@@ -45,19 +47,50 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 			return errors.New("failed to create sales order")
 		}
 
+		// 获取采购单信息
+		var purchaseOrder model.PurchaseOrder
+		if salesOrder.PurchaseOrderNo != "" {
+			if err := tx.Where("order_no = ?", salesOrder.PurchaseOrderNo).First(&purchaseOrder).Error; err != nil {
+				ctx.Logger.Error("Failed to get purchase order by order number", err)
+				return errors.New("failed to get purchase order by order number")
+			}
+		}
+
 		for _, itemReq := range req.ProductList {
 			item := &model.SalesOrderItem{
-				Uuid:            uuid.New().String(),
-				OrderNo:         orderNo,
-				ProductUuid:     itemReq.ProductUuid,
-				SkuUuid:         itemReq.SkuUuid,
-				ProductQuantity: float64(itemReq.ProductQuantity),
-				ProductPrice:    float64(itemReq.ProductPrice),
-				ProductAmount:   float64(itemReq.ProductAmount),
-				BoxNum:          itemReq.BoxNum,
-				CreatedAt:       nowStr,
-				UpdatedAt:       nowStr,
+				Uuid:                   uuid.New().String(),
+				OrderNo:                orderNo,
+				ProductUuid:            itemReq.ProductUuid,
+				SkuUuid:                itemReq.SkuUuid,
+				PurchaseOrderProductNo: itemReq.PurchaseOrderProductNo,
+				ProductQuantity:        itemReq.ProductQuantity,
+				ProductPrice:           itemReq.ProductPrice,
+				ProductAmount:          itemReq.ProductAmount,
+				BoxNum:                 itemReq.BoxNum,
+				CreatedAt:              nowStr,
+				UpdatedAt:              nowStr,
 			}
+
+			var purchaseOrderProduct model.PurchaseOrderItem
+			if item.PurchaseOrderProductNo != "" {
+				if err := tx.Where("purchase_order_product_no = ?", item.PurchaseOrderProductNo).First(&purchaseOrderProduct).Error; err != nil {
+					ctx.Logger.Error("Failed to get purchase order product by purchase order product no", err)
+					return errors.New("failed to get purchase order product by purchase order product no")
+				}
+				productQuantity := purchaseOrderProduct.Quantity
+				productBoxNum := purchaseOrderProduct.BoxNum
+				if purchaseOrder.OrderType == model.OrderTypeFutures {
+					productQuantity = purchaseOrderProduct.CIQuantity
+					productBoxNum = purchaseOrderProduct.CIBoxNum
+				}
+				if productQuantity < item.ProductQuantity {
+					return errors.New("采购单商品数量不足，无法创建销售订单")
+				}
+				if productBoxNum < item.BoxNum {
+					return errors.New("采购单箱数不足，无法创建销售订单")
+				}
+			}
+
 			if err := tx.Create(item).Error; err != nil {
 				ctx.Logger.Error("Failed to create sales order item", err)
 				return errors.New("failed to create sales order item")
@@ -154,13 +187,66 @@ func (s *SalesOrderService) GetSalesOrderItems(ctx *app.Context, orderNo string)
 
 }
 
-func (s *SalesOrderService) UpdateSalesOrder(ctx *app.Context, salesOrder *model.SalesOrder) error {
-	salesOrder.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-	err := ctx.DB.Where("order_no = ?", salesOrder.OrderNo).Updates(salesOrder).Error
-	if err != nil {
-		ctx.Logger.Error("Failed to update sales order", err)
-		return errors.New("failed to update sales order")
+func (s *SalesOrderService) UpdateSalesOrder(ctx *app.Context, userId string, req *model.SalesOrderReq) error {
+	nowStr := time.Now().Format("2006-01-02 15:04:05")
+	orderNo := req.OrderNo
+	salesOrder := &model.SalesOrder{
+		OrderNo:            orderNo,
+		OrderType:          req.OrderType,
+		Title:              req.Title,
+		OrderDate:          req.OrderDate,
+		DepositAmount:      float64(req.Deposit),
+		OrderAmount:        float64(req.OrderAmount),
+		Updater:            userId,
+		CustomerUuid:       req.CustomerUuid,
+		SettlementCurrency: req.SettlementCurrency,
+		DepositRatio:       req.DepositRatio,
+		FinalPaymentAmount: req.FinalPaymentAmount,
+		Remarks:            req.Remarks,
+		OrderStatus:        model.OrderStatusPending,
+		PurchaseOrderNo:    req.PurchaseOrderNo,
+		CreatedAt:          nowStr,
+		UpdatedAt:          nowStr,
 	}
+
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		if err := tx.Where("order_no = ?", orderNo).Updates(salesOrder).Error; err != nil {
+			ctx.Logger.Error("Failed to update sales order", err)
+			return errors.New("failed to update sales order")
+		}
+
+		if err := tx.Where("order_no = ?", orderNo).Delete(&model.SalesOrderItem{}).Error; err != nil {
+			ctx.Logger.Error("Failed to delete sales order items", err)
+			return errors.New("failed to delete sales order items")
+		}
+
+		for _, itemReq := range req.ProductList {
+			item := &model.SalesOrderItem{
+				Uuid:                   uuid.New().String(),
+				OrderNo:                orderNo,
+				ProductUuid:            itemReq.ProductUuid,
+				PurchaseOrderProductNo: itemReq.PurchaseOrderProductNo,
+				SkuUuid:                itemReq.SkuUuid,
+				ProductQuantity:        itemReq.ProductQuantity,
+				ProductPrice:           itemReq.ProductPrice,
+				ProductAmount:          itemReq.ProductAmount,
+				BoxNum:                 itemReq.BoxNum,
+				CreatedAt:              nowStr,
+				UpdatedAt:              nowStr,
+			}
+			if err := tx.Create(item).Error; err != nil {
+				ctx.Logger.Error("Failed to create sales order item", err)
+				return errors.New("failed to create sales order item")
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

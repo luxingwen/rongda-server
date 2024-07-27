@@ -200,7 +200,9 @@ type ReqInventoryCheckQueryParam struct {
 
 type ReqPurchaseOrderQueryParam struct {
 	OrderNo      string `json:"order_no"`
+	Title        string `json:"title"`
 	SupplierUuid string `json:"supplier_uuid"`
+	CustomerUuid string `json:"customer_uuid"`
 	Pagination
 }
 

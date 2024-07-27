@@ -26,6 +26,10 @@ func (p *StorehouseInboundController) CreateInbound(ctx *app.Context) {
 		return
 	}
 	userId := ctx.GetString("user_id")
+	if userId == "" {
+		ctx.JSONError(http.StatusUnauthorized, "用户未登录")
+		return
+	}
 	param.Status = model.StorehouseInboundStatusPending
 	if err := p.InboundService.CreateInbound(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())

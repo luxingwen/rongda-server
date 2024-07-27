@@ -1,9 +1,12 @@
 package model
 
 type PurchaseOrderReq struct {
+	OrderNo string `json:"order_no" gorm:"comment:'采购单号'"` // 采购单号
 	// 标题
 	Title string `json:"title" gorm:"comment:'标题'"`  // 标题
 	Date  string `json:"date" gorm:"comment:'采购日期'"` // 采购日期
+
+	Status string `json:"status" gorm:"comment:'采购单状态'"` // 采购单状态
 
 	CustomerUuid string `json:"customer_uuid" gorm:"type:char(36);index;comment:'客户UUID'"` // 客户UUID
 
@@ -109,11 +112,24 @@ type PurchaseOrderItemReq struct {
 	// CI总金额
 	CITotalAmount float64 `json:"ci_total_amount" gorm:"comment:'CI总金额'"` // CI总金额
 
+	// CI尾款金额
+	CIResidualAmount float64 `json:"ci_residual_amount" gorm:"comment:'CI尾款金额'"` // CI尾款金额
+
 	// 生产日期
 	ProductionDate string `json:"production_date" gorm:"comment:'生产日期'"` // 生产日期
 
 	// 预计到港日期
 	EstimatedArrivalDate string `json:"estimated_arrival_date" gorm:"comment:'预计到港日期'"` // 预计到港日期
+
+	// RMB定金金额
+	RMBDepositAmount float64 `json:"rmb_deposit_amount" gorm:"comment:'RMB定金金额'"` // RMB定金金额
+	// RMB尾款金额
+	RMBResidualAmount float64 `json:"rmb_residual_amount" gorm:"comment:'RMB尾款金额'"` // RMB尾款金额
+
+	// 定金汇率
+	DepositExchangeRate float64 `json:"deposit_exchange_rate" gorm:"comment:'定金汇率'"` // 定金汇率
+	// 尾款汇率
+	ResidualExchangeRate float64 `json:"residual_exchange_rate" gorm:"comment:'尾款汇率'"` // 尾款汇率
 
 	// 关税
 	Tariff float64 `json:"tariff" gorm:"comment:'关税'"` // 关税
@@ -188,6 +204,9 @@ type PurchaseOrder struct {
 	// 采购人
 	Purchaser string `json:"purchaser" gorm:"comment:'采购人'"` // 采购人
 
+	// 更新人
+	Updater string `json:"updater" gorm:"comment:'更新人'"` // 更新人
+
 	// 附件
 	Attachment string `json:"attachment" gorm:"comment:'附件'"` // 附件
 
@@ -224,14 +243,30 @@ type PurchaseOrderItem struct {
 	CIQuantity             int     `json:"ci_quantity" gorm:"comment:'CI数量'"`                                      // CI数量
 	CIUnitPrice            float64 `json:"ci_unit_price" gorm:"comment:'CI单价'"`                                    // CI单价
 	CITotalAmount          float64 `json:"ci_total_amount" gorm:"comment:'CI总金额'"`                                 // CI总金额
-	ProductionDate         string  `json:"production_date" gorm:"comment:'生产日期'"`                                  // 生产日期
-	EstimatedArrivalDate   string  `json:"estimated_arrival_date" gorm:"comment:'预计到港日期'"`                         // 预计到港日期
-	Tariff                 float64 `json:"tariff" gorm:"comment:'关税'"`                                             // 关税
-	VAT                    float64 `json:"vat" gorm:"comment:'增值税'"`                                               // 增值税
-	PaymentDate            string  `json:"payment_date" gorm:"comment:'缴费日期'"`                                     // 缴费日期
-	Desc                   string  `json:"desc" gorm:"comment:'备注'"`                                               // 备注
-	CreatedAt              string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"`                        // 创建时间
-	UpdatedAt              string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"`                        // 更新时间
+
+	// CI尾款金额
+	CIResidualAmount float64 `json:"ci_residual_amount" gorm:"comment:'CI尾款金额'"` // CI尾款金额
+	//
+
+	ProductionDate       string `json:"production_date" gorm:"comment:'生产日期'"`          // 生产日期
+	EstimatedArrivalDate string `json:"estimated_arrival_date" gorm:"comment:'预计到港日期'"` // 预计到港日期
+
+	// RMB定金金额
+	RMBDepositAmount float64 `json:"rmb_deposit_amount" gorm:"comment:'RMB定金金额'"` // RMB定金金额
+	// RMB尾款金额
+	RMBResidualAmount float64 `json:"rmb_residual_amount" gorm:"comment:'RMB尾款金额'"` // RMB尾款金额
+
+	// 定金汇率
+	DepositExchangeRate float64 `json:"deposit_exchange_rate" gorm:"comment:'定金汇率'"` // 定金汇率
+	// 尾款汇率
+	ResidualExchangeRate float64 `json:"residual_exchange_rate" gorm:"comment:'尾款汇率'"` // 尾款汇率
+
+	Tariff      float64 `json:"tariff" gorm:"comment:'关税'"`                      // 关税
+	VAT         float64 `json:"vat" gorm:"comment:'增值税'"`                        // 增值税
+	PaymentDate string  `json:"payment_date" gorm:"comment:'缴费日期'"`              // 缴费日期
+	Desc        string  `json:"desc" gorm:"comment:'备注'"`                        // 备注
+	CreatedAt   string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt   string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
 // PurchaseOrderResp 采购单响应

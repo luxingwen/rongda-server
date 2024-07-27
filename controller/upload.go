@@ -96,6 +96,13 @@ func (u *UploadController) DeleteFile(ctx *app.Context) {
 	err := os.Remove(ctx.Config.Upload.Dir + param.Filename)
 	if err != nil {
 		ctx.Logger.Error("删除文件失败:", err)
+
+		if os.IsNotExist(err) {
+			ctx.Logger.Error("文件不存在:", param.Filename)
+			ctx.JSONSuccess("删除文件成功")
+			return
+		}
+
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}

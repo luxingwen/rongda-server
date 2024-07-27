@@ -34,7 +34,13 @@ func (t *PurchaseOrderController) CreatePurchaseOrderFutures(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := t.PurchaseOrderService.CreatePurchaseOrderFutures(ctx, ctx.GetString("userId"), &param); err != nil {
+
+	userId := ctx.GetString("user_id")
+	if userId == "" {
+		ctx.JSONError(http.StatusUnauthorized, "用户未登录")
+		return
+	}
+	if err := t.PurchaseOrderService.CreatePurchaseOrderFutures(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -47,7 +53,12 @@ func (t *PurchaseOrderController) CreatePurchaseOrderSpot(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := t.PurchaseOrderService.CreatePurchaseOrderSpot(ctx, ctx.GetString("userId"), &param); err != nil {
+	userId := ctx.GetString("user_id")
+	if userId == "" {
+		ctx.JSONError(http.StatusUnauthorized, "用户未登录")
+		return
+	}
+	if err := t.PurchaseOrderService.CreatePurchaseOrderSpot(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -354,6 +365,42 @@ func (t *PurchaseOrderController) UpdatePurchaseOrder(ctx *app.Context) {
 		return
 	}
 	if err := t.PurchaseOrderService.UpdatePurchaseOrder(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
+}
+
+func (t *PurchaseOrderController) UpdatePurchaseOrderFutures(ctx *app.Context) {
+	var param model.PurchaseOrderReq
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	userId := ctx.GetString("user_id")
+	if userId == "" {
+		ctx.JSONError(http.StatusUnauthorized, "用户未登录")
+		return
+	}
+	if err := t.PurchaseOrderService.UpdatePurchaseOrderFutures(ctx, userId, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
+}
+
+func (t *PurchaseOrderController) UpdatePurchaseOrderSpot(ctx *app.Context) {
+	var param model.PurchaseOrderReq
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	userId := ctx.GetString("user_id")
+	if userId == "" {
+		ctx.JSONError(http.StatusUnauthorized, "用户未登录")
+		return
+	}
+	if err := t.PurchaseOrderService.UpdatePurchaseOrderSpot(ctx, userId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}

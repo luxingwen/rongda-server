@@ -124,6 +124,8 @@ func InitPurchaseOrderRouter(ctx *app.App) {
 		v1.POST("/purchase_order/create_futures", purchaseOrderController.CreatePurchaseOrderFutures)
 		v1.POST("/purchase_order/create_spot", purchaseOrderController.CreatePurchaseOrderSpot)
 		v1.POST("/purchase_order/update", purchaseOrderController.UpdatePurchaseOrder)
+		v1.POST("/purchase_order/update_futures", purchaseOrderController.UpdatePurchaseOrderFutures)
+		v1.POST("/purchase_order/update_spot", purchaseOrderController.UpdatePurchaseOrderSpot)
 		v1.POST("/purchase_order/delete", purchaseOrderController.DeletePurchaseOrder)
 		v1.POST("/purchase_order/info", purchaseOrderController.GetPurchaseOrder)
 		v1.POST("/purchase_order/list", purchaseOrderController.GetPurchaseOrderList)
