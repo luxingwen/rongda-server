@@ -80,11 +80,13 @@ type StorehouseProductOpLog struct {
 	StorehouseProductUuid string `json:"storehouse_product_uuid" gorm:"type:char(36);index;comment:'仓库物品UUID'"` // 仓库物品UUID
 	// 操作之前库存数量
 	BeforeQuantity int `json:"before_quantity" gorm:"comment:'操作之前库存数量'"` // 操作之前库存数量
+	BeforeBoxNum   int `json:"before_box_num" gorm:"comment:'操作之前箱数'"`    // 操作之前箱数
 	// 库存数量
 	Quantity   int    `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
 	BoxNum     int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
 	OpType     int    `json:"op_type" gorm:"comment:'操作类型'"`                   // 操作类型 1:入库 2:出库 3:盘点 4:调拨
 	OpQuantity int    `json:"op_quantity" gorm:"comment:'操作数量'"`               // 操作数量
+	OpBoxNum   int    `json:"op_box_num" gorm:"comment:'操作箱数'"`                // 操作箱数
 	OpBy       string `json:"op_by" gorm:"comment:'操作人'"`                      // 操作人
 	OpDesc     string `json:"op_desc" gorm:"comment:'操作描述'"`                   // 操作描述
 	CreatedAt  string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
@@ -344,9 +346,11 @@ type StorehouseInventoryCheckReq struct {
 }
 
 type StorehouseInventoryCheckDetailReq struct {
-	ProductUuid string `json:"product_uuid" binding:"required"` // 商品UUID
-	SkuUuid     string `json:"sku_uuid" binding:"required"`     // SKU UUID
-	Quantity    int    `json:"quantity" binding:"required"`     // 盘点数量
+	StorehouseProductUuid string `json:"storehouse_product_uuid" binding:"required"` // 仓库物品UUID
+	ProductUuid           string `json:"product_uuid" binding:"required"`            // 商品UUID
+	SkuUuid               string `json:"sku_uuid" binding:"required"`                // SKU UUID
+	Quantity              int    `json:"quantity" binding:"required"`                // 盘点数量
+	BoxNum                int    `json:"box_num" binding:"-"`                        // 箱数
 	// 差异op
 	DifferenceOp string `json:"difference_op" gorm:"comment:'差异操作'"` // 差异操作 1:盘盈 2:盘亏
 }
@@ -369,26 +373,38 @@ type StorehouseInventoryCheck struct {
 }
 
 type StorehouseInventoryCheckRes struct {
-	StorehouseInventoryCheck
-	Storehouse  Storehouse `json:"storehouse"`
-	CheckByUser User       `json:"check_by_user"`
+	StorehouseInventoryCheckDetailRes
+	StorehouseInventoryCheck StorehouseInventoryCheck `json:"storehouse_inventory_check"`
+	Storehouse               Storehouse               `json:"storehouse"`
+	StorehouseProduct        StorehouseProduct        `json:"storehouse_product"`
+	CheckByUser              User                     `json:"check_by_user"`
 }
 
 // 仓库盘点明细
 type StorehouseInventoryCheckDetail struct {
 	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
 	// 盘点单号
-	CheckOrderNo string `json:"check_order_no" gorm:"comment:'盘点单号'"` // 盘点单号
+	Uuid                  string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"`                        // UUID
+	CheckOrderNo          string `json:"check_order_no" gorm:"comment:'盘点单号'"`                                  // 盘点单号
+	StorehouseUuid        string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"`           // 仓库UUID
+	StorehouseProductUuid string `json:"storehouse_product_uuid" gorm:"type:char(36);index;comment:'仓库物品UUID'"` // 仓库物品UUID
 	// 商品uuid
 	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
 	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID
 	// 盘点数量
+
 	Quantity int `json:"quantity" gorm:"comment:'盘点数量'"` // 盘点数量
+	BoxNum   int `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
 
 	// 差异op
 	DifferenceOp string `json:"difference_op" gorm:"comment:'差异操作'"` // 差异操作 1:盘盈 2:盘亏
+
+	DifferenceBoxNumOp string `json:"difference_box_num_op" gorm:"comment:'差异箱数操作'"` // 差异箱数操作 1:盘盈 2:盘亏
+
 	// 差异数量
 	DifferenceQuantity int `json:"difference_quantity" gorm:"comment:'差异数量'"` // 差异数量
+
+	DifferenceBoxNum int `json:"difference_box_num" gorm:"comment:'差异箱数'"` // 差异箱数
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间

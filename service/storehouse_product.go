@@ -250,6 +250,22 @@ func (s *StorehouseProductService) GetProductByStorehouseProduct(ctx *app.Contex
 	return productList, nil
 }
 
+// 根据uuids获取库存信息
+func (s *StorehouseProductService) GetProductListByUUIDs(ctx *app.Context, uuids []string) (map[string]*model.StorehouseProduct, error) {
+	var productList []*model.StorehouseProduct
+	err := ctx.DB.Where("uuid IN ?", uuids).Find(&productList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get product list by UUIDs", err)
+		return nil, errors.New("failed to get product list by UUIDs")
+	}
+
+	res := make(map[string]*model.StorehouseProduct)
+	for _, v := range productList {
+		res[v.Uuid] = v
+	}
+	return res, nil
+}
+
 // 根据销售订单获取库存信息
 func (s *StorehouseProductService) GetProductBySalesOrder(ctx *app.Context, storehouseUuid string, orderNo string) ([]*model.StorehouseProductRes, error) {
 	var productList []*model.StorehouseProduct

@@ -63,6 +63,7 @@ func InitUserRouter(ctx *app.App) {
 		v1.POST("/user/create", userController.CreateUser)
 		v1.POST("/user/info", userController.GetUserByUUID)
 		v1.POST("/user/list", userController.GetUserList)
+		v1.POST("/user/all", userController.GetAllUsers)
 		v1.POST("/user/update", userController.UpdateUser)
 		v1.POST("/user/delete", userController.DeleteUser)
 		v1.GET("/user/myinfo", userController.GetMyInfo)
@@ -323,13 +324,19 @@ func InitDepartmentRouter(ctx *app.App) {
 	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		departmentController := &controller.DepartmentController{
-			DepartmentService: &service.DepartmentService{},
+			DepartmentService:      &service.DepartmentService{},
+			DepartmentStaffService: &service.DepartmentStaffService{},
 		}
 		v1.POST("/department/create", departmentController.CreateDepartment)
 		v1.POST("/department/update", departmentController.UpdateDepartment)
 		v1.POST("/department/delete", departmentController.DeleteDepartment)
 		v1.POST("/department/info", departmentController.GetDepartmentInfo)
 		v1.POST("/department/list", departmentController.GetDepartmentList)
+		v1.POST("/department/staff/list", departmentController.GetDepartmentStaffList)
+		v1.POST("/department/staff/create", departmentController.CreateDepartmentStaff)
+		v1.POST("/department/staff/delete", departmentController.DeleteDepartmentStaff)
+		v1.POST("/department/staff/update", departmentController.UpdateDepartmentStaff)
+
 	}
 }
 
@@ -467,6 +474,7 @@ func InitStorehouseInventoryCheckRouter(ctx *app.App) {
 		v1.POST("/storehouse_inventory_check/create", storehouseInventoryCheckController.CreateInventoryCheck)
 		v1.POST("/storehouse_inventory_check/update", storehouseInventoryCheckController.UpdateInventoryCheck)
 		v1.POST("/storehouse_inventory_check/delete", storehouseInventoryCheckController.DeleteInventoryCheck)
+		v1.POST("/storehouse_inventory_check/delete_detail", storehouseInventoryCheckController.DeleteInventoryCheckDetail)
 		v1.POST("/storehouse_inventory_check/info", storehouseInventoryCheckController.GetInventoryCheck)
 		v1.POST("/storehouse_inventory_check/list", storehouseInventoryCheckController.GetInventoryCheckList)
 		v1.POST("/storehouse_inventory_check/detail", storehouseInventoryCheckController.GetInventoryCheckDetail)

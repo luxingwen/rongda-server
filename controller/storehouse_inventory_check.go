@@ -140,11 +140,27 @@ func (t *StorehouseInventoryCheckController) GetInventoryCheckList(ctx *app.Cont
 		return
 	}
 
-	checks, err := t.InventoryCheckService.ListInventoryChecks(ctx, param)
+	checks, err := t.InventoryCheckService.ListInventoryChecks2(ctx, param)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	ctx.JSONSuccess(checks)
+}
+
+func (t *StorehouseInventoryCheckController) DeleteInventoryCheckDetail(ctx *app.Context) {
+	var param model.ReqDeleteStorehouseCheckOrderDetail
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userId := ctx.GetString("user_id")
+
+	if err := t.InventoryCheckService.DeleteInventoryCheckDetail(ctx, userId, param.Uuid, param.CheckOrderNo); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
 }

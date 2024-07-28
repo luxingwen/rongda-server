@@ -8,7 +8,8 @@ import (
 )
 
 type DepartmentController struct {
-	DepartmentService *service.DepartmentService
+	DepartmentService      *service.DepartmentService
+	DepartmentStaffService *service.DepartmentStaffService
 }
 
 // @Summary 创建部门
@@ -118,4 +119,68 @@ func (d *DepartmentController) GetDepartmentList(ctx *app.Context) {
 	}
 
 	ctx.JSONSuccess(departments)
+}
+
+func (d *DepartmentController) GetDepartmentStaffList(ctx *app.Context) {
+	param := &model.ReqDepartmentStaffQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	staffs, err := d.DepartmentStaffService.DepartmentStaffList(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(staffs)
+}
+
+func (d *DepartmentController) CreateDepartmentStaff(ctx *app.Context) {
+	param := &model.DepartmentStaff{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := d.DepartmentStaffService.CreateDepartmentStaff(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("Success")
+}
+
+func (d *DepartmentController) UpdateDepartmentStaff(ctx *app.Context) {
+	param := &model.DepartmentStaff{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := d.DepartmentStaffService.UpdateDepartmentStaff(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("Success")
+}
+
+func (d *DepartmentController) DeleteDepartmentStaff(ctx *app.Context) {
+	param := &model.ReqUuidParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := d.DepartmentStaffService.DeleteDepartmentStaff(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("Success")
 }

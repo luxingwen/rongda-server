@@ -11,3 +11,23 @@ type Department struct {
 	CreatedAt        string `gorm:"autoCreateTime" json:"created_at"`     // CreatedAt 记录了部门创建的时间
 	UpdatedAt        string `gorm:"autoUpdateTime" json:"updated_at"`     // UpdatedAt 记录了部门信息最后更新的时间
 }
+
+// 部门员工
+type DepartmentStaff struct {
+	Id uint `gorm:"primary_key" json:"id"`
+
+	Uuid string `gorm:"type:char(36);unique" json:"uuid"` // UUID 是部门员工的唯一标识符
+
+	DepartmentUuid string `gorm:"type:char(36);index" json:"department_uuid"` // DepartmentUuid 是部门员工所属部门的 UUID
+	// StaffUuid 是部门员工的 UUID
+	StaffUuid string `gorm:"type:char(36);index" json:"staff_uuid"`
+	// StaffName 是部门员工的名称
+	StaffName string `gorm:"type:varchar(100)" json:"staff_name"`
+	// StaffNo 是部门员工的工号
+	StaffNo string `gorm:"type:varchar(100)" json:"staff_no"`
+	// StaffPosition 是部门员工的职位
+	StaffPosition string `gorm:"type:varchar(100)" json:"staff_position"`
+
+	CreatedAt string `gorm:"autoCreateTime" json:"created_at"` // CreatedAt 记录了部门员工创建的时间
+	UpdatedAt string `gorm:"autoUpdateTime" json:"updated_at"` // UpdatedAt 记录了部门员工信息最后更新的时间
+}

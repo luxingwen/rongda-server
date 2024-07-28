@@ -194,7 +194,10 @@ type ReqStorehouseOutboundQueryParam struct {
 }
 
 type ReqInventoryCheckQueryParam struct {
-	StorehouseUuid string `json:"storehouse_uuid"`
+	CheckOrderNo   string `json:"check_order_no"`  // 盘点单号
+	StorehouseUuid string `json:"storehouse_uuid"` // 仓库uuid
+	ProductUuid    string `json:"product_uuid"`    // 商品uuid
+	CustomerUuid   string `json:"customer_uuid"`   // 客户uuid
 	Pagination
 }
 
@@ -296,4 +299,14 @@ type ReqUpdateOrderStatus struct {
 
 type ReqPurchaseOrderStatusParam struct {
 	StatusList []string `json:"status_list"`
+}
+
+type ReqDeleteStorehouseCheckOrderDetail struct {
+	Uuid         string `json:"uuid"`
+	CheckOrderNo string `json:"check_order_no"`
+}
+
+type ReqDepartmentStaffQueryParam struct {
+	DepartmentUuid string `json:"department_uuid"`
+	Pagination
 }
