@@ -66,6 +66,23 @@ func (s *DepartmentService) DeleteDepartment(ctx *app.Context, uuid string) erro
 	return nil
 }
 
+// 根据uuid列表 获取部门信息
+func (s *DepartmentService) GetDepartmentByUUIDs(ctx *app.Context, uuids []string) (map[string]*model.Department, error) {
+	var departments []*model.Department
+	err := ctx.DB.Where("uuid in (?)", uuids).Find(&departments).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get department by UUIDs", err)
+		return nil, errors.New("failed to get department by UUIDs")
+	}
+
+	departmentMap := make(map[string]*model.Department)
+	for _, department := range departments {
+		departmentMap[department.UUID] = department
+	}
+
+	return departmentMap, nil
+}
+
 // 获取部门列表
 func (s *DepartmentService) GetDepartmentList(ctx *app.Context, param *model.ReqDepartmentQueryParam) (r *model.PagedResponse, err error) {
 	var (

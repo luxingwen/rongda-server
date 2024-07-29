@@ -31,3 +31,9 @@ type DepartmentStaff struct {
 	CreatedAt string `gorm:"autoCreateTime" json:"created_at"` // CreatedAt 记录了部门员工创建的时间
 	UpdatedAt string `gorm:"autoUpdateTime" json:"updated_at"` // UpdatedAt 记录了部门员工信息最后更新的时间
 }
+
+type DepartmentStaffRes struct {
+	DepartmentStaff
+	DepartmentInfo *Department `json:"department_info"`
+	StaffInfo      *User       `json:"staff_info"`
+}

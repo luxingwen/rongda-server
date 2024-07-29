@@ -310,3 +310,20 @@ type ReqDepartmentStaffQueryParam struct {
 	DepartmentUuid string `json:"department_uuid"`
 	Pagination
 }
+
+type ReqPermissionQueryParam struct {
+	Name string `json:"name"`
+	Pagination
+}
+
+type ReqUserPermissionQueryParam struct {
+	UserUuid       string `json:"user_uuid"`
+	PermissionUuid string `json:"permission_uuid"`
+	Pagination
+}
+
+type ReqPermissionMenuQueryParam struct {
+	PermissionUuid string `json:"permission_uuid"`
+	MenuUuid       string `json:"menu_uuid"`
+	Pagination
+}

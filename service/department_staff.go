@@ -107,3 +107,49 @@ func (s *DepartmentStaffService) DepartmentStaffList(ctx *app.Context, params *m
 		Data:  staffList,
 	}, nil
 }
+
+// 根据用户uuid 获取部门信息
+func (s *DepartmentStaffService) GetDepartmentByStaffUUID(ctx *app.Context, staffUuid string) ([]*model.DepartmentStaffRes, error) {
+
+	var departmentStaffList []model.DepartmentStaff
+
+	err := ctx.DB.Where("staff_uuid = ?", staffUuid).Find(&departmentStaffList).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get department staff by staff uuid", err)
+		return nil, errors.New("failed to get department staff by staff uuid")
+	}
+
+	departmentUuids := make([]string, 0)
+	for _, departmentStaff := range departmentStaffList {
+		departmentUuids = append(departmentUuids, departmentStaff.DepartmentUuid)
+	}
+
+	user, err := NewUserService().GetUserByUUID(ctx, staffUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get user by uuid", err)
+		return nil, errors.New("failed to get user by uuid")
+	}
+	user.Password = ""
+	user.PassWordStrength = 0
+
+	departmentMap, err := NewDepartmentService().GetDepartmentByUUIDs(ctx, departmentUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get department by uuids", err)
+		return nil, errors.New("failed to get department by uuids")
+	}
+
+	res := make([]*model.DepartmentStaffRes, 0)
+
+	for _, departmentStaff := range departmentStaffList {
+		itemDepartmentRes := &model.DepartmentStaffRes{
+			DepartmentStaff: departmentStaff,
+		}
+		if department, ok := departmentMap[departmentStaff.DepartmentUuid]; ok {
+			itemDepartmentRes.DepartmentInfo = department
+		}
+		itemDepartmentRes.StaffInfo = user
+		res = append(res, itemDepartmentRes)
+	}
+
+	return res, nil
+}

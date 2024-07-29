@@ -77,6 +77,7 @@ func SysOpLogMiddleware(logservice *service.SysOpLogService) app.HandlerFunc {
 			Params:    string(bodyBytes),
 			Duration:  0, // 初始时为0，后面更新
 			CreatedAt: startTime.Format("2006-01-02 15:04:05"),
+			RequestId: c.TraceID,
 		}
 
 		c.Next()

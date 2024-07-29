@@ -184,3 +184,19 @@ func (d *DepartmentController) DeleteDepartmentStaff(ctx *app.Context) {
 
 	ctx.JSONSuccess("Success")
 }
+
+func (d *DepartmentController) GetDepartmentByStaffUUID(ctx *app.Context) {
+	param := &model.ReqUuidParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	departmentStaffs, err := d.DepartmentStaffService.GetDepartmentByStaffUUID(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(departmentStaffs)
+}
