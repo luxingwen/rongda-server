@@ -327,3 +327,9 @@ type ReqPermissionMenuQueryParam struct {
 	MenuUuid       string `json:"menu_uuid"`
 	Pagination
 }
+
+type ReqMenuAPIQueryParam struct {
+	MenuUUID string `json:"menu_uuid"`
+	APIUUID  string `json:"api_uuid"`
+	Pagination
+}

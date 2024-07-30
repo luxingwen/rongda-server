@@ -13,7 +13,7 @@ type UserPermissionController struct {
 
 // CreateUserPermission 创建新的用户权限关联
 func (u *UserPermissionController) CreateUserPermission(ctx *app.Context) {
-	var param model.UserPermission
+	var param model.ReqPermissionUserCreate
 	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
@@ -60,7 +60,7 @@ func (u *UserPermissionController) GetUserPermissionInfo(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	userPermission, err := u.UserPermissionService.GetUserPermissionByUUID(ctx, param.Uuid)
+	userPermission, err := u.UserPermissionService.GetUserPermissionByUserUUID(ctx, param.Uuid)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

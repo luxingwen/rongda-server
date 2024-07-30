@@ -52,6 +52,7 @@ func InitRouter(ctx *app.App) {
 	InitPermissionRouter(ctx)
 	InitPermissionMenuRouter(ctx)
 	InitPermissionUserRouter(ctx)
+	InitMenuAPIRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -98,6 +99,7 @@ func InitMenuRouter(ctx *app.App) {
 		v1.POST("/menu/list", menuController.GetMenuList)
 		v1.POST("/menu/update", menuController.UpdateMenu)
 		v1.POST("/menu/delete", menuController.DeleteMenu)
+		v1.POST("/menu/info", menuController.GetMenuInfo)
 	}
 }
 
@@ -696,6 +698,24 @@ func InitPermissionUserRouter(ctx *app.App) {
 		v1.POST("/permission_user/delete", permissionUserController.DeleteUserPermission)
 		v1.POST("/permission_user/info", permissionUserController.GetUserPermissionInfo)
 		v1.POST("/permission_user/list", permissionUserController.GetUserPermissionList)
+	}
+}
+
+func InitMenuAPIRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
+	{
+		menuAPIController := &controller.MenuAPIController{
+			MenuAPIService: &service.MenuAPIService{},
+		}
+		v1.POST("/menu_api/create", menuAPIController.CreateMenuAPI)
+		v1.POST("/menu_api/update", menuAPIController.UpdateMenuAPI)
+		v1.POST("/menu_api/delete", menuAPIController.DeleteMenuAPI)
+		v1.POST("/menu_api/info", menuAPIController.GetMenuAPIInfo)
+		v1.POST("/menu_api/info_menu", menuAPIController.GetMenuAPIListByMenuUUID)
+		v1.POST("/menu_api/info_api", menuAPIController.GetMenuAPIListByAPIUUID)
+		v1.POST("/menu_api/list", menuAPIController.GetMenuAPIList)
 	}
 }
 

@@ -43,3 +43,8 @@ type UserPermission struct {
 	CreatedAt      string `gorm:"autoCreateTime" json:"created_at"`           // CreatedAt 记录了用户权限关联创建的时间
 	UpdatedAt      string `gorm:"autoUpdateTime" json:"updated_at"`           // UpdatedAt 记录了用户权限关联信息最后更新的时间
 }
+
+type ReqPermissionUserCreate struct {
+	UserUuid        string   `json:"user_uuid" binding:"required"`        // UserUuid 是用户的 UUID
+	PermissionUuids []string `json:"permission_uuids" binding:"required"` // PermissionUuids 是权限的 UUID 列表
+}

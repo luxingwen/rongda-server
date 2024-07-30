@@ -19,16 +19,38 @@ func NewUserPermissionService() *UserPermissionService {
 }
 
 // CreateUserPermission 创建新的用户权限关联
-func (s *UserPermissionService) CreateUserPermission(ctx *app.Context, userPermission *model.UserPermission) error {
-	now := time.Now().Format("2006-01-02 15:04:05")
-	userPermission.CreatedAt = now
-	userPermission.UpdatedAt = now
-	userPermission.Uuid = uuid.New().String()
+func (s *UserPermissionService) CreateUserPermission(ctx *app.Context, userPermission *model.ReqPermissionUserCreate) error {
 
-	err := ctx.DB.Create(userPermission).Error
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		now := time.Now().Format("2006-01-02 15:04:05")
+		// 先删除已有的用户权限关联
+		err := tx.Where("user_uuid = ?", userPermission.UserUuid).Delete(&model.UserPermission{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete user permission by user UUID", err)
+			return errors.New("failed to delete user permission by user UUID")
+		}
+
+		rlist := make([]*model.UserPermission, 0)
+		for _, permissionUuid := range userPermission.PermissionUuids {
+			userPermission := &model.UserPermission{
+				Uuid:           uuid.New().String(),
+				UserUuid:       userPermission.UserUuid,
+				PermissionUuid: permissionUuid,
+				CreatedAt:      now,
+				UpdatedAt:      now,
+			}
+			rlist = append(rlist, userPermission)
+		}
+		err = tx.Create(&rlist).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create user permission", err)
+			return errors.New("failed to create user permission")
+		}
+
+		return nil
+	})
 	if err != nil {
-		ctx.Logger.Error("Failed to create user permission", err)
-		return errors.New("failed to create user permission")
+		return err
 	}
 	return nil
 }
@@ -104,4 +126,15 @@ func (s *UserPermissionService) GetUserPermissionList(ctx *app.Context, params *
 		Total: total,
 		Data:  userPermissions,
 	}, nil
+}
+
+// 根据用户uuid 获取用户权限关联
+func (s *UserPermissionService) GetUserPermissionByUserUUID(ctx *app.Context, userUuid string) ([]*model.UserPermission, error) {
+	var userPermissions []*model.UserPermission
+	err := ctx.DB.Where("user_uuid = ?", userUuid).Find(&userPermissions).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get user permission by user UUID", err)
+		return nil, errors.New("failed to get user permission by user UUID")
+	}
+	return userPermissions, nil
 }
