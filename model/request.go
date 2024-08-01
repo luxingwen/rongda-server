@@ -333,3 +333,9 @@ type ReqMenuAPIQueryParam struct {
 	APIUUID  string `json:"api_uuid"`
 	Pagination
 }
+
+type ReqEntrustOrderQueryParam struct {
+	UserUuid string `json:"user_uuid"`
+	TeamUuid string `json:"team_uuid"`
+	Pagination
+}

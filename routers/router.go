@@ -53,6 +53,7 @@ func InitRouter(ctx *app.App) {
 	InitPermissionMenuRouter(ctx)
 	InitPermissionUserRouter(ctx)
 	InitMenuAPIRouter(ctx)
+	InitEntrustOrderRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -716,6 +717,21 @@ func InitMenuAPIRouter(ctx *app.App) {
 		v1.POST("/menu_api/info_menu", menuAPIController.GetMenuAPIListByMenuUUID)
 		v1.POST("/menu_api/info_api", menuAPIController.GetMenuAPIListByAPIUUID)
 		v1.POST("/menu_api/list", menuAPIController.GetMenuAPIList)
+	}
+}
+
+func InitEntrustOrderRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		entrustOrderController := &controller.EntrustOrderController{
+			EntrustOrderService: &service.EntrustOrderService{},
+		}
+		v1.POST("/entrust_order/create", entrustOrderController.CreateEntrustOrder)
+		v1.POST("/entrust_order/update", entrustOrderController.UpdateEntrustOrder)
+		v1.POST("/entrust_order/delete", entrustOrderController.DeleteEntrustOrder)
+		v1.POST("/entrust_order/info", entrustOrderController.GetEntrustOrder)
+		v1.POST("/entrust_order/list", entrustOrderController.GetEntrustOrderList)
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type VerificationCodeService struct {
@@ -19,11 +20,12 @@ func (v *VerificationCodeService) CreateVerificationCode(ctx *app.Context, email
 	// 先获取最新的一条验证码是否过期
 	var vcode model.VerificationCode
 	err := ctx.DB.Where("email = ? OR phone = ?", email, phone).Order("created_at desc").First(&vcode).Error
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
+		ctx.Logger.Error("Failed to get verification code", err)
 		return "", err
 	}
 
-	if vcode.Status == 0 && time.Now().Sub(vcode.CreatedAt).Minutes() < 1 {
+	if err == nil && vcode.Status == 0 && time.Now().Sub(vcode.CreatedAt).Minutes() < 1 {
 		err := errors.New("验证码已发送，请稍后再试")
 		return "", err
 	}
