@@ -7,6 +7,7 @@ type WxUser struct {
 	Unionid    string `gorm:"type:varchar(100);unique" json:"unionid"`    // unionid
 	Password   string `gorm:"type:varchar(100)" json:"password"`          // 密码
 	Phone      string `gorm:"type:varchar(20)" json:"phone"`              // 手机号
+	Email      string `gorm:"type:varchar(100)" json:"email"`             // 邮箱
 	Name       string `gorm:"type:varchar(50)" json:"name"`               // 姓名
 	Avatar     string `gorm:"type:varchar(200)" json:"avatarUrl"`         // 头像
 	NickName   string `gorm:"type:varchar(50)" json:"nickName"`           // 昵称
