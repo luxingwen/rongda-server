@@ -48,37 +48,34 @@ func (v *VerificationCodeService) CreateVerificationCode(ctx *app.Context, email
 }
 
 // CheckVerificationCode 检查验证码
-func (v *VerificationCodeService) CheckVerificationCode(ctx *app.Context, code string, email string, phone string) (bool, error) {
+func (v *VerificationCodeService) CheckVerificationCode(ctx *app.Context, code string, email string, phone string) (bool, model.VerificationCode, error) {
 
 	var vcode model.VerificationCode
-	err := ctx.DB.Where("code = ? AND (email = ? OR phone = ?)", code, email, phone).First(&vcode).Error
+	err := ctx.DB.Where("code = ? AND (email = ? OR phone = ?)", code, email, phone).Order("id DESC").First(&vcode).Error
 	if err != nil {
-		return false, err
+		return false, vcode, err
 	}
 
 	if vcode.Status == 1 {
-		return false, nil
+		return false, vcode, nil
 	}
 
 	if time.Now().Sub(vcode.CreatedAt).Minutes() > 5 {
-		return false, nil
+		return false, vcode, nil
 	}
 
-	return true, nil
+	return true, vcode, nil
 }
 
 // UpdateVerificationCode 更新验证码
-func (v *VerificationCodeService) UpdateVerificationCode(ctx *app.Context, code string, email string, phone string) error {
+func (v *VerificationCodeService) UpdateVerificationCode(ctx *app.Context, uuidstr string) error {
 
-	var vcode model.VerificationCode
-	err := ctx.DB.Where("code = ? AND email = ? AND phone = ?", code, email, phone).First(&vcode).Error
+	err := ctx.DB.Model(&model.VerificationCode{}).Where("uuid = ?", uuidstr).Update("status", 1).Error
+
 	if err != nil {
+		ctx.Logger.Error("Failed to update verification code", err)
 		return err
 	}
 
-	vcode.Status = 1
-	vcode.UpdatedAt = time.Now()
-
-	err = ctx.DB.Save(&vcode).Error
 	return err
 }

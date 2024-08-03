@@ -339,3 +339,24 @@ type ReqEntrustOrderQueryParam struct {
 	TeamUuid string `json:"team_uuid"`
 	Pagination
 }
+
+type ReqWxUserQueryParam struct {
+	NickName string `json:"nick_name"`
+	Pagination
+}
+
+type ReqWxUserChangePasswordParam struct {
+	Phone    string `json:"phone"`
+	Code     string `json:"code"`
+	Password string `json:"password"`
+}
+
+type ReqWxUserLoginByPasswordParam struct {
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+}
+
+type ReqInviteQueryParam struct {
+	InviteCode string `json:"invite_code"`
+	Pagination
+}

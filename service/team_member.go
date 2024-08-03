@@ -7,6 +7,7 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,20 @@ func (s *TeamMemberService) CreateTeamMember(ctx *app.Context, teamMember *model
 	teamMember.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	teamMember.UpdatedAt = teamMember.CreatedAt
 
-	err := ctx.DB.Create(teamMember).Error
+	// 检查是否已经存在
+	var teamMember1 model.TeamMember
+	err := ctx.DB.Where("team_uuid = ? AND user_uuid = ?", teamMember.TeamUUID, teamMember.UserUUID).First(&teamMember1).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		ctx.Logger.Error("Failed to get team member", err)
+		return errors.New("failed to get team member")
+	}
+
+	if err == nil && teamMember1.Id > 0 {
+		return errors.New("team member already exists")
+	}
+	teamMember.UUID = uuid.New().String()
+
+	err = ctx.DB.Create(teamMember).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to create team member", err)
 		return errors.New("failed to create team member")
@@ -93,4 +107,47 @@ func (s *TeamMemberService) GetTeamMemberUserList(ctx *app.Context, teamUUID str
 	}
 
 	return users, nil
+}
+
+// 获取团队成员列表
+func (s *TeamMemberService) GetTeamMemberList(ctx *app.Context, params *model.ReqTeamMemberQueryParam) (*model.PagedResponse, error) {
+
+	var (
+		teamMembers []*model.TeamMember
+		total       int64
+	)
+
+	db := ctx.DB.Model(&model.TeamMember{})
+
+	if params.TeamUUID != "" {
+		db = db.Where("team_uuid = ?", params.TeamUUID)
+	}
+
+	err := db.Count(&total).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to count team member", err)
+		return nil, errors.New("failed to count team member")
+	}
+
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&teamMembers).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get team member list", err)
+		return nil, errors.New("failed to get team member list")
+	}
+
+	userUuids := make([]string, 0)
+	for _, teamMember := range teamMembers {
+		userUuids = append(userUuids, teamMember.UserUUID)
+	}
+
+	reslist, err := NewWxUserService().GetWxUserListByUUIDs(ctx, userUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get wxUser list by uuids", err)
+		return nil, errors.New("failed to get wxUser list by uuids")
+	}
+
+	return &model.PagedResponse{
+		Total: total,
+		Data:  reslist,
+	}, nil
 }

@@ -24,7 +24,26 @@ func (s *AgentService) CreateAgent(ctx *app.Context, agent *model.Agent) error {
 	agent.UpdatedAt = now
 	agent.Uuid = uuid.New().String()
 
-	err := ctx.DB.Create(agent).Error
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		err := tx.Create(agent).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create agent", err)
+			return errors.New("failed to create agent")
+		}
+		teamRef := model.TeamRef{
+			TeamUuid:  agent.Uuid,
+			Category:  model.TeamCategoryAgent,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+		err = tx.Create(&teamRef).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create teamRef", err)
+			return errors.New("failed to create teamRef")
+		}
+		return nil
+	})
+
 	if err != nil {
 		ctx.Logger.Error("Failed to create agent", err)
 		return errors.New("failed to create agent")

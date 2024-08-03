@@ -24,7 +24,26 @@ func (s *SupplierService) CreateSupplier(ctx *app.Context, supplier *model.Suppl
 	supplier.UpdatedAt = now
 	supplier.Uuid = uuid.New().String()
 
-	err := ctx.DB.Create(supplier).Error
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		err := tx.Create(supplier).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create supplier", err)
+			return errors.New("failed to create supplier")
+		}
+		teamRef := model.TeamRef{
+			TeamUuid:  supplier.Uuid,
+			Category:  model.TeamCategorySupplier,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+		err = tx.Create(&teamRef).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create teamRef", err)
+			return errors.New("failed to create teamRef")
+		}
+		return nil
+	})
+
 	if err != nil {
 		ctx.Logger.Error("Failed to create supplier", err)
 		return errors.New("failed to create supplier")

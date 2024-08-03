@@ -24,7 +24,26 @@ func (s *CustomerService) CreateCustomer(ctx *app.Context, customer *model.Custo
 	customer.UpdatedAt = now
 	customer.Uuid = uuid.New().String()
 
-	err := ctx.DB.Create(customer).Error
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		err := tx.Create(customer).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create customer", err)
+			return errors.New("failed to create customer")
+		}
+		teamRef := model.TeamRef{
+			TeamUuid:  customer.Uuid,
+			Category:  model.TeamCategoryCustomer,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+		err = tx.Create(&teamRef).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create teamRef", err)
+			return errors.New("failed to create teamRef")
+		}
+		return nil
+	})
+
 	if err != nil {
 		ctx.Logger.Error("Failed to create customer", err)
 		return errors.New("failed to create customer")

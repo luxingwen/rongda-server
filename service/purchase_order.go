@@ -36,6 +36,7 @@ func (s *PurchaseOrderService) CreatePurchaseOrderFutures(ctx *app.Context, user
 	order := &model.PurchaseOrder{
 		Title:                 req.Title,
 		OrderNo:               utils.GenerateOrderID(), // Generating a unique order number
+		EntrustOrderId:        req.EntrustOrderId,
 		SupplierUuid:          req.SupplierUuid,
 		CustomerUuid:          req.CustomerUuid,
 		Date:                  req.Date,

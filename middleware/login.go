@@ -12,9 +12,18 @@ func LoginCheck() app.HandlerFunc {
 
 		// 获取token
 		token := c.GetHeader("X-Token")
+		if token == "" {
+			token = c.GetHeader("Wx-Token")
+		}
+
+		if token == "" {
+			c.JSONError(http.StatusUnauthorized, "未登录")
+			c.Abort()
+			return
+		}
 
 		// 根据token获取用户信息
-		userId, err := utils.ParseTokenGetUserID(token)
+		userId, wxUserId, err := utils.ParseTokenGetUserID(token)
 		if err != nil {
 			c.JSONError(http.StatusUnauthorized, err.Error())
 			c.Abort()
@@ -23,5 +32,6 @@ func LoginCheck() app.HandlerFunc {
 
 		// 将用户信息放入上下文
 		c.Set("user_id", userId)
+		c.Set("wx_user_id", wxUserId)
 	}
 }

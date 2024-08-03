@@ -25,7 +25,12 @@ func (c *EntrustOrderController) CreateEntrustOrder(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := c.EntrustOrderService.CreateEntrustOrder(ctx, &param); err != nil {
+	wxUserId := ctx.GetString("wx_user_id")
+	if wxUserId == "" {
+		ctx.JSONError(http.StatusBadRequest, "请先登录")
+		return
+	}
+	if err := c.EntrustOrderService.CreateEntrustOrder(ctx, wxUserId, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}

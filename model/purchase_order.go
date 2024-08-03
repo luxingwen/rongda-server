@@ -2,6 +2,8 @@ package model
 
 type PurchaseOrderReq struct {
 	OrderNo string `json:"order_no" gorm:"comment:'采购单号'"` // 采购单号
+
+	EntrustOrderId string `json:"entrust_order_id" gorm:"comment:'委托订单ID'"` // 委托订单ID
 	// 标题
 	Title string `json:"title" gorm:"comment:'标题'"`  // 标题
 	Date  string `json:"date" gorm:"comment:'采购日期'"` // 采购日期
@@ -160,9 +162,10 @@ const (
 
 // PurchaseOrder 采购单
 type PurchaseOrder struct {
-	ID      uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
-	Title   string `json:"title" gorm:"comment:'标题'"`           // 标题
-	OrderNo string `json:"order_no" gorm:"comment:'采购单号'"`      // 采购单号
+	ID             uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`      // 主键ID
+	Title          string `json:"title" gorm:"comment:'标题'"`                // 标题
+	OrderNo        string `json:"order_no" gorm:"comment:'采购单号'"`           // 采购单号
+	EntrustOrderId string `json:"entrust_order_id" gorm:"comment:'委托订单ID'"` // 委托订单ID
 	// 订单类型
 	OrderType    string `json:"order_type" gorm:"comment:'订单类型'"`                           // 订单类型 1:期货订单 2:现货订单
 	SupplierUuid string `json:"supplier_uuid" gorm:"type:char(36);index;comment:'供应商UUID'"` // 供应商UUID

@@ -102,7 +102,7 @@ func (v *VerificationCodeController) CheckVerificationCode(ctx *app.Context) {
 		return
 	}
 
-	ok, err := v.VerificationCodeService.CheckVerificationCode(ctx, param.Code, param.Email, param.Phone)
+	ok, rcode, err := v.VerificationCodeService.CheckVerificationCode(ctx, param.Code, param.Email, param.Phone)
 	if err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
@@ -110,6 +110,13 @@ func (v *VerificationCodeController) CheckVerificationCode(ctx *app.Context) {
 
 	if ok == false {
 		ctx.JSONError(http.StatusBadRequest, "验证码错误")
+		return
+	}
+
+	// 更新验证码状态
+	err = v.VerificationCodeService.UpdateVerificationCode(ctx, rcode.UUID)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
 

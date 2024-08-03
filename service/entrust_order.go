@@ -18,11 +18,12 @@ func NewEntrustOrderService() *EntrustOrderService {
 }
 
 // CreateEntrustOrder 创建新的委托订单
-func (s *EntrustOrderService) CreateEntrustOrder(ctx *app.Context, order *model.EntrustOrder) error {
+func (s *EntrustOrderService) CreateEntrustOrder(ctx *app.Context, userUuid string, order *model.EntrustOrder) error {
 	now := time.Now().Format("2006-01-02 15:04:05")
 	order.CreatedAt = now
 	order.UpdatedAt = now
 	order.OrderId = utils.GenerateOrderID()
+	order.UserUuid = userUuid
 
 	err := ctx.DB.Create(order).Error
 	if err != nil {
@@ -76,6 +77,10 @@ func (s *EntrustOrderService) GetEntrustOrderList(ctx *app.Context, params *mode
 	)
 
 	db := ctx.DB.Model(&model.EntrustOrder{})
+
+	if params.UserUuid != "" {
+		db = db.Where("user_uuid = ?", params.UserUuid)
+	}
 
 	db = db.Where("is_deleted = ?", 0)
 

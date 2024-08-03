@@ -32,7 +32,7 @@ func (rc *RegisterController) Register(c *app.Context) {
 	}
 
 	// 验证验证码
-	ok, err := rc.VerificationCodeService.CheckVerificationCode(c, params.Code, params.Email, params.Phone)
+	ok, rcode, err := rc.VerificationCodeService.CheckVerificationCode(c, params.Code, params.Email, params.Phone)
 	if err != nil {
 		c.JSONError(http.StatusInternalServerError, err.Error())
 		return
@@ -43,7 +43,7 @@ func (rc *RegisterController) Register(c *app.Context) {
 		return
 	}
 	// 更新验证码状态
-	err = rc.VerificationCodeService.UpdateVerificationCode(c, params.Code, params.Email, params.Phone)
+	err = rc.VerificationCodeService.UpdateVerificationCode(c, rcode.UUID)
 	if err != nil {
 		c.JSONError(http.StatusInternalServerError, err.Error())
 		return

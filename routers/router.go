@@ -54,6 +54,9 @@ func InitRouter(ctx *app.App) {
 	InitPermissionUserRouter(ctx)
 	InitMenuAPIRouter(ctx)
 	InitEntrustOrderRouter(ctx)
+	InitWxUserRouter(ctx)
+	InitTeamInviteRouter(ctx)
+	InitTeamMemberRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -204,6 +207,13 @@ func InitLoginRouter(ctx *app.App) {
 			SysLoginLogService: &service.SysLoginLogService{},
 		}
 		v1.POST("/login", loginController.Login)
+
+		wxLoginController := &controller.WxLoginController{
+			VerificationCodeService: &service.VerificationCodeService{},
+			WxUserService:           &service.WxUserService{},
+		}
+		v1.POST("/wx_login_phone", wxLoginController.VerificationCodeLoginPhone)
+		v1.POST("/wx_login", wxLoginController.LoginByPassword)
 	}
 }
 
@@ -238,6 +248,7 @@ func InitTeamRouter(ctx *app.App) {
 		v1.POST("/team/delete", teamController.DeleteTeam)
 		v1.POST("/team/info", teamController.GetTeamInfo)
 		v1.POST("/team/list", teamController.GetTeamList)
+		v1.POST("/team/wx_user_teams", teamController.GetWxUserTeamList)
 	}
 }
 
@@ -732,6 +743,48 @@ func InitEntrustOrderRouter(ctx *app.App) {
 		v1.POST("/entrust_order/delete", entrustOrderController.DeleteEntrustOrder)
 		v1.POST("/entrust_order/info", entrustOrderController.GetEntrustOrder)
 		v1.POST("/entrust_order/list", entrustOrderController.GetEntrustOrderList)
+	}
+}
+
+func InitWxUserRouter(ctx *app.App) {
+
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		wxUserController := &controller.WxUserController{
+			WxUserService: &service.WxUserService{},
+		}
+		v1.POST("/wx_user/info", wxUserController.GetMyWxUserInfo)
+		v1.POST("/wx_user/all", wxUserController.GetWxUserList)
+		v1.POST("/wx_user/update_passwd", wxUserController.ChangePassword)
+
+	}
+}
+
+func InitTeamInviteRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		teamInviteController := &controller.TeamInviteController{
+			TeamInviteService: &service.TeamInviteService{},
+		}
+		v1.POST("/team_invite/create", teamInviteController.CreateInvite)
+		v1.POST("/team_invite/delete", teamInviteController.DeleteInvite)
+		v1.POST("/team_invite/info", teamInviteController.GetInviteInfo)
+		v1.POST("/team_invite/list", teamInviteController.GetInviteList)
+	}
+}
+
+func InitTeamMemberRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		teamMemberController := &controller.TeamMemberController{
+			TeamMemberService: &service.TeamMemberService{},
+		}
+		v1.POST("/team_member/create", teamMemberController.CreateTeamMember)
+		v1.POST("/team_member/delete", teamMemberController.DeleteTeamMember)
+		v1.POST("/team_member/list", teamMemberController.GetTeamMemberList)
 	}
 }
 

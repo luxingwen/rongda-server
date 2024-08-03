@@ -56,6 +56,9 @@ func MigrateDbTable(db *gorm.DB) {
 		&UserPermission{},
 		&MenuAPI{},
 		&EntrustOrder{},
+		&WxUser{},
+		&TeamInvite{},
+		&TeamRef{},
 	)
 	if err != nil {
 		panic(err)

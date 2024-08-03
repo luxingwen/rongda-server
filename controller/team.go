@@ -119,3 +119,19 @@ func (t *TeamController) GetTeamList(ctx *app.Context) {
 
 	ctx.JSONSuccess(teams)
 }
+
+func (t *TeamController) GetWxUserTeamList(ctx *app.Context) {
+
+	wxUserId := ctx.GetString("wx_user_id")
+	if wxUserId == "" {
+		ctx.JSONError(http.StatusBadRequest, "请先登录")
+		return
+	}
+	teams, err := t.TeamService.GetTeamListByUserID(ctx, wxUserId)
+	if err != nil {
+		ctx.Logger.Error(err)
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(teams)
+}
