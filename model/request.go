@@ -360,3 +360,9 @@ type ReqInviteQueryParam struct {
 	InviteCode string `json:"invite_code"`
 	Pagination
 }
+
+type ReqConfigQueryParam struct {
+	Name     string `json:"name"`
+	Category string `json:"category"`
+	Pagination
+}

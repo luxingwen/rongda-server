@@ -57,6 +57,7 @@ func InitRouter(ctx *app.App) {
 	InitWxUserRouter(ctx)
 	InitTeamInviteRouter(ctx)
 	InitTeamMemberRouter(ctx)
+	InitConfigurationRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -785,6 +786,20 @@ func InitTeamMemberRouter(ctx *app.App) {
 		v1.POST("/team_member/create", teamMemberController.CreateTeamMember)
 		v1.POST("/team_member/delete", teamMemberController.DeleteTeamMember)
 		v1.POST("/team_member/list", teamMemberController.GetTeamMemberList)
+	}
+}
+
+func InitConfigurationRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		configurationController := &controller.ConfigurationController{
+			ConfigurationService: &service.ConfigurationService{},
+		}
+		v1.POST("/configuration/create", configurationController.CreateConfiguration)
+		v1.POST("/configuration/update", configurationController.UpdateConfiguration)
+		v1.POST("/configuration/info", configurationController.GetConfigurationInfo)
+		v1.POST("/configuration/list", configurationController.GetConfigurationList)
 	}
 }
 
