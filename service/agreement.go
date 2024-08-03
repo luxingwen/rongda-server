@@ -35,7 +35,7 @@ func (s *AgreementService) GetAgreement(ctx *app.Context, uuid string) (*model.A
 	err := ctx.DB.Where("uuid = ?", uuid).First(agreement).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, errors.New("agreement not found")
+			return agreement, nil
 		}
 		ctx.Logger.Error("Failed to get agreement by UUID", err)
 		return nil, errors.New("failed to get agreement by UUID")

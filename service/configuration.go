@@ -100,7 +100,7 @@ func (s *ConfigurationService) GetConfigurationByCategoryAndName(ctx *app.Contex
 	err := ctx.DB.Where("category = ? AND name = ?", category, name).First(config).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, errors.New("configuration not found")
+			return config, nil
 		}
 		ctx.Logger.Error("Failed to get configuration by category and name", err)
 		return nil, errors.New("failed to get configuration by category and name")

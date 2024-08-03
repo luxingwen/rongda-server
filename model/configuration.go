@@ -10,6 +10,9 @@ const (
 	ConfigurationNameUserAgreement = "user_agreement"
 	// 隐私政策
 	ConfigurationNamePrivacyPolicy = "privacy_policy"
+
+	// 关于我们
+	ConfigurationNameAboutUs = "about_us"
 )
 
 type Configuration struct {
