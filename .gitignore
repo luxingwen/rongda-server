@@ -1,3 +1,5 @@
+config.yaml
+key/
 public
 release*
 .vscode

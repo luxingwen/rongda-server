@@ -136,3 +136,37 @@ func (c *CustomerController) GetAllCustomerList(ctx *app.Context) {
 
 	ctx.JSONSuccess(customers)
 }
+
+// 获取订单列表
+func (c *CustomerController) GetOrderList(ctx *app.Context) {
+	param := &model.ReqSalesOrderQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	orders, err := c.CustomerService.GetCustomerOrders(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(orders)
+}
+
+// UpdateOrderStatus
+func (c *CustomerController) UpdateOrderStatus(ctx *app.Context) {
+	param := &model.ReqSalesOrderUpdateStatusParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := c.CustomerService.UpdateOrderStatus(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("更新订单状态成功")
+}

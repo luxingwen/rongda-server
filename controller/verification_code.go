@@ -6,6 +6,7 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 	"sgin/pkg/mail"
+	"sgin/pkg/sms"
 	"sgin/service"
 )
 
@@ -71,6 +72,13 @@ func (v *VerificationCodeController) CreateVerificationCode(ctx *app.Context) {
 
 	if param.Phone != "" {
 		// 发送短信
+		codetmpl := sms.GenerateSmsCodeTemplate(code)
+		err := sms.SendSMS(ctx, param.Phone, codetmpl)
+		if err != nil {
+			ctx.Logger.Error("send sms error", err)
+			ctx.JSONError(http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	ctx.JSONSuccess("验证码发送成功")

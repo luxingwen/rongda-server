@@ -205,7 +205,8 @@ type ReqPurchaseOrderQueryParam struct {
 	OrderNo      string `json:"order_no"`
 	Title        string `json:"title"`
 	SupplierUuid string `json:"supplier_uuid"`
-	CustomerUuid string `json:"customer_uuid"`
+	CustomerUuid string `json:"customer_uuid"` // 客户uuid  对应小程序的team_id
+	Status       string `json:"status"`        // 状态
 	Pagination
 }
 
@@ -228,7 +229,15 @@ type ReqPurchaseBillQueryParam struct {
 type ReqSalesOrderQueryParam struct {
 	OrderNo      string `json:"order_no"`
 	CustomerUuid string `json:"customer_uuid"`
+	Status       string `json:"status"`
+	StartDate    string `json:"start_date"` // 开始日期
+	EndDate      string `json:"end_date"`   // 结束日期
 	Pagination
+}
+
+type ReqSalesOrderUpdateStatusParam struct {
+	OrderNo string `json:"order_no"`
+	Status  string `json:"status"`
 }
 
 type ReqSalesOutOfStockQueryParam struct {
@@ -335,8 +344,12 @@ type ReqMenuAPIQueryParam struct {
 }
 
 type ReqEntrustOrderQueryParam struct {
-	UserUuid string `json:"user_uuid"`
-	TeamUuid string `json:"team_uuid"`
+	UserUuid  string `json:"user_uuid"`
+	TeamUuid  string `json:"team_uuid"`
+	Status    string `json:"status"`
+	OrderId   string `json:"order_id"`   // 订单ID
+	StartDate string `json:"start_date"` // 开始日期
+	EndDate   string `json:"end_date"`   // 结束日期
 	Pagination
 }
 
@@ -365,4 +378,20 @@ type ReqConfigQueryParam struct {
 	Name     string `json:"name"`
 	Category string `json:"category"`
 	Pagination
+}
+
+type ReqWxUserRealNameAuthParam struct {
+	CertificateType   string `json:"certificate_type"`   // 证件类型 身份证 护照 港澳通行证 台湾通行证 其他
+	CertificateNumber string `json:"certificate_number"` // 证件号码
+	CertificateImage  string `json:"certificate_image"`  // 证件图片
+	Name              string `json:"name"`               // 姓名
+}
+
+type ReqWxUserUpdateIsRealNameAuthParam struct {
+	Uuid       string `json:"uuid"`
+	IsRealName int    `json:"is_real_name"`
+}
+
+type ReqWxUserUpdateEmailParam struct {
+	Email string `json:"email"` // 邮箱
 }

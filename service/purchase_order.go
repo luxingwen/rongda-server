@@ -64,6 +64,19 @@ func (s *PurchaseOrderService) CreatePurchaseOrderFutures(ctx *app.Context, user
 			return errors.New("failed to create purchase order")
 		}
 
+		if order.EntrustOrderId != "" {
+			// 更新委托订单采购单号
+			err := tx.Model(&model.EntrustOrder{}).Where("order_id = ?", order.EntrustOrderId).Updates(map[string]interface{}{
+				"purchase_order_no": order.OrderNo,
+				"status":            "处理中",
+				"updated_at":        nowStr,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update entrust order", err)
+				return errors.New("failed to update entrust order")
+			}
+		}
+
 		for _, detailReq := range req.Details {
 			detail := &model.PurchaseOrderItem{
 				PurchaseOrderNo:        order.OrderNo,
@@ -747,6 +760,10 @@ func (s *PurchaseOrderService) ListPurchaseOrders(ctx *app.Context, param *model
 		db = db.Where("order_no = ?", param.OrderNo)
 	}
 
+	if param.Status != "" {
+		db = db.Where("status = ?", param.Status)
+	}
+
 	if err = db.Order("id DESC").Offset(param.GetOffset()).Limit(param.PageSize).Find(&orderList).Error; err != nil {
 		return
 	}
@@ -824,6 +841,26 @@ func (s *PurchaseOrderService) GetPurchaseOrderListByStatus(ctx *app.Context, st
 	if err != nil {
 		ctx.Logger.Error("Failed to get purchase order list by status", err)
 		return nil, errors.New("failed to get purchase order list by status")
+	}
+	return
+}
+
+// 根据采购订单号列表获取采购订单列表
+func (s *PurchaseOrderService) GetPurchaseOrderListByOrderNos(ctx *app.Context, orderNos []string) (r map[string]*model.PurchaseOrder, err error) {
+	r = make(map[string]*model.PurchaseOrder)
+
+	if len(orderNos) == 0 {
+		return
+	}
+
+	var orders []*model.PurchaseOrder
+	err = ctx.DB.Where("order_no IN ?", orderNos).Find(&orders).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order list by order nos", err)
+		return nil, errors.New("failed to get purchase order list by order nos")
+	}
+	for _, order := range orders {
+		r[order.OrderNo] = order
 	}
 	return
 }

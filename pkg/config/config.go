@@ -22,6 +22,7 @@ type Config struct {
 	ForwardPrefix   []string          // 转发前缀
 	ForwardAddress  string            // 转发地址
 	ApiPrefix       string            // api前缀
+	AliyunSMSConfig AliyunSMSConfig   // 阿里云短信配置
 }
 
 type UploadConfig struct {
@@ -73,6 +74,15 @@ type RedisConfig struct {
 	Address  string // 地址, 多个使用逗号(,)分隔
 	Password string
 	Database int
+}
+
+type AliyunSMSConfig struct {
+	AccessKeyId     string // 阿里云短信AccessKeyId
+	AccessKeySecret string // 阿里云短信AccessKeySecret
+	SignName        string // 短信签名
+	TemplateCode    string // 短信模板
+	// 是否开启短信验证码
+	Enable bool
 }
 
 var (

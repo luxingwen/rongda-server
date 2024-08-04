@@ -82,6 +82,22 @@ func (s *EntrustOrderService) GetEntrustOrderList(ctx *app.Context, params *mode
 		db = db.Where("user_uuid = ?", params.UserUuid)
 	}
 
+	if params.TeamUuid != "" {
+		db = db.Where("team_uuid = ?", params.TeamUuid)
+	}
+
+	if params.Status != "" {
+		db = db.Where("status = ?", params.Status)
+	}
+
+	if params.StartDate != "" {
+		db = db.Where("created_at >= ?", params.StartDate)
+	}
+
+	if params.EndDate != "" {
+		db = db.Where("created_at <= ?", params.EndDate)
+	}
+
 	db = db.Where("is_deleted = ?", 0)
 
 	err := db.Count(&total).Error

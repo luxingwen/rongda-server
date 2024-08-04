@@ -146,3 +146,87 @@ func (s *CustomerService) GetCustomerListByUUIDs(ctx *app.Context, uuids []strin
 
 	return customerMap, nil
 }
+
+// 获取客户订单
+func (s *CustomerService) GetCustomerOrders(ctx *app.Context, params *model.ReqSalesOrderQueryParam) (*model.PagedResponse, error) {
+
+	if params.CustomerUuid == "" {
+		return nil, errors.New("customer uuid is required")
+	}
+
+	var (
+		orders []*model.SalesOrder
+		total  int64
+	)
+
+	db := ctx.DB.Model(&model.SalesOrder{})
+	db = db.Where("customer_uuid = ?", params.CustomerUuid)
+
+	if params.Status != "" {
+		db = db.Where("status = ?", params.Status)
+	}
+
+	if params.StartDate != "" {
+		db = db.Where("created_at >= ?", params.StartDate)
+	}
+
+	if params.EndDate != "" {
+		db = db.Where("created_at <= ?", params.EndDate)
+	}
+
+	err := db.Count(&total).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer order count", err)
+		return nil, errors.New("failed to get customer order count")
+	}
+
+	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&orders).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer order list", err)
+		return nil, errors.New("failed to get customer order list")
+	}
+
+	purchaseOrderUuids := make([]string, 0)
+	for _, order := range orders {
+		purchaseOrderUuids = append(purchaseOrderUuids, order.PurchaseOrderNo)
+	}
+
+	purchaseOrderMap, err := NewPurchaseOrderService().GetPurchaseOrderListByOrderNos(ctx, purchaseOrderUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order list by order nos", err)
+		return nil, errors.New("failed to get purchase order list by order nos")
+	}
+
+	res := make([]*model.CustomerSalesOrderRes, 0)
+	for _, order := range orders {
+		customerOrderResItem := model.CustomerSalesOrderRes{
+			SalesOrder: *order,
+		}
+
+		if purchaseOrder, ok := purchaseOrderMap[order.PurchaseOrderNo]; ok {
+			customerOrderResItem.PurchaseOrderInfo = purchaseOrder
+		}
+
+		res = append(res, &customerOrderResItem)
+	}
+
+	return &model.PagedResponse{
+		Total: total,
+		Data:  res,
+	}, nil
+
+}
+
+// UpdateOrderStatus
+func (s *CustomerService) UpdateOrderStatus(ctx *app.Context, params *model.ReqSalesOrderUpdateStatusParam) error {
+	nowstr := time.Now().Format("2006-01-02 15:04:05")
+	err := ctx.DB.Model(&model.SalesOrder{}).Where("order_no = ?", params.OrderNo).Updates(map[string]interface{}{
+		"status":     params.Status,
+		"updated_at": nowstr,
+	}).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update order status", err)
+		return errors.New("failed to update order status")
+	}
+	return nil
+}

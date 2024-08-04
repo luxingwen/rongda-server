@@ -10,6 +10,7 @@ type SalesOrderReq struct {
 	FinalPaymentAmount float64 `json:"final_payment_amount" form:"final_payment_amount" binding:"required"` // 尾款金额
 
 	PurchaseOrderNo string `json:"purchase_order_no" form:"purchase_order_no" binding:"-"` // 采购订单号
+	EntrustOrderId  string `json:"entrust_order_id" gorm:"comment:'委托订单ID'"`               // 委托订单ID
 
 	OrderAmount        int    `json:"order_amount" form:"order_amount" binding:"required"`               // 订单金额
 	SettlementCurrency string `json:"settlement_currency" form:"settlement_currency" binding:"required"` // 结算币种
@@ -63,6 +64,7 @@ type SalesOrder struct {
 	ID              uint    `json:"id" gorm:"primaryKey"`
 	OrderNo         string  `json:"order_no" gorm:"uniqueIndex;type:varchar(50);comment:订单号"`
 	PurchaseOrderNo string  `json:"purchase_order_no" gorm:"type:varchar(50);comment:采购订单号"` // 采购订单号
+	EntrustOrderId  string  `json:"entrust_order_id" gorm:"comment:'委托订单ID'"`                // 委托订单ID
 	Title           string  `json:"title" gorm:"type:varchar(200);comment:标题"`               // 标题
 	OrderType       string  `json:"order_type" gorm:"type:varchar(50);comment:订单类型"`         // 订单类型：1.期货订单 2.现货订单
 	OrderStatus     string  `json:"order_status" gorm:"type:varchar(50);comment:订单状态"`       // 订单状态：待支付、已支付、已发货、已完成、已取消
@@ -83,6 +85,11 @@ type SalesOrder struct {
 	Updater            string `json:"updater" gorm:"type:varchar(50);comment:更新人"`
 	CreatedAt          string `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
 	UpdatedAt          string `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
+}
+
+type CustomerSalesOrderRes struct {
+	SalesOrder
+	PurchaseOrderInfo *PurchaseOrder `json:"purchase_order_info"`
 }
 
 type SalesOrderRes struct {

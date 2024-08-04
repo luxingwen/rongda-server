@@ -6,6 +6,7 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -30,6 +31,11 @@ func (s *WxUserService) GetWxUserOrCreateByPhone(ctx *app.Context, wxUser *model
 		wxUser.Uuid = uuid.New().String()
 		wxUser.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 		wxUser.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+
+		if wxUser.Password != "" {
+			wxUser.Password = utils.HashPasswordWithSalt(wxUser.Password, ctx.Config.PasswdKey)
+		}
+
 		err = ctx.DB.Create(wxUser).Error
 		if err != nil {
 			ctx.Logger.Error("Failed to create wxUser", err)
@@ -78,12 +84,19 @@ func (s *WxUserService) GetWxUserByUUID(ctx *app.Context, uuid string) (*model.W
 		ctx.Logger.Error("Failed to get wxUser by UUID", err)
 		return nil, errors.New("failed to get wxUser by UUID")
 	}
+
+	wxUser.Password = ""
 	return wxUser, nil
 }
 
 func (s *WxUserService) UpdateWxUser(ctx *app.Context, wxUser *model.WxUser) error {
 	now := time.Now().Format("2006-01-02 15:04:05")
 	wxUser.UpdatedAt = now
+
+	if wxUser.Password != "" {
+		wxUser.Password = utils.HashPasswordWithSalt(wxUser.Password, ctx.Config.PasswdKey)
+	}
+
 	err := ctx.DB.Where("uuid = ?", wxUser.Uuid).Updates(wxUser).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update wxUser", err)
@@ -129,6 +142,10 @@ func (s *WxUserService) GetWxUserList(ctx *app.Context, params *model.ReqWxUserQ
 		return nil, errors.New("failed to get wxUser list")
 	}
 
+	for _, wxUser := range wxUsers {
+		wxUser.Password = ""
+	}
+
 	return &model.PagedResponse{
 		Total: total,
 		Data:  wxUsers,
@@ -155,4 +172,20 @@ func (s *WxUserService) GetAllWxUsers(ctx *app.Context) ([]*model.WxUser, error)
 		return nil, errors.New("failed to get all wxUsers")
 	}
 	return wxUsers, nil
+}
+
+// UpdateWxUserIsRealNameAuth
+func (s *WxUserService) UpdateWxUserIsRealNameAuth(ctx *app.Context, params *model.ReqWxUserUpdateIsRealNameAuthParam) error {
+	now := time.Now().Format("2006-01-02 15:04:05")
+	err := ctx.DB.Model(&model.WxUser{}).Where("uuid = ?", params.Uuid).Updates(map[string]interface{}{
+		"is_real_name": params.IsRealName,
+		"updated_at":   now,
+	}).Error
+
+	if err != nil {
+		ctx.Logger.Error("Failed to update wxUser is real name auth", err)
+		return errors.New("failed to update wxUser is real name auth")
+	}
+
+	return nil
 }

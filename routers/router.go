@@ -268,6 +268,10 @@ func InitCustomerRouter(ctx *app.App) {
 		v1.POST("/customer/info", customerController.GetCustomerInfo)
 		v1.POST("/customer/list", customerController.GetCustomerList)
 		v1.POST("/customer/all", customerController.GetAllCustomerList)
+		v1.POST("/customer/order/list", customerController.GetOrderList)
+
+		// 更新订单状态
+		v1.POST("/customer/order/update_status", customerController.UpdateOrderStatus)
 	}
 }
 func InitAgentRouter(ctx *app.App) {
@@ -756,8 +760,17 @@ func InitWxUserRouter(ctx *app.App) {
 			WxUserService: &service.WxUserService{},
 		}
 		v1.POST("/wx_user/info", wxUserController.GetMyWxUserInfo)
-		v1.POST("/wx_user/all", wxUserController.GetWxUserList)
+		v1.POST("/wx_user/all", wxUserController.GetWxUserListAll)
+		v1.POST("/wx_user/list", wxUserController.GetWxUserList)
 		v1.POST("/wx_user/update_passwd", wxUserController.ChangePassword)
+
+		// 实名认证
+		v1.POST("/wx_user/realname_auth", wxUserController.RealNameAuth)
+
+		v1.POST("/wx_user/update_realname_auth", wxUserController.UpdateWxUserIsRealNameAuth)
+
+		// 更改邮箱
+		v1.POST("/wx_user/update_email", wxUserController.UpdateEmail)
 
 	}
 }

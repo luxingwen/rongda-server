@@ -37,6 +37,7 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 		Remarks:            req.Remarks,
 		OrderStatus:        model.OrderStatusPending,
 		PurchaseOrderNo:    req.PurchaseOrderNo,
+		EntrustOrderId:     req.EntrustOrderId,
 		CreatedAt:          nowStr,
 		UpdatedAt:          nowStr,
 	}
@@ -45,6 +46,19 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 		if err := tx.Create(salesOrder).Error; err != nil {
 			ctx.Logger.Error("Failed to create sales order", err)
 			return errors.New("failed to create sales order")
+		}
+
+		if salesOrder.EntrustOrderId != "" {
+			// 更新委托订单销售单号
+			err := tx.Model(&model.EntrustOrder{}).Where("order_id = ?", salesOrder.EntrustOrderId).Updates(map[string]interface{}{
+				"sales_order_no": salesOrder.OrderNo,
+				"status":         "已处理",
+				"updated_at":     nowStr,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update entrust order", err)
+				return errors.New("failed to update entrust order")
+			}
 		}
 
 		// 获取采购单信息

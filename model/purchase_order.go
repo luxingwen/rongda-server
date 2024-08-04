@@ -153,6 +153,9 @@ const (
 	// 处理中
 	PurchaseOrderStatusProcessing = "处理中"
 	PurchaseOrderStatusHandled    = "已处理" // 已处理
+
+	// 待确认
+	PurchaseOrderStatusToBeConfirmed = "待确认"
 	// 已审核
 	PurchaseOrderStatusReviewed = "已审核"
 	PurchaseOrderStatusCanceled = "已取消" // 已取消
