@@ -6,6 +6,7 @@ import (
 
 	"sgin/model"
 	"sgin/pkg/app"
+	"sgin/pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -21,12 +22,35 @@ func (s *AgreementService) CreateAgreement(ctx *app.Context, userid string, agre
 	agreement.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	agreement.UpdatedAt = agreement.CreatedAt
 	agreement.Creater = userid
+	agreement.Uuid = utils.GenerateOrderID()
 
-	err := ctx.DB.Create(agreement).Error
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		err := tx.Create(agreement).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create agreement", err)
+			return errors.New("failed to create agreement")
+		}
+
+		if agreement.Type == model.AgreementTypeSales && agreement.OrderNo != "" {
+			// 更新销售订单的合同状态
+			err = tx.Model(&model.SalesOrder{}).Where("order_no = ?", agreement.OrderNo).Updates(map[string]interface{}{
+				"agreement_uuid": agreement.Uuid,
+				"updated_at":     time.Now().Format("2006-01-02 15:04:05"),
+			}).Error
+
+			if err != nil {
+				ctx.Logger.Error("Failed to update sales order agreement status", err)
+				return errors.New("failed to update sales order agreement status")
+			}
+		}
+		return nil
+	})
 	if err != nil {
 		ctx.Logger.Error("Failed to create agreement", err)
-		return errors.New("failed to create agreement")
+		return err
 	}
+
 	return nil
 }
 
@@ -54,11 +78,41 @@ func (s *AgreementService) UpdateAgreement(ctx *app.Context, agreement *model.Ag
 }
 
 func (s *AgreementService) DeleteAgreement(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Delete(&model.Agreement{}).Error
-	if err != nil {
-		ctx.Logger.Error("Failed to delete agreement", err)
-		return errors.New("failed to delete agreement")
-	}
+
+	ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		// 先查询合同
+		agreement := &model.Agreement{}
+		err := tx.Where("uuid = ?", uuid).First(agreement).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return nil
+			}
+			ctx.Logger.Error("Failed to get agreement by UUID", err)
+			return errors.New("failed to get agreement by UUID")
+		}
+
+		err = tx.Where("uuid = ?", uuid).Delete(&model.Agreement{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete agreement", err)
+			return errors.New("failed to delete agreement")
+		}
+
+		if agreement.Type == model.AgreementTypeSales && agreement.OrderNo != "" {
+			// 更新销售订单的合同状态
+			err = tx.Model(&model.SalesOrder{}).Where("order_no = ?", agreement.OrderNo).Updates(map[string]interface{}{
+				"agreement_uuid": "",
+				"updated_at":     time.Now().Format("2006-01-02 15:04:05"),
+			}).Error
+
+			if err != nil {
+				ctx.Logger.Error("Failed to update sales order agreement status", err)
+				return errors.New("failed to update sales order agreement status")
+			}
+		}
+
+		return nil
+	})
 	return nil
 }
 

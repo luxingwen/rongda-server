@@ -571,6 +571,8 @@ func InitSalesOrderRouter(ctx *app.App) {
 		v1.POST("/sales_order/all", salesOrderController.GetAllSalesOrder)
 		v1.POST("/sales_order/product_item/list", salesOrderController.GetSalesOrderProducts)
 		v1.POST("/sales_order/update_status", salesOrderController.UpdateSalesOrderStatus)
+		// 创建销售合同
+		v1.POST("/sales_order/create_agreement", salesOrderController.CreateSalesAgreement)
 	}
 }
 

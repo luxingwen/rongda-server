@@ -65,6 +65,7 @@ type SalesOrder struct {
 	OrderNo         string  `json:"order_no" gorm:"uniqueIndex;type:varchar(50);comment:订单号"`
 	PurchaseOrderNo string  `json:"purchase_order_no" gorm:"type:varchar(50);comment:采购订单号"` // 采购订单号
 	EntrustOrderId  string  `json:"entrust_order_id" gorm:"comment:'委托订单ID'"`                // 委托订单ID
+	AgreementUuid   string  `json:"agreement_uuid" gorm:"type:varchar(50);comment:合同uuid"`   // 合同uuid
 	Title           string  `json:"title" gorm:"type:varchar(200);comment:标题"`               // 标题
 	OrderType       string  `json:"order_type" gorm:"type:varchar(50);comment:订单类型"`         // 订单类型：1.期货订单 2.现货订单
 	OrderStatus     string  `json:"order_status" gorm:"type:varchar(50);comment:订单状态"`       // 订单状态：待支付、已支付、已发货、已完成、已取消

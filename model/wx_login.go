@@ -3,8 +3,8 @@ package model
 type WxUser struct {
 	ID         int    `gorm:"primary_key" json:"id"`
 	Uuid       string `gorm:"type:char(36);unique" json:"uuid"`           // 用户唯一标识
-	Openid     string `gorm:"type:varchar(100);unique" json:"openid"`     // openid
-	Unionid    string `gorm:"type:varchar(100);unique" json:"unionid"`    // unionid
+	Openid     string `gorm:"type:varchar(100);index" json:"openid"`      // openid
+	Unionid    string `gorm:"type:varchar(100);index" json:"unionid"`     // unionid
 	Password   string `gorm:"type:varchar(100)" json:"password"`          // 密码
 	Phone      string `gorm:"type:varchar(20)" json:"phone"`              // 手机号
 	Email      string `gorm:"type:varchar(100)" json:"email"`             // 邮箱

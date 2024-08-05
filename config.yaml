@@ -30,3 +30,11 @@ ApiPrefix: "/api"
 
 Upload:
   Dir: "public"
+
+
+AliyunSMSConfig:
+  AccessKeyId: ""
+  AccessKeySecret: ""
+  SignName: ""
+  TemplateCode: ""
+  Enable: false

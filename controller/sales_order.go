@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"encoding/json"
 	"net/http"
+	"path/filepath"
 	"sgin/model"
 	"sgin/pkg/app"
 	"sgin/service"
@@ -9,6 +11,7 @@ import (
 
 type SalesOrderController struct {
 	SalesOrderService *service.SalesOrderService
+	AgreementService  *service.AgreementService
 }
 
 func NewSalesOrderController() *SalesOrderController {
@@ -180,5 +183,80 @@ func (t *SalesOrderController) UpdateSalesOrderStatus(ctx *app.Context) {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
+	ctx.JSONSuccess(nil)
+}
+
+// CreateSalesAgreement
+func (t *SalesOrderController) CreateSalesAgreement(ctx *app.Context) {
+	userId := ctx.GetString("user_id")
+	if userId == "" {
+		ctx.JSONError(http.StatusUnauthorized, "用户未登录")
+		return
+	}
+
+	title := ctx.PostForm("title")
+
+	signature_position_list := ctx.PostForm("signature_position_list")
+
+	if title == "" {
+		ctx.JSONError(http.StatusBadRequest, "title is required")
+		return
+	}
+
+	orderNo := ctx.PostForm("order_no")
+	if orderNo == "" {
+		ctx.JSONError(http.StatusBadRequest, "order_no is required")
+		return
+	}
+
+	if signature_position_list == "" {
+		ctx.JSONError(http.StatusBadRequest, "signature_position_list is required")
+		return
+	}
+
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx.Logger.Info("file", file.Filename)
+	// 保存合同
+
+	extfile := filepath.Ext(file.Filename)
+
+	filename := "/sales_order/agreement/" + orderNo + extfile
+
+	err = ctx.SaveUploadedFile(file, ctx.Config.Upload.Dir+filename)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	fileAttachment := model.FileAttachment{
+		Name: file.Filename,
+		Url:  filename,
+	}
+
+	ctx.Logger.Info("title", title)
+	ctx.Logger.Info("signature_position_list", signature_position_list)
+
+	srcfilebyte, _ := json.Marshal(fileAttachment)
+
+	agreement := model.Agreement{
+		Title:             title,
+		OrderNo:           orderNo,
+		SourceFile:        string(srcfilebyte),
+		SignaturePosition: signature_position_list,
+		Creater:           userId,
+		Type:              model.AgreementTypeSales,
+	}
+
+	err = t.AgreementService.CreateAgreement(ctx, userId, &agreement)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	ctx.JSONSuccess(nil)
 }

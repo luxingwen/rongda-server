@@ -111,11 +111,12 @@ func (t *AgreementController) GetAgreement(ctx *app.Context) {
 func (t *AgreementController) UpdateAgreement(ctx *app.Context) {
 
 	param := model.Agreement{
-		Uuid:    ctx.Request.FormValue("uuid"),
-		Date:    ctx.Request.FormValue("date"),
-		Content: ctx.Request.FormValue("content"),
-		Title:   ctx.Request.FormValue("title"),
-		Type:    ctx.Request.FormValue("type"),
+		Uuid:              ctx.Request.FormValue("uuid"),
+		Date:              ctx.Request.FormValue("date"),
+		Content:           ctx.Request.FormValue("content"),
+		Title:             ctx.Request.FormValue("title"),
+		Type:              ctx.Request.FormValue("type"),
+		SignaturePosition: ctx.Request.FormValue("signature_position"),
 	}
 
 	var attachments []model.FileAttachment
@@ -194,6 +195,16 @@ func (t *AgreementController) DeleteAgreement(ctx *app.Context) {
 			// 删除文件
 			os.Remove(ctx.Config.Upload.Dir + attachment)
 		}
+	}
+
+	if agreement.SourceFile != "" {
+		// 删除文件
+		var attachment model.FileAttachment
+		if err := json.Unmarshal([]byte(agreement.SourceFile), &attachment); err != nil {
+			ctx.JSONError(http.StatusInternalServerError, err.Error())
+			return
+		}
+		os.Remove(ctx.Config.Upload.Dir + attachment.Url)
 	}
 
 	if err := t.AgreementService.DeleteAgreement(ctx, param.Uuid); err != nil {
