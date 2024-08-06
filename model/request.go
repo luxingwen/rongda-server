@@ -395,3 +395,9 @@ type ReqWxUserUpdateIsRealNameAuthParam struct {
 type ReqWxUserUpdateEmailParam struct {
 	Email string `json:"email"` // 邮箱
 }
+
+// 订单确认
+type ReqSalesOrderConfirmParam struct {
+	OrderNo string `json:"order_no"`
+	Op      string `json:"op"` // confirm:确认  cancel:取消
+}

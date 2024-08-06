@@ -426,3 +426,17 @@ func (t *SalesOrderController) GetSalesOrderStepList(ctx *app.Context) {
 	}
 	ctx.JSONSuccess(steps)
 }
+
+// ConfirmSalesOrder
+func (t *SalesOrderController) ConfirmSalesOrder(ctx *app.Context) {
+	var param model.ReqSalesOrderConfirmParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := t.SalesOrderService.ConfirmSalesOrder(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
+}
