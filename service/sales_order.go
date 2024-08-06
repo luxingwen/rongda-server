@@ -110,6 +110,49 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 				return errors.New("failed to create sales order item")
 			}
 		}
+
+		// 创建步骤链
+
+		stepChain := model.StepChain{
+			Uuid:        uuid.New().String(),
+			RefId:       orderNo,
+			RefType:     model.StepChainRefTypeSalesOrder,
+			ChainName:   "销售订单",
+			ChainStatus: model.StepChainStatusWait,
+			ChainType:   model.StepChainRefTypeSalesOrder,
+			CreatedAt:   nowStr,
+			UpdatedAt:   nowStr,
+		}
+
+		if err := tx.Create(&stepChain).Error; err != nil {
+			ctx.Logger.Error("Failed to create step chain", err)
+			return errors.New("failed to create step chain")
+		}
+
+		steps := make([]model.Step, 0)
+		for _, itemStep := range model.SalesSteps {
+			itemStep.Uuid = uuid.New().String()
+			itemStep.ChainId = stepChain.Uuid
+			itemStep.CreatedAt = nowStr
+			itemStep.UpdatedAt = nowStr
+			itemStep.Status = model.StepStatusWait
+			if itemStep.Title == "创建订单" {
+				itemStep.Status = model.StepStatusFinish
+				itemStep.RefId = orderNo
+				itemStep.RefType = model.StepRefTypeSalesOrder
+				itemStep.StepType = model.StepTypeDetail
+			}
+			if itemStep.Title == "订单确认" {
+				itemStep.Status = model.StepStatusProcess
+			}
+			steps = append(steps, itemStep)
+		}
+
+		if err := tx.Create(&steps).Error; err != nil {
+			ctx.Logger.Error("Failed to create steps", err)
+			return errors.New("failed to create steps")
+		}
+
 		return nil
 	})
 

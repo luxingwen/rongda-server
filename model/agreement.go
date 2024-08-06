@@ -1,10 +1,13 @@
 package model
 
 const (
-	AgreementTypeSales    = "1"
-	AgreementTypePurchase = "2"
-	AgreementTypeService  = "3"
-	AgreementTypeOther    = "4"
+	AgreementTypeSales    = "sales"
+	AgreementTypePurchase = "purchase"
+	AgreementTypeService  = "service"
+	// 销售定金
+	AgreementTypeSalesDeposit = "sales_deposit"
+	// 销售尾款
+	AgreementTypeSalesFinalPayment = "sales_final_payment"
 )
 
 type ReqAgreementCreate struct {
@@ -31,7 +34,7 @@ type Agreement struct {
 	Content string `json:"content" gorm:"comment:'内容'"`   // 内容
 	Creater string `json:"creater" gorm:"comment:'创建人'"`  // 创建人
 	// 合同类型
-	Type string `json:"type" gorm:"comment:'合同类型'"` // 合同类型 1:销售合同 2:采购合同 3:服务合同 4:其他
+	Type string `json:"type" gorm:"comment:'合同类型'"` // 合同类型 1:销售合同 2:采购合同 3:服务合同 4:定金
 	// 附件
 	Attachment string `json:"attachment" gorm:"comment:'附件'"` // 附件
 
@@ -50,6 +53,8 @@ type Agreement struct {
 
 	// 签署位置
 	SignaturePosition string `json:"signature_position" gorm:"comment:'签署位置'"` // 签署位置
+
+	Status string `json:"status" gorm:"comment:'状态'"` // 状态
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间

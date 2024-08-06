@@ -215,6 +215,7 @@ func InitLoginRouter(ctx *app.App) {
 		}
 		v1.POST("/wx_login_phone", wxLoginController.VerificationCodeLoginPhone)
 		v1.POST("/wx_login", wxLoginController.LoginByPassword)
+		v1.POST("/wxlogin", wxLoginController.WxLogin)
 	}
 }
 
@@ -573,6 +574,13 @@ func InitSalesOrderRouter(ctx *app.App) {
 		v1.POST("/sales_order/update_status", salesOrderController.UpdateSalesOrderStatus)
 		// 创建销售合同
 		v1.POST("/sales_order/create_agreement", salesOrderController.CreateSalesAgreement)
+		// 创建定金合同
+		v1.POST("/sales_order/create_deposit_agreement", salesOrderController.CreateDepositAgreement)
+		// 创建尾款合同
+		v1.POST("/sales_order/create_final_agreement", salesOrderController.CreateFinalAgreement)
+
+		// 获取步骤列表
+		v1.POST("/sales_order/step/list", salesOrderController.GetSalesOrderStepList)
 	}
 }
 
