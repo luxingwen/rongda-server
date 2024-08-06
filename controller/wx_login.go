@@ -6,6 +6,8 @@ import (
 	"sgin/pkg/app"
 	"sgin/pkg/utils"
 	"sgin/service"
+
+	"github.com/medivhzhan/weapp"
 )
 
 type WxLoginController struct {
@@ -98,4 +100,65 @@ func (w *WxLoginController) LoginByPassword(ctx *app.Context) {
 	}
 
 	ctx.JSONSuccess(rtoken)
+}
+
+// 微信登录
+func (w *WxLoginController) WxLogin(ctx *app.Context) {
+
+	param := &model.AuthLoginBody{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	appid := ctx.Config.WxConfig.AppID
+	secret := ctx.Config.WxConfig.AppSecret
+
+	if appid == "" || secret == "" {
+		ctx.JSONError(http.StatusInternalServerError, "暂时不支持微信登录")
+		return
+	}
+
+	if param.UserInfo.UserInfo.OpenID != "" {
+
+		wsuser, err := w.WxUserService.GetWxUserByOpenid(ctx, param.UserInfo.UserInfo.OpenID)
+		if err != nil {
+			ctx.JSONError(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		rtoken, err := utils.GenerateWxUserToken(wsuser.Uuid)
+
+		if err != nil {
+			ctx.JSONError(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		ctx.JSONSuccess(rtoken)
+		return
+	}
+
+	loginResponse, err := weapp.Login(appid, secret, param.Code)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.Logger.Info("loginResponse:", loginResponse)
+
+	wxUser, err := w.WxUserService.GetWxUserOrCreateByOpenid(ctx, loginResponse.OpenID, &param.UserInfo)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	rtoken, err := utils.GenerateWxUserToken(wxUser.Uuid)
+
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(rtoken)
+
 }

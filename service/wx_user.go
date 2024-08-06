@@ -47,6 +47,63 @@ func (s *WxUserService) GetWxUserOrCreateByPhone(ctx *app.Context, wxUser *model
 	return &wxUser1, nil
 }
 
+// 根据openid获取用户信息
+func (s *WxUserService) GetWxUserByOpenid(ctx *app.Context, openid string) (*model.WxUser, error) {
+	var wxUser model.WxUser
+	err := ctx.DB.Where("openid = ?", openid).First(&wxUser).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("wxUser not found")
+		}
+		ctx.Logger.Error("Failed to get wxUser by openid", err)
+		return nil, errors.New("failed to get wxUser by openid")
+	}
+	return &wxUser, nil
+}
+
+func (s *WxUserService) GetWxUserOrCreateByOpenid(ctx *app.Context, openid string, req *model.ReqWXUserInfo) (*model.WxUser, error) {
+	var wxUser model.WxUser
+	err := ctx.DB.Where("openid = ?", openid).First(&wxUser).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		ctx.Logger.Error("Failed to get wxUser", err)
+		return nil, errors.New("failed to get wxUser")
+	}
+
+	if err == gorm.ErrRecordNotFound {
+		wxUser.Uuid = uuid.New().String()
+		wxUser.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+		wxUser.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+		wxUser.Openid = openid
+		wxUser.Unionid = req.UserInfo.UnionID
+		wxUser.NickName = req.UserInfo.NickName
+		wxUser.Avatar = req.UserInfo.AvatarUrl
+		wxUser.Gender = req.UserInfo.Gender
+		wxUser.City = req.UserInfo.City
+		wxUser.Status = 1
+		wxUser.IsDeleted = 0
+
+		err = ctx.DB.Create(&wxUser).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create wxUser", err)
+			return nil, errors.New("failed to create wxUser")
+		}
+		return &wxUser, nil
+	}
+
+	// 更新用户信息
+	wxUser.NickName = req.UserInfo.NickName
+	wxUser.Avatar = req.UserInfo.AvatarUrl
+	wxUser.City = req.UserInfo.City
+
+	err = ctx.DB.Where("openid = ?", openid).Updates(&wxUser).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update wxUser", err)
+		return nil, errors.New("failed to update wxUser")
+	}
+
+	return &wxUser, nil
+}
+
 func (s *WxUserService) GetWxUserByPhoneAndPassword(ctx *app.Context, phone, password string) (*model.WxUser, error) {
 	wxUser := &model.WxUser{}
 	err := ctx.DB.Where("phone = ? AND password = ?", phone, password).First(wxUser).Error

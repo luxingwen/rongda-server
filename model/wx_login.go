@@ -28,3 +28,34 @@ type WxUser struct {
 	// 是否实名认证
 	IsRealName int `gorm:"type:int" json:"is_real_name"`
 }
+
+type Watermark struct {
+	AppID     string `json:"appid"`
+	TimeStamp int64  `json:"timestamp"`
+}
+
+type WXUserInfo struct {
+	OpenID    string    `json:"openId,omitempty"`
+	NickName  string    `json:"nickName"`
+	AvatarUrl string    `json:"avatarUrl"`
+	Gender    int       `json:"gender"`
+	Country   string    `json:"country"`
+	Province  string    `json:"province"`
+	City      string    `json:"city"`
+	UnionID   string    `json:"unionId,omitempty"`
+	Language  string    `json:"language"`
+	Watermark Watermark `json:"watermark,omitempty"`
+}
+
+type ReqWXUserInfo struct {
+	UserInfo      WXUserInfo `json:"userInfo"`
+	RawData       string     `json:"rawData"`
+	Signature     string     `json:"signature"`
+	EncryptedData string     `json:"encryptedData"`
+	IV            string     `json:"iv"`
+}
+
+type AuthLoginBody struct {
+	Code     string        `json:"code"`
+	UserInfo ReqWXUserInfo `json:"userInfo"`
+}

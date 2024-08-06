@@ -23,6 +23,7 @@ type Config struct {
 	ForwardAddress  string            // 转发地址
 	ApiPrefix       string            // api前缀
 	AliyunSMSConfig AliyunSMSConfig   // 阿里云短信配置
+	WxConfig        WxConfig          // 微信配置
 }
 
 type UploadConfig struct {
@@ -83,6 +84,11 @@ type AliyunSMSConfig struct {
 	TemplateCode    string // 短信模板
 	// 是否开启短信验证码
 	Enable bool
+}
+
+type WxConfig struct {
+	AppID     string
+	AppSecret string
 }
 
 var (
