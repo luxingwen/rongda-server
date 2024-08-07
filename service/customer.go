@@ -163,7 +163,7 @@ func (s *CustomerService) GetCustomerOrders(ctx *app.Context, params *model.ReqS
 	db = db.Where("customer_uuid = ?", params.CustomerUuid)
 
 	if params.Status != "" {
-		db = db.Where("status = ?", params.Status)
+		db = db.Where("order_status = ?", params.Status)
 	}
 
 	if params.StartDate != "" {

@@ -23,12 +23,25 @@ func (s *AgreementService) CreateAgreement(ctx *app.Context, userid string, agre
 	agreement.UpdatedAt = agreement.CreatedAt
 	agreement.Creater = userid
 	agreement.Uuid = utils.GenerateOrderID()
+	agreement.Status = model.AgreementStatusUnSigned
 
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
 
-		err := tx.Create(agreement).Error
+		// 获取销售订单
+		salesOrder := &model.SalesOrder{}
+		err := tx.Where("order_no = ?", agreement.OrderNo).First(salesOrder).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get sales order", err)
+			tx.Rollback()
+			return errors.New("failed to get sales order")
+		}
+
+		agreement.TeamUuid = salesOrder.CustomerUuid
+
+		err = tx.Create(agreement).Error
 		if err != nil {
 			ctx.Logger.Error("Failed to create agreement", err)
+			tx.Rollback()
 			return errors.New("failed to create agreement")
 		}
 
@@ -41,9 +54,165 @@ func (s *AgreementService) CreateAgreement(ctx *app.Context, userid string, agre
 
 			if err != nil {
 				ctx.Logger.Error("Failed to update sales order agreement status", err)
+				tx.Rollback()
 				return errors.New("failed to update sales order agreement status")
 			}
+
+			// 获取步骤链
+			stepChain := &model.StepChain{}
+			err = tx.Where("ref_id = ? AND ref_type = ?", agreement.OrderNo, model.StepChainRefTypeSalesOrder).First(stepChain).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to get step chain", err)
+				tx.Rollback()
+				return errors.New("failed to get step chain")
+			}
+
+			// 获取步骤
+			step := &model.Step{}
+			err = tx.Where("chain_id = ? and title = ?", stepChain.Uuid, "创建合同").First(step).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to get step", err)
+				tx.Rollback()
+				return errors.New("failed to get step")
+			}
+
+			agreement.RefId = step.Uuid
+			agreement.RefType = model.AgreementTypeSales
+
+			// 更新步骤
+
+			err = tx.Model(&model.Step{}).Where("chain_id = ? and title = ?", stepChain.Uuid, "创建合同").Updates(map[string]interface{}{
+				"status":     model.StepStatusFinish,
+				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"ref_id":     agreement.Uuid,
+				"ref_type":   model.AgreementTypeSales,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update step", err)
+				tx.Rollback()
+				return errors.New("failed to update step")
+			}
+
+			err = tx.Model(&model.Step{}).Where("chain_id = ? and title = ?", stepChain.Uuid, "签署合同").Updates(map[string]interface{}{
+				"status":     model.StepStatusWait,
+				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"ref_type":   model.AgreementTypeSales,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update step", err)
+				tx.Rollback()
+				return errors.New("failed to update step")
+			}
+
 		}
+
+		if agreement.Type == model.AgreementTypeSalesDeposit && agreement.OrderNo != "" {
+			// 获取步骤链
+			stepChain := &model.StepChain{}
+			err = tx.Where("ref_id = ? AND ref_type = ?", agreement.OrderNo, model.StepChainRefTypeSalesOrder).First(stepChain).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to get step chain", err)
+				tx.Rollback()
+				return errors.New("failed to get step chain")
+			}
+
+			// 获取步骤
+			step := &model.Step{}
+			err = tx.Where("chain_id = ? and title = ?", stepChain.Uuid, "创建定金合同").First(step).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to get step", err)
+				tx.Rollback()
+				return errors.New("failed to get step")
+			}
+
+			agreement.RefId = step.Uuid
+			agreement.RefType = model.AgreementTypeSalesDeposit
+
+			// 更新步骤
+
+			err = tx.Model(&model.Step{}).Where("chain_id = ? and title = ?", stepChain.Uuid, "创建定金合同").Updates(map[string]interface{}{
+				"status":     model.StepStatusFinish,
+				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"ref_id":     agreement.Uuid,
+				"ref_type":   model.AgreementTypeSalesDeposit,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update step", err)
+				tx.Rollback()
+				return errors.New("failed to update step")
+			}
+
+			err = tx.Model(&model.Step{}).Where("chain_id = ? and title = ?", stepChain.Uuid, "签署定金合同").Updates(map[string]interface{}{
+				"status":     model.StepStatusWait,
+				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"ref_type":   model.AgreementTypeSalesDeposit,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update step", err)
+				tx.Rollback()
+				return errors.New("failed to update step")
+			}
+		}
+
+		if agreement.Type == model.AgreementTypeSalesFinalPayment && agreement.OrderNo != "" {
+			// 获取步骤链
+			stepChain := &model.StepChain{}
+			err = tx.Where("ref_id = ? AND ref_type = ?", agreement.OrderNo, model.StepChainRefTypeSalesOrder).First(stepChain).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to get step chain", err)
+				tx.Rollback()
+				return errors.New("failed to get step chain")
+			}
+
+			// 获取步骤
+			step := &model.Step{}
+			err = tx.Where("chain_id = ? and title = ?", stepChain.Uuid, "创建尾款合同").First(step).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to get step", err)
+				tx.Rollback()
+				return errors.New("failed to get step")
+			}
+
+			agreement.RefId = step.Uuid
+			agreement.RefType = model.AgreementTypeSalesFinalPayment
+
+			// 更新步骤
+
+			err = tx.Model(&model.Step{}).Where("chain_id = ? and title = ?", stepChain.Uuid, "创建尾款合同").Updates(map[string]interface{}{
+				"status":     model.StepStatusFinish,
+				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"ref_id":     agreement.Uuid,
+				"ref_type":   model.AgreementTypeSalesFinalPayment,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update step", err)
+				tx.Rollback()
+				return errors.New("failed to update step")
+			}
+
+			err = tx.Model(&model.Step{}).Where("chain_id = ? and title = ?", stepChain.Uuid, "签署尾款合同").Updates(map[string]interface{}{
+				"status":     model.StepStatusWait,
+				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"ref_type":   model.AgreementTypeSalesFinalPayment,
+			}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to update step", err)
+				tx.Rollback()
+				return errors.New("failed to update step")
+			}
+		}
+
+		err = tx.Model(&model.Agreement{}).Where("uuid = ?", agreement.Uuid).Updates(map[string]interface{}{
+			"ref_id":   agreement.RefId,
+			"ref_type": agreement.RefType,
+		}).Error
+
+		if err != nil {
+			ctx.Logger.Error("Failed to update agreement ref_id", err)
+			tx.Rollback()
+			return errors.New("failed to update agreement ref_id")
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -88,12 +257,14 @@ func (s *AgreementService) DeleteAgreement(ctx *app.Context, uuid string) error 
 			if err == gorm.ErrRecordNotFound {
 				return nil
 			}
+			tx.Rollback()
 			ctx.Logger.Error("Failed to get agreement by UUID", err)
 			return errors.New("failed to get agreement by UUID")
 		}
 
 		err = tx.Where("uuid = ?", uuid).Delete(&model.Agreement{}).Error
 		if err != nil {
+			tx.Rollback()
 			ctx.Logger.Error("Failed to delete agreement", err)
 			return errors.New("failed to delete agreement")
 		}
@@ -106,8 +277,45 @@ func (s *AgreementService) DeleteAgreement(ctx *app.Context, uuid string) error 
 			}).Error
 
 			if err != nil {
+				tx.Rollback()
 				ctx.Logger.Error("Failed to update sales order agreement status", err)
 				return errors.New("failed to update sales order agreement status")
+			}
+
+			// // 获取步骤链
+			// stepChain := &model.StepChain{}
+			// err = tx.Where("ref_id = ? AND ref_type = ?", agreement.OrderNo, model.StepChainRefTypeSalesOrder).First(stepChain).Error
+			// if err != nil {
+			// 	ctx.Logger.Error("Failed to get step chain", err)
+			// 	return errors.New("failed to get step chain")
+			// }
+
+			// // 更新步骤
+
+			// err = tx.Model(&model.Step{}).Where("chain_id = ? and title = ?", stepChain.Uuid, "创建合同").Updates(map[string]interface{}{
+			// 	"status":     model.StepStatusWait,
+			// 	"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+			// 	"ref_id":     "",
+			// 	"ref_type":   model.AgreementTypeSalesDeposit,
+			// }).Error
+			// if err != nil {
+			// 	ctx.Logger.Error("Failed to update step", err)
+			// 	return errors.New("failed to update step")
+			// }
+
+		}
+
+		if agreement.RefId != "" {
+			// 更新步骤
+			err = tx.Model(&model.Step{}).Where("uuid = ?", agreement.RefId).Updates(map[string]interface{}{
+				"status":     model.StepStatusWait,
+				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"ref_id":     "",
+			}).Error
+			if err != nil {
+				tx.Rollback()
+				ctx.Logger.Error("Failed to update step", err)
+				return errors.New("failed to update step")
 			}
 		}
 
@@ -126,6 +334,14 @@ func (s *AgreementService) ListAgreements(ctx *app.Context, param *model.ReqAgre
 
 	if param.Type != "" {
 		db = db.Where("type = ?", param.Type)
+	}
+
+	if param.TeamUuid != "" {
+		db = db.Where("team_uuid = ?", param.TeamUuid)
+	}
+
+	if param.Status != "" {
+		db = db.Where("status = ?", param.Status)
 	}
 
 	if err := db.Offset(param.GetOffset()).Limit(param.PageSize).Find(&agreements).Error; err != nil {

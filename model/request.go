@@ -211,7 +211,9 @@ type ReqPurchaseOrderQueryParam struct {
 }
 
 type ReqAgreementQueryParam struct {
-	Type string `json:"type"`
+	Type     string `json:"type"`
+	Status   string `json:"status"`
+	TeamUuid string `json:"team_uuid"`
 	Pagination
 }
 
@@ -398,6 +400,6 @@ type ReqWxUserUpdateEmailParam struct {
 
 // 订单确认
 type ReqSalesOrderConfirmParam struct {
-	OrderNo string `json:"order_no"`
-	Op      string `json:"op"` // confirm:确认  cancel:取消
+	OrderNoList string `json:"order_no_list"`
+	Op          string `json:"op"` // confirm:确认  cancel:取消
 }

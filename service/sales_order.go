@@ -408,7 +408,7 @@ func (s *SalesOrderService) ConfirmSalesOrder(ctx *app.Context, params *model.Re
 
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
 		// 更新订单状态
-		err := tx.Model(&model.SalesOrder{}).Where("order_no = ?", params.OrderNo).Updates(map[string]interface{}{
+		err := tx.Model(&model.SalesOrder{}).Where("order_no IN ?", params.OrderNoList).Updates(map[string]interface{}{
 			"order_status": model.OrderStatusConfirmed,
 			"updated_at":   time.Now().Format("2006-01-02 15:04:05"),
 		}).Error
@@ -418,48 +418,51 @@ func (s *SalesOrderService) ConfirmSalesOrder(ctx *app.Context, params *model.Re
 			return errors.New("failed to update sales order status")
 		}
 
-		// 获取步骤链信息
-		stepChain := &model.StepChain{}
-		err = tx.Where("ref_id = ?", params.OrderNo).First(stepChain).Error
-		if err != nil {
-			ctx.Logger.Error("Failed to get step chain", err)
-			tx.Rollback()
-			return errors.New("failed to get step chain")
-		}
+		for _, orderNo := range params.OrderNoList {
 
-		if params.Op == "confirm" {
-			// 更新步骤状态
-			err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "订单确认").Updates(map[string]interface{}{
-				"status":     model.StepStatusFinish,
-				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
-			}).Error
+			// 获取步骤链信息
+			stepChain := &model.StepChain{}
+			err = tx.Where("ref_id = ?", orderNo).First(stepChain).Error
 			if err != nil {
-				ctx.Logger.Error("Failed to update step status", err)
+				ctx.Logger.Error("Failed to get step chain", err)
 				tx.Rollback()
-				return errors.New("failed to update step status")
+				return errors.New("failed to get step chain")
 			}
 
-			err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "创建合同").Updates(map[string]interface{}{
-				"status":     model.StepStatusProcess,
-				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
-			}).Error
-			if err != nil {
-				ctx.Logger.Error("Failed to update step status", err)
-				tx.Rollback()
-				return errors.New("failed to update step status")
-			}
-		}
+			if params.Op == "confirm" {
+				// 更新步骤状态
+				err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "订单确认").Updates(map[string]interface{}{
+					"status":     model.StepStatusFinish,
+					"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				}).Error
+				if err != nil {
+					ctx.Logger.Error("Failed to update step status", err)
+					tx.Rollback()
+					return errors.New("failed to update step status")
+				}
 
-		if params.Op == "cancel" {
-			// 更新步骤状态
-			err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "订单确认").Updates(map[string]interface{}{
-				"status":     model.StepStatusError,
-				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
-			}).Error
-			if err != nil {
-				ctx.Logger.Error("Failed to update step status", err)
-				tx.Rollback()
-				return errors.New("failed to update step status")
+				err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "创建合同").Updates(map[string]interface{}{
+					"status":     model.StepStatusProcess,
+					"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				}).Error
+				if err != nil {
+					ctx.Logger.Error("Failed to update step status", err)
+					tx.Rollback()
+					return errors.New("failed to update step status")
+				}
+			}
+
+			if params.Op == "cancel" {
+				// 更新步骤状态
+				err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "订单确认").Updates(map[string]interface{}{
+					"status":     model.StepStatusError,
+					"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				}).Error
+				if err != nil {
+					ctx.Logger.Error("Failed to update step status", err)
+					tx.Rollback()
+					return errors.New("failed to update step status")
+				}
 			}
 		}
 

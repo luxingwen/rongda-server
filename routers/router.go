@@ -581,6 +581,9 @@ func InitSalesOrderRouter(ctx *app.App) {
 
 		// 获取步骤列表
 		v1.POST("/sales_order/step/list", salesOrderController.GetSalesOrderStepList)
+
+		// 订单确认
+		v1.POST("/sales_order/confirm", salesOrderController.ConfirmSalesOrder)
 	}
 }
 

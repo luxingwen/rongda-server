@@ -51,6 +51,9 @@ const (
 	OrderStatusPending = "待处理"
 	// 处理中
 	OrderStatusProcessing = "处理中"
+
+	// 待确认
+	OrderStatusPendingConfirm = "待确认"
 	// 已确认
 	OrderStatusConfirmed      = "已确认"
 	OrderStatusPendingPayment = "待支付"
