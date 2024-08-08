@@ -8,7 +8,8 @@ import (
 )
 
 type CustomerController struct {
-	CustomerService *service.CustomerService
+	CustomerService    *service.CustomerService
+	PaymentBillService *service.PaymentBillService
 }
 
 // @Summary 创建客户
@@ -169,4 +170,21 @@ func (c *CustomerController) UpdateOrderStatus(ctx *app.Context) {
 	}
 
 	ctx.JSONSuccess("更新订单状态成功")
+}
+
+// UpdateOrderStatusPaidComfirm
+func (c *CustomerController) UpdateOrderStatusPaidComfirm(ctx *app.Context) {
+	param := &model.ReqPaymentBillOrderStatusPaidComfirm{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := c.PaymentBillService.UpdatePaymentBillStatusPaidPendingConfirm(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("确认支付成功")
 }

@@ -186,10 +186,24 @@ func (s *SalesOrderService) GetSalesOrder(ctx *app.Context, orderNo string) (*mo
 		return nil, err
 	}
 
+	purchaseOrderInfo, err := NewPurchaseOrderService().GetPurchaseOrderRecord(ctx, salesOrder.PurchaseOrderNo)
+	if err != nil && err.Error() != "purchase order not found" {
+		ctx.Logger.Error("Failed to get purchase order info", err)
+		return nil, err
+	}
+
+	settlementCurrencyInfo, err := NewSettlementCurrencyService().GetSettlementCurrencyByUUID(ctx, salesOrder.SettlementCurrency)
+	if err != nil && err.Error() != "settlement currency not found" {
+		ctx.Logger.Error("Failed to get settlement currency info", err)
+		return nil, err
+	}
+
 	salesOrderRes := &model.SalesOrderRes{
-		SalesOrder:   *salesOrder,
-		CustomerInfo: customerInfo,
-		SalesmanInfo: user,
+		SalesOrder:             *salesOrder,
+		CustomerInfo:           customerInfo,
+		SalesmanInfo:           user,
+		PurchaseOrderInfo:      purchaseOrderInfo,
+		SettlementCurrencyInfo: settlementCurrencyInfo,
 	}
 
 	return salesOrderRes, nil
@@ -464,6 +478,100 @@ func (s *SalesOrderService) ConfirmSalesOrder(ctx *app.Context, params *model.Re
 					return errors.New("failed to update step status")
 				}
 			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 创建支付定金账单
+func (s *SalesOrderService) CreateDepositPaymentBill(ctx *app.Context, params *model.PaymentBill) error {
+	now := time.Now().Format("2006-01-02 15:04:05")
+	params.CreatedAt = now
+	params.UpdatedAt = now
+	params.Uuid = uuid.New().String()
+
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		err := tx.Create(params).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create payment bill", err)
+			tx.Rollback()
+			return errors.New("failed to create payment bill")
+		}
+
+		// 获取步骤链
+		stepChain := &model.StepChain{}
+		err = tx.Where("ref_id = ? AND ref_type = ?", params.OrderNo, model.StepChainRefTypeSalesOrder).First(stepChain).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get step chain", err)
+			tx.Rollback()
+			return errors.New("failed to get step chain")
+		}
+
+		// 更新步骤
+		err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "支付定金").Updates(map[string]interface{}{
+			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+			"ref_id":     params.Uuid,
+			"ref_type":   "定金支付账单",
+		}).Error
+
+		if err != nil {
+			ctx.Logger.Error("Failed to update step", err)
+			tx.Rollback()
+			return errors.New("failed to update step")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CreateFinalPaymentBill 创建支付尾款账单
+func (s *SalesOrderService) CreateFinalPaymentBill(ctx *app.Context, params *model.PaymentBill) error {
+	now := time.Now().Format("2006-01-02 15:04:05")
+	params.CreatedAt = now
+	params.UpdatedAt = now
+	params.Uuid = uuid.New().String()
+
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		err := tx.Create(params).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to create payment bill", err)
+			tx.Rollback()
+			return errors.New("failed to create payment bill")
+		}
+
+		// 获取步骤链
+		stepChain := &model.StepChain{}
+		err = tx.Where("ref_id = ? AND ref_type = ?", params.OrderNo, model.StepChainRefTypeSalesOrder).First(stepChain).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get step chain", err)
+			tx.Rollback()
+			return errors.New("failed to get step chain")
+		}
+
+		// 更新步骤
+		err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "支付尾款").Updates(map[string]interface{}{
+			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+			"ref_id":     params.Uuid,
+			"ref_type":   "尾款支付账单",
+		}).Error
+
+		if err != nil {
+			ctx.Logger.Error("Failed to update step", err)
+			tx.Rollback()
+			return errors.New("failed to update step")
 		}
 
 		return nil

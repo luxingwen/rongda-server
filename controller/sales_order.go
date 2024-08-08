@@ -10,9 +10,10 @@ import (
 )
 
 type SalesOrderController struct {
-	SalesOrderService *service.SalesOrderService
-	AgreementService  *service.AgreementService
-	StepService       *service.StepService
+	SalesOrderService  *service.SalesOrderService
+	AgreementService   *service.AgreementService
+	StepService        *service.StepService
+	PaymentBillService *service.PaymentBillService
 }
 
 func NewSalesOrderController() *SalesOrderController {
@@ -439,4 +440,36 @@ func (t *SalesOrderController) ConfirmSalesOrder(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(nil)
+}
+
+// CreatePaymentBill
+func (t *SalesOrderController) CreateDepositPaymentBill(ctx *app.Context) {
+	var param model.PaymentBill
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	param.Type = model.PaymentBillTypeDeposit
+	param.Status = model.PaymentBillStatusPendingPayment
+	if err := t.SalesOrderService.CreateDepositPaymentBill(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(param)
+}
+
+// CreateFinalPaymentBill
+func (t *SalesOrderController) CreateFinalPaymentBill(ctx *app.Context) {
+	var param model.PaymentBill
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	param.Type = model.PaymentBillTypeFinal
+	param.Status = model.PaymentBillStatusPendingPayment
+	if err := t.SalesOrderService.CreateFinalPaymentBill(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(param)
 }

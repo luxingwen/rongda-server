@@ -305,18 +305,16 @@ func (s *AgreementService) DeleteAgreement(ctx *app.Context, uuid string) error 
 
 		}
 
-		if agreement.RefId != "" {
-			// 更新步骤
-			err = tx.Model(&model.Step{}).Where("uuid = ?", agreement.RefId).Updates(map[string]interface{}{
-				"status":     model.StepStatusWait,
-				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
-				"ref_id":     "",
-			}).Error
-			if err != nil {
-				tx.Rollback()
-				ctx.Logger.Error("Failed to update step", err)
-				return errors.New("failed to update step")
-			}
+		// 更新步骤
+		err = tx.Model(&model.Step{}).Where("ref_id = ?", agreement.Uuid).Updates(map[string]interface{}{
+			"status":     model.StepStatusWait,
+			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+			"ref_id":     "",
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			ctx.Logger.Error("Failed to update step", err)
+			return errors.New("failed to update step")
 		}
 
 		return nil
@@ -357,4 +355,18 @@ func (s *AgreementService) ListAgreements(ctx *app.Context, param *model.ReqAgre
 		PageSize: param.PageSize,
 		Data:     agreements,
 	}, nil
+}
+
+// GetAgreementByOrder
+func (s *AgreementService) GetAgreementByOrder(ctx *app.Context, params *model.ReqOrderAgreementQueryParam) (*model.Agreement, error) {
+	agreement := &model.Agreement{}
+	err := ctx.DB.Where("order_no = ? AND type = ?", params.OrderNo, params.Type).First(agreement).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return agreement, nil
+		}
+		ctx.Logger.Error("Failed to get agreement by order no", err)
+		return nil, errors.New("failed to get agreement by order no")
+	}
+	return agreement, nil
 }

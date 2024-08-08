@@ -43,3 +43,78 @@ type Bill struct {
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
+
+const (
+	// 支付账单类型
+	PaymentBillTypeDeposit = "定金" // 定金
+	PaymentBillTypeFinal   = "尾款" // 尾款
+	// 结算款
+	PaymentBillTypeSettlement = "结算款"
+)
+
+const (
+	// 支付账单状态
+	PaymentBillStatusPendingPayment = "待支付" // 待支付
+	// 已支付待确认
+	PaymentBillStatusPaidPendingConfirm = "已支付待确认" // 已支付待确认
+	PaymentBillStatusPaid               = "已支付"    // 已支付
+	PaymentBillStatusCancelled          = "已取消"    // 已取消
+)
+
+// 支付账单
+type PaymentBill struct {
+	ID   uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
+	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
+
+	TeamUuid string `json:"team_uuid" gorm:"type:char(36);comment:'团队UUID'"` // 团队UUID
+	// 订单号
+	OrderNo string `json:"order_no" gorm:"comment:'订单号'"` // 订单号
+	// 合同号
+	AgreementNo string `json:"agreement_no" gorm:"comment:'合同号'"` // 合同号
+	// PI合同号
+	PiAgreementNo string `json:"pi_agreement_no" gorm:"comment:'PI合同号'"` // PI合同号
+
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
+
+	// 类型
+	Type string `json:"type" gorm:"comment:'类型'"` // 类型  定金  尾款  全款  结算款 其他
+
+	// 原币金额
+	OriginalAmount float64 `json:"original_amount" gorm:"comment:'原币金额'"` // 原币金额
+	// 原币币种
+	OriginalCurrency string `json:"original_currency" gorm:"comment:'原币币种'"` // 原币币种
+
+	// 汇率
+	ExchangeRate float64 `json:"exchange_rate" gorm:"comment:'汇率'"` // 汇率
+
+	// 应付金额
+	Amount float64 `json:"amount" gorm:"comment:'应付金额'"` // 应付金额
+	// 实际付款金额
+	PaymentAmount float64 `json:"payment_amount" gorm:"comment:'实际付款金额'"` // 实际付款金额
+
+	// 未付金额
+	UnpaidAmount float64 `json:"unpaid_amount" gorm:"comment:'未付金额'"` // 未付金额
+
+	// 可垫资额度
+	AdvanceAmount float64 `json:"advance_amount" gorm:"comment:'可垫资额度'"` // 可垫资额度
+	// 是否垫资
+	IsAdvance int `json:"is_advance" gorm:"comment:'是否垫资'"` // 是否垫资 1:是 0:否
+
+	// 状态
+	Status string `json:"status" gorm:"comment:'状态'"` // 状态 1:待付款 2:已付款 3:已取消
+
+	// 锁汇汇率
+	LockExchangeRate float64 `json:"lock_exchange_rate" gorm:"comment:'锁汇汇率'"` // 锁汇汇率
+
+	// 锁汇开始日期
+	LockExchangeStartDate string `json:"lock_exchange_start_date" gorm:"comment:'锁汇开始日期'"` // 锁汇开始日期
+	// 锁汇结束日期
+
+	LockExchangeEndDate string `json:"lock_exchange_end_date" gorm:"comment:'锁汇结束日期'"` // 锁汇结束日期
+
+	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+
+	IsDeleted int `json:"is_deleted" gorm:"comment:'是否删除'"` // 是否删除 1:是 0:否
+}

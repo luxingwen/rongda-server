@@ -1,13 +1,13 @@
 package model
 
 const (
-	AgreementTypeSales    = "sales"
-	AgreementTypePurchase = "purchase"
-	AgreementTypeService  = "service"
+	AgreementTypeSales    = "销售合同"
+	AgreementTypePurchase = "采购合同"
+	AgreementTypeService  = "服务合同"
 	// 销售定金
-	AgreementTypeSalesDeposit = "sales_deposit"
+	AgreementTypeSalesDeposit = "销售定金合同"
 	// 销售尾款
-	AgreementTypeSalesFinalPayment = "sales_final_payment"
+	AgreementTypeSalesFinalPayment = "销售尾款合同"
 )
 
 type ReqAgreementCreate struct {

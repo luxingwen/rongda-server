@@ -212,8 +212,8 @@ type ReqPurchaseOrderQueryParam struct {
 
 type ReqAgreementQueryParam struct {
 	Type     string `json:"type"`
-	Status   string `json:"status"`
-	TeamUuid string `json:"team_uuid"`
+	Status   string `json:"status"`    // 状态 未签署 已签署 已拒绝
+	TeamUuid string `json:"team_uuid"` // 团队uuid
 	Pagination
 }
 
@@ -402,4 +402,26 @@ type ReqWxUserUpdateEmailParam struct {
 type ReqSalesOrderConfirmParam struct {
 	OrderNoList string `json:"order_no_list"`
 	Op          string `json:"op"` // confirm:确认  cancel:取消
+}
+
+type ReqPaymentBillQueryParam struct {
+	OrderNo     string `json:"order_no"`
+	AgreementNo string `json:"agreement_no"`
+	Pagination
+}
+
+type ReqOrderAgreementQueryParam struct {
+	OrderNo string `json:"order_no"`
+	Type    string `json:"type"`
+}
+
+type ReqUpdatePaymentBillStatusParam struct {
+	Uuid   string `json:"uuid"`
+	Status string `json:"status"`
+}
+
+type ReqPaymentBillOrderStatusPaidComfirm struct {
+	Uuid string `json:"uuid"` // 支付账单uuid
+	// 实际付款金额
+	PaymentAmount float64 `json:"payment_amount"`
 }

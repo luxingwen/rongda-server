@@ -237,3 +237,18 @@ func (t *AgreementController) ListAgreements(ctx *app.Context) {
 
 	ctx.JSONSuccess(agreements)
 }
+
+// GetAgreementByOrder
+func (t *AgreementController) GetAgreementByOrder(ctx *app.Context) {
+	var param model.ReqOrderAgreementQueryParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	agreement, err := t.AgreementService.GetAgreementByOrder(ctx, &param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(agreement)
+}

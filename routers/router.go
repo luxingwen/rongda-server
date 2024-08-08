@@ -58,6 +58,7 @@ func InitRouter(ctx *app.App) {
 	InitTeamInviteRouter(ctx)
 	InitTeamMemberRouter(ctx)
 	InitConfigurationRouter(ctx)
+	InitPaymentBillRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -273,6 +274,9 @@ func InitCustomerRouter(ctx *app.App) {
 
 		// 更新订单状态
 		v1.POST("/customer/order/update_status", customerController.UpdateOrderStatus)
+
+		// 根据uuid 列表修改订单状态为已支付待确认
+		v1.POST("/customer/payment_bill/update_status_paid_confirm", customerController.UpdateOrderStatusPaidComfirm)
 	}
 }
 func InitAgentRouter(ctx *app.App) {
@@ -519,6 +523,9 @@ func InitAgreementRouter(ctx *app.App) {
 		v1.POST("/agreement/delete", agreementController.DeleteAgreement)
 		v1.POST("/agreement/info", agreementController.GetAgreement)
 		v1.POST("/agreement/list", agreementController.ListAgreements)
+
+		// 根据订单id和类型获取合同
+		v1.POST("/agreement/order", agreementController.GetAgreementByOrder)
 	}
 }
 
@@ -562,7 +569,10 @@ func InitSalesOrderRouter(ctx *app.App) {
 	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		salesOrderController := &controller.SalesOrderController{
-			SalesOrderService: &service.SalesOrderService{},
+			SalesOrderService:  &service.SalesOrderService{},
+			PaymentBillService: &service.PaymentBillService{},
+			StepService:        &service.StepService{},
+			AgreementService:   &service.AgreementService{},
 		}
 		v1.POST("/sales_order/create", salesOrderController.CreateSalesOrder)
 		v1.POST("/sales_order/update", salesOrderController.UpdateSalesOrder)
@@ -584,6 +594,12 @@ func InitSalesOrderRouter(ctx *app.App) {
 
 		// 订单确认
 		v1.POST("/sales_order/confirm", salesOrderController.ConfirmSalesOrder)
+
+		// 创建定金支付账单
+		v1.POST("/sales_order/create_deposit_payment_bill", salesOrderController.CreateDepositPaymentBill)
+
+		// 创建尾款支付账单
+		v1.POST("/sales_order/create_final_payment_bill", salesOrderController.CreateFinalPaymentBill)
 	}
 }
 
@@ -826,6 +842,24 @@ func InitConfigurationRouter(ctx *app.App) {
 		v1.POST("/configuration/update", configurationController.UpdateConfiguration)
 		v1.POST("/configuration/info", configurationController.GetConfigurationInfo)
 		v1.POST("/configuration/list", configurationController.GetConfigurationList)
+	}
+}
+
+func InitPaymentBillRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		paymentBillController := &controller.PaymentBillController{
+			PaymentBillService: &service.PaymentBillService{},
+		}
+		v1.POST("/payment_bill/create", paymentBillController.CreatePaymentBill)
+		v1.POST("/payment_bill/update", paymentBillController.UpdatePaymentBill)
+		v1.POST("/payment_bill/delete", paymentBillController.DeletePaymentBill)
+		v1.POST("/payment_bill/info", paymentBillController.GetPaymentBillInfo)
+		v1.POST("/payment_bill/list", paymentBillController.GetPaymentBillList)
+
+		// 更新订单状态
+		v1.POST("/payment_bill/update_status", paymentBillController.UpdatePaymentBillStatus)
 	}
 }
 

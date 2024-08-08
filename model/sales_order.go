@@ -100,8 +100,10 @@ type CustomerSalesOrderRes struct {
 
 type SalesOrderRes struct {
 	SalesOrder
-	CustomerInfo *Customer `json:"customer_info"`
-	SalesmanInfo *User     `json:"salesman_info"`
+	CustomerInfo           *Customer           `json:"customer_info"`
+	SalesmanInfo           *User               `json:"salesman_info"`
+	PurchaseOrderInfo      *PurchaseOrder      `json:"purchase_order_info"`
+	SettlementCurrencyInfo *SettlementCurrency `json:"settlement_currency_info"`
 }
 
 // 销售订单明细

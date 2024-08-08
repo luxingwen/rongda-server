@@ -43,7 +43,7 @@ func GenerateToken(userID string) (string, error) {
 // GenerateToken 生成 JWT token
 func GenerateWxUserToken(userID string) (string, error) {
 	// 定义 JWT 的有效期限
-	expirationTime := time.Now().Add(24 * time.Hour) // 设置为 24 小时有效期，可根据需求调整
+	expirationTime := time.Now().Add(7 * 24 * time.Hour) // 设置为 24 小时有效期，可根据需求调整
 
 	// 创建 token 的声明部分
 	claims := jwt.MapClaims{
