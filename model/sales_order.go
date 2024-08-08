@@ -129,3 +129,31 @@ type SalesOrderItemRes struct {
 	ProductInfo *Product `json:"product"`
 	SkuInfo     *Sku     `json:"sku"`
 }
+
+// 结算单
+type Settlement struct {
+	ID   uint   `json:"id" gorm:"primaryKey"`
+	Uuid string `json:"uuid" gorm:"uniqueIndex;type:varchar(50);comment:uuid"`
+	// 团队uuid
+	TeamUuid string `json:"team_uuid" gorm:"type:varchar(50);comment:团队uuid"`
+	OrderNo  string `json:"order_no" gorm:"type:varchar(50);comment:订单号"`
+	// 采购订单号
+	PurchaseOrderNo string `json:"purchase_order_no" gorm:"type:varchar(50);comment:采购订单号"`
+
+	// PI合同号
+	PiAgreementNo string `json:"pi_agreement_no" gorm:"type:varchar(50);comment:PI合同号"`
+
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"type:varchar(50);comment:柜号"`
+	// 目的港口
+	DestinationPort string `json:"destination_port" gorm:"type:varchar(50);comment:目的港口"`
+	// ETA时间
+	EtaDate string `json:"eta_date" gorm:"type:varchar(50);comment:ETA时间"`
+	// 状态
+	Status string `json:"status" gorm:"type:varchar(50);comment:状态"`
+	// 备注
+	Remarks   string `json:"remarks" gorm:"type:varchar(50);comment:备注"`
+	CreatedAt string `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
+	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
+	IsDeleted int    `json:"is_deleted" gorm:"comment:是否删除"`   // 是否删除 1:是 0:否
+}

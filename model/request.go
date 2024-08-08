@@ -425,3 +425,9 @@ type ReqPaymentBillOrderStatusPaidComfirm struct {
 	// 实际付款金额
 	PaymentAmount float64 `json:"payment_amount"`
 }
+
+type ReqSettlementQueryParam struct {
+	OrderNo         string `json:"order_no"`
+	PurchaseOrderNo string `json:"purchase_order_no"`
+	Pagination
+}

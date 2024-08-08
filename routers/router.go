@@ -59,6 +59,7 @@ func InitRouter(ctx *app.App) {
 	InitTeamMemberRouter(ctx)
 	InitConfigurationRouter(ctx)
 	InitPaymentBillRouter(ctx)
+	InitSettlementRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -860,6 +861,21 @@ func InitPaymentBillRouter(ctx *app.App) {
 
 		// 更新订单状态
 		v1.POST("/payment_bill/update_status", paymentBillController.UpdatePaymentBillStatus)
+	}
+}
+
+func InitSettlementRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		settlementController := &controller.SettlementController{
+			SettlementService: &service.SettlementService{},
+		}
+		v1.POST("/settlement/create", settlementController.CreateSettlement)
+		v1.POST("/settlement/update", settlementController.UpdateSettlement)
+		v1.POST("/settlement/delete", settlementController.DeleteSettlement)
+		v1.POST("/settlement/info", settlementController.GetSettlementInfo)
+		v1.POST("/settlement/list", settlementController.GetSettlementList)
 	}
 }
 
