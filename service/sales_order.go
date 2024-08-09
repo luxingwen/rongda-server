@@ -410,7 +410,7 @@ func (s *SalesOrderService) ListAllSalesOrders(ctx *app.Context) (r []*model.Sal
 
 	db := ctx.DB.Model(&model.SalesOrder{})
 
-	if err = db.Where("order_status = ?", model.OrderStatusPendingShipped).Find(&orderList).Error; err != nil {
+	if err = db.Where("order_status != ?", model.OrderStatusCompleted).Find(&orderList).Error; err != nil {
 		return
 	}
 

@@ -119,11 +119,11 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 			}
 
 			// 更新订单状态
-			err = tx.Model(&model.SalesOrder{}).Where("order_no = ?", req.SalesOrderNo).Update("order_status", model.OrderStatusShipped).Error
-			if err != nil {
-				ctx.Logger.Error("Failed to update sales order status", err)
-				return errors.New("failed to update sales order status")
-			}
+			// err = tx.Model(&model.SalesOrder{}).Where("order_no = ?", req.SalesOrderNo).Update("order_status", model.OrderStatusShipped).Error
+			// if err != nil {
+			// 	ctx.Logger.Error("Failed to update sales order status", err)
+			// 	return errors.New("failed to update sales order status")
+			// }
 
 		}
 		return nil

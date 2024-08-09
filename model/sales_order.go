@@ -55,13 +55,26 @@ const (
 	// 待确认
 	OrderStatusPendingConfirm = "待确认"
 	// 已确认
-	OrderStatusConfirmed      = "已确认"
-	OrderStatusPendingPayment = "待支付"
-	OrderStatusPaid           = "已支付"
-	OrderStatusPendingShipped = "待发货"
-	OrderStatusShipped        = "已发货"
-	OrderStatusCompleted      = "已完成"
-	OrderStatusCancelled      = "已取消"
+	OrderStatusConfirmed = "已确认"
+
+	// 待付头款
+	OrderStatusPendingDeposit = "待付头款"
+	// 已付头款
+	OrderStatusPaidDeposit = "已付头款"
+
+	// 待付尾款
+	OrderStatusPendingFinalPayment = "待付尾款"
+	// 已付尾款
+	OrderStatusPaidFinalPayment = "已付尾款"
+
+	// 清关中
+	OrderStatusCustomsClearance = "清关中"
+
+	// 已放行
+	OrderStatusReleased = "已放行"
+
+	// 已完成
+	OrderStatusCompleted = "已完成"
 )
 
 // 销售订单

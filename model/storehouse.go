@@ -91,6 +91,7 @@ type StorehouseProductOpLog struct {
 	// 库存数量
 	Quantity   int    `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
 	BoxNum     int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
+	LogType    string `json:"log_type" gorm:"comment:'日志类型'"`                  // 记录类型 采购单入库  销售单入库
 	OpType     int    `json:"op_type" gorm:"comment:'操作类型'"`                   // 操作类型 1:入库 2:出库 3:盘点 4:调拨
 	OpQuantity int    `json:"op_quantity" gorm:"comment:'操作数量'"`               // 操作数量
 	OpBoxNum   int    `json:"op_box_num" gorm:"comment:'操作箱数'"`                // 操作箱数
@@ -134,6 +135,9 @@ type StorehouseInboundReq struct {
 	Title          string `json:"title" binding:"required"`           // 标题
 	// 采购订单
 	PurchaseOrderNo string `json:"purchase_order_no" binding:"-"` // 采购订单
+
+	// 销售订单
+	SalesOrderNo string `json:"sales_order_no" binding:"-"` // 销售订单
 
 	// 订单类型
 	PurchaseOrderProductType string                       `json:"purchase_order_product_type" binding:"-"` // 采购订单物品类型 1：期货 2：现货
