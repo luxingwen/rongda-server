@@ -2,14 +2,20 @@ package controller
 
 import (
 	"net/http"
+	"path/filepath"
 	"sgin/model"
 	"sgin/pkg/app"
 	"sgin/service"
+	"time"
 )
 
 type CustomerController struct {
-	CustomerService    *service.CustomerService
-	PaymentBillService *service.PaymentBillService
+	CustomerService               *service.CustomerService
+	PaymentBillService            *service.PaymentBillService
+	SettlementService             *service.SettlementService
+	StorehouseProductOpLogService *service.StorehouseProductOpLogService
+	StorehouseProductService      *service.StorehouseProductService
+	AgreementService              *service.AgreementService
 }
 
 // @Summary 创建客户
@@ -187,4 +193,167 @@ func (c *CustomerController) UpdateOrderStatusPaidComfirm(ctx *app.Context) {
 	}
 
 	ctx.JSONSuccess("确认支付成功")
+}
+
+// GetSettlementList
+func (c *CustomerController) GetSettlementList(ctx *app.Context) {
+	param := &model.ReqSettlementQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if param.TeamUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "团队UUID不能为空")
+		return
+	}
+
+	settlements, err := c.SettlementService.GetSettlementList(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(settlements)
+}
+
+// GetStorehouseProductInOutList
+func (c *CustomerController) GetStorehouseProductInOutList(ctx *app.Context) {
+	param := &model.ReqStorehouseProductOpLogListParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if param.TeamUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "团队UUID不能为空")
+		return
+	}
+	param.OpTypes = []int{model.StorehouseProductOpLogOpTypeInbound, model.StorehouseProductOpLogOpTypeOutbound}
+
+	list, err := c.StorehouseProductOpLogService.GetStorehouseProductOpLogList(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(list)
+}
+
+// GetStorehouseProductList
+func (c *CustomerController) GetStorehouseProductList(ctx *app.Context) {
+	param := &model.ReqStorehouseProductQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if param.TeamUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "团队UUID不能为空")
+		return
+	}
+
+	list, err := c.StorehouseProductService.ListProducts(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(list)
+}
+
+// PaymentBillUpdateIsAdvance
+func (c *CustomerController) PaymentBillUpdateIsAdvance(ctx *app.Context) {
+	param := &model.ReqUpdatePaymentBillIsAdvanceParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := c.PaymentBillService.UpdatePaymentBillIsAdvance(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("更新是否预付款成功")
+}
+
+// GetPaymentBillList
+func (c *CustomerController) GetPaymentBillList(ctx *app.Context) {
+	param := &model.ReqPaymentBillQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if param.TeamUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "团队UUID不能为空")
+		return
+	}
+
+	list, err := c.PaymentBillService.GetPaymentBillList(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(list)
+}
+
+// UpdateAgreementSign
+func (c *CustomerController) UpdateAgreementSign(ctx *app.Context) {
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	orderNo := ctx.PostForm("order_no")
+
+	if orderNo == "" {
+		ctx.JSONError(http.StatusBadRequest, "order_no is required")
+		return
+	}
+
+	uuidStr := ctx.PostForm("uuid")
+	if uuidStr == "" {
+		ctx.JSONError(http.StatusBadRequest, "uuid is required")
+		return
+	}
+
+	// 保存头像
+
+	userid := ctx.GetString("wx_user_id")
+	if userid == "" {
+		ctx.JSONError(http.StatusBadRequest, "user_id is required")
+		return
+	}
+
+	// 获取文件后缀
+
+	extfile := filepath.Ext(file.Filename)
+
+	filename := "/sales_order/agreement/sign_" + orderNo + extfile
+
+	err = ctx.SaveUploadedFile(file, ctx.Config.Upload.Dir+filename)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	param := &model.Agreement{
+		Uuid:           uuidStr,
+		SignatureImage: filename,
+		SignatureTime:  time.Now().Format("2006-01-02 15:04:05"),
+		SignatureUser:  userid,
+	}
+
+	err = c.AgreementService.UpdateAgreementSign(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("更新合同签署成功")
 }

@@ -370,3 +370,21 @@ func (s *AgreementService) GetAgreementByOrder(ctx *app.Context, params *model.R
 	}
 	return agreement, nil
 }
+
+// UpdateAgreementSign
+func (s *AgreementService) UpdateAgreementSign(ctx *app.Context, agreement *model.Agreement) error {
+	now := time.Now().Format("2006-01-02 15:04:05")
+	err := ctx.DB.Model(&model.Agreement{}).Where("uuid = ?", agreement.Uuid).Updates(map[string]interface{}{
+		"status":          model.AgreementStatusSigned,
+		"signature_image": agreement.SignatureImage,
+		"signature_user":  agreement.SignatureUser,
+		"signature_time":  now,
+		"updated_at":      now,
+	}).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update agreement sign", err)
+		return errors.New("failed to update agreement sign")
+	}
+
+	return nil
+}

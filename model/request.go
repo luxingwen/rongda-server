@@ -177,6 +177,7 @@ type ReqStorehouseProductQueryParam struct {
 	PurchaseOrderProductType string `json:"purchase_order_product_type" binding:"-"` // 采购订单物品类型 1：期货 2：现货
 	CustomerUuid             string `json:"customer_uuid" binding:"-"`               // 客户uuid
 	ProductUuid              string `json:"product_uuid" binding:"-"`                // 商品UUID
+	TeamUuid                 string `json:"team_uuid" binding:"-"`                   // 团队uuid
 	Pagination
 }
 
@@ -400,13 +401,16 @@ type ReqWxUserUpdateEmailParam struct {
 
 // 订单确认
 type ReqSalesOrderConfirmParam struct {
-	OrderNoList string `json:"order_no_list"`
-	Op          string `json:"op"` // confirm:确认  cancel:取消
+	OrderNoList []string `json:"order_no_list"`
+	Op          string   `json:"op"` // confirm:确认  cancel:取消
 }
 
 type ReqPaymentBillQueryParam struct {
 	OrderNo     string `json:"order_no"`
 	AgreementNo string `json:"agreement_no"`
+	TeamUuid    string `json:"team_uuid"`
+	// 是否垫资
+	IsAdvance int `json:"is_advance"` // 是否垫资 1:是 0:否
 	Pagination
 }
 
@@ -429,5 +433,20 @@ type ReqPaymentBillOrderStatusPaidComfirm struct {
 type ReqSettlementQueryParam struct {
 	OrderNo         string `json:"order_no"`
 	PurchaseOrderNo string `json:"purchase_order_no"`
+	TeamUuid        string `json:"team_uuid"`
 	Pagination
+}
+
+type ReqStorehouseProductOpLogListParam struct {
+	TeamUuid       string `json:"team_uuid"`
+	StorehouseUuid string `json:"storehouse_uuid"`
+	OpTypes        []int  `json:"op_types"` // 操作类型 1:入库 2:出库 3:盘点
+	Pagination
+}
+
+type ReqUpdatePaymentBillIsAdvanceParam struct {
+	// uuid列表
+	Uuids []string `json:"uuids"`
+	// 是否垫资
+	IsAdvance int `json:"is_advance"` // 是否垫资 1:是 0:否
 }

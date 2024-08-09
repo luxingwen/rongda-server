@@ -78,6 +78,13 @@ type StorehouseProductOpLog struct {
 
 	StorehouseUuid        string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"`           //
 	StorehouseProductUuid string `json:"storehouse_product_uuid" gorm:"type:char(36);index;comment:'仓库物品UUID'"` // 仓库物品UUID
+
+	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
+
+	SkuUuid string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"` // SKU UUID
+
+	TeamUuid string `json:"team_uuid" gorm:"type:char(36);index;comment:'团队UUID'"` // 团队UUID
+
 	// 操作之前库存数量
 	BeforeQuantity int `json:"before_quantity" gorm:"comment:'操作之前库存数量'"` // 操作之前库存数量
 	BeforeBoxNum   int `json:"before_box_num" gorm:"comment:'操作之前箱数'"`    // 操作之前箱数
@@ -94,7 +101,10 @@ type StorehouseProductOpLog struct {
 
 type StorehouseProductOpLogRes struct {
 	StorehouseProductOpLog
-	OpByUser User `json:"op_by_user"`
+	ProductInfo    Product    `json:"product_info"`
+	SkuInfo        Sku        `json:"sku_info"`
+	StorehouseInfo Storehouse `json:"storehouse_info"`
+	OpByUser       User       `json:"op_by_user"`
 }
 
 type StorehouseProductRes struct {

@@ -25,6 +25,8 @@ func (s *SettlementController) CreateSettlement(ctx *app.Context) {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
+	param.Status = model.SettlementStatusPending
+
 	if err := s.SettlementService.CreateSettlement(ctx, &param); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return

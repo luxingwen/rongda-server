@@ -101,6 +101,9 @@ func (s *StorehouseOutboundService) CreateOutbound(ctx *app.Context, userId stri
 			stockopLog := &model.StorehouseProductOpLog{
 				Uuid:                  uuid.New().String(),
 				StorehouseProductUuid: stock.Uuid,
+				ProductUuid:           stock.ProductUuid,
+				SkuUuid:               stock.SkuUuid,
+				TeamUuid:              req.CustomerUuid,
 				StorehouseUuid:        outbound.StorehouseUuid,
 				BeforeQuantity:        beforQuantity,
 				Quantity:              stock.Quantity,

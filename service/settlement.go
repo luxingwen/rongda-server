@@ -27,6 +27,7 @@ func (s *SettlementService) CreateSettlement(ctx *app.Context, settlement *model
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Create(settlement).Error
 		if err != nil {
+			tx.Rollback()
 			ctx.Logger.Error("Failed to create settlement", err)
 			return errors.New("failed to create settlement")
 		}
@@ -85,10 +86,14 @@ func (s *SettlementService) GetSettlementList(ctx *app.Context, params *model.Re
 	db := ctx.DB.Model(&model.Settlement{})
 
 	if params.OrderNo != "" {
-		db = db.Where("order_no LIKE ?", "%"+params.OrderNo+"%")
+		db = db.Where("order_no = ?", params.OrderNo)
 	}
 	if params.PurchaseOrderNo != "" {
-		db = db.Where("purchase_order_no LIKE ?", "%"+params.PurchaseOrderNo+"%")
+		db = db.Where("purchase_order_no = ?", params.PurchaseOrderNo)
+	}
+
+	if params.TeamUuid != "" {
+		db = db.Where("team_uuid = ?", params.TeamUuid)
 	}
 
 	db = db.Where("is_deleted = ?", 0)

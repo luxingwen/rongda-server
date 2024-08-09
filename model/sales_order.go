@@ -130,6 +130,15 @@ type SalesOrderItemRes struct {
 	SkuInfo     *Sku     `json:"sku"`
 }
 
+const (
+	// 结算单状态
+	SettlementStatusPending = "待结算"
+	// 结算中
+	SettlementStatusProcessing = "结算中"
+	// 已结算
+	SettlementStatusSettled = "已结算"
+)
+
 // 结算单
 type Settlement struct {
 	ID   uint   `json:"id" gorm:"primaryKey"`

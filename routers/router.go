@@ -263,7 +263,11 @@ func InitCustomerRouter(ctx *app.App) {
 	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		customerController := &controller.CustomerController{
-			CustomerService: &service.CustomerService{},
+			CustomerService:               &service.CustomerService{},
+			PaymentBillService:            &service.PaymentBillService{},
+			SettlementService:             &service.SettlementService{},
+			StorehouseProductOpLogService: &service.StorehouseProductOpLogService{},
+			StorehouseProductService:      &service.StorehouseProductService{},
 		}
 		v1.POST("/customer/create", customerController.CreateCustomer)
 		v1.POST("/customer/update", customerController.UpdateCustomer)
@@ -278,6 +282,22 @@ func InitCustomerRouter(ctx *app.App) {
 
 		// 根据uuid 列表修改订单状态为已支付待确认
 		v1.POST("/customer/payment_bill/update_status_paid_confirm", customerController.UpdateOrderStatusPaidComfirm)
+
+		// 获取结算单列表
+		v1.POST("/customer/settlement/list", customerController.GetSettlementList)
+
+		// 获取出入库记录
+		v1.POST("/customer/storehouse_in_out/list", customerController.GetStorehouseProductInOutList)
+
+		// 获取我的库存
+		v1.POST("/customer/storehouse_product/list", customerController.GetStorehouseProductList)
+
+		// 批量调整账单垫资情况
+		v1.POST("/customer/payment_bill/update_is_advance", customerController.PaymentBillUpdateIsAdvance)
+
+		// 获取账单列表
+		v1.POST("/customer/payment_bill/list", customerController.GetPaymentBillList)
+
 	}
 }
 func InitAgentRouter(ctx *app.App) {

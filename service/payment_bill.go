@@ -98,10 +98,14 @@ func (s *PaymentBillService) GetPaymentBillList(ctx *app.Context, params *model.
 	db := ctx.DB.Model(&model.PaymentBill{})
 
 	if params.OrderNo != "" {
-		db = db.Where("order_no LIKE ?", "%"+params.OrderNo+"%")
+		db = db.Where("order_no = ?", params.OrderNo)
 	}
 	if params.AgreementNo != "" {
-		db = db.Where("agreement_no LIKE ?", "%"+params.AgreementNo+"%")
+		db = db.Where("agreement_no = ?", params.AgreementNo)
+	}
+
+	if params.TeamUuid != "" {
+		db = db.Where("team_uuid = ?", params.TeamUuid)
 	}
 
 	db = db.Where("is_deleted = ?", 0)
@@ -168,6 +172,26 @@ func (s *PaymentBillService) UpdatePaymentBillStatusPaidPendingConfirm(ctx *app.
 	if err != nil {
 		ctx.Logger.Error("Failed to update payment bill status", err)
 		return errors.New("failed to update payment bill status")
+	}
+
+	return nil
+}
+
+// UpdatePaymentBillIsAdvance
+func (s *PaymentBillService) UpdatePaymentBillIsAdvance(ctx *app.Context, param *model.ReqUpdatePaymentBillIsAdvanceParam) error {
+
+	if param.Uuids == nil || len(param.Uuids) == 0 {
+		return errors.New("uuids is empty")
+	}
+
+	now := time.Now().Format("2006-01-02 15:04:05")
+	err := ctx.DB.Model(&model.PaymentBill{}).Where("uuid IN ?", param.Uuids).Updates(map[string]interface{}{
+		"is_advance": param.IsAdvance,
+		"updated_at": now,
+	}).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update payment bill is_advance", err)
+		return errors.New("failed to update payment bill is_advance")
 	}
 
 	return nil

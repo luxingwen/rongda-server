@@ -343,6 +343,10 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 		db = db.Where("customer_uuid = ?", param.CustomerUuid)
 	}
 
+	if param.TeamUuid != "" {
+		db = db.Where("customer_uuid = ?", param.TeamUuid)
+	}
+
 	if err = db.Order("id DESC").Offset(param.GetOffset()).Limit(param.PageSize).Find(&productList).Error; err != nil {
 		return
 	}
