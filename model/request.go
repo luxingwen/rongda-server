@@ -409,6 +409,9 @@ type ReqPaymentBillQueryParam struct {
 	OrderNo     string `json:"order_no"`
 	AgreementNo string `json:"agreement_no"`
 	TeamUuid    string `json:"team_uuid"`
+
+	Status string `json:"status"` //
+	Type   string `json:"type"`   // 类型  定金  尾款  全款  结算款 其他
 	// 是否垫资
 	IsAdvance int `json:"is_advance"` // 是否垫资 1:是 0:否
 	Pagination

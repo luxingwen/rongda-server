@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"sgin/model"
@@ -23,6 +24,7 @@ func (s *PaymentBillService) CreatePaymentBill(ctx *app.Context, paymentBill *mo
 	paymentBill.Uuid = uuid.New().String()
 	paymentBill.CreatedAt = now
 	paymentBill.UpdatedAt = now
+	paymentBill.IsAdvance = 2 // 默认不垫资
 
 	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Create(paymentBill).Error
@@ -108,6 +110,18 @@ func (s *PaymentBillService) GetPaymentBillList(ctx *app.Context, params *model.
 		db = db.Where("team_uuid = ?", params.TeamUuid)
 	}
 
+	if params.Status != "" {
+		db = db.Where("status = ?", params.Status)
+	}
+
+	if params.Type != "" {
+		db = db.Where("type = ?", params.Type)
+	}
+
+	if params.IsAdvance > 0 {
+		db = db.Where("is_advance = ?", params.IsAdvance)
+	}
+
 	db = db.Where("is_deleted = ?", 0)
 
 	err := db.Count(&total).Error
@@ -122,10 +136,74 @@ func (s *PaymentBillService) GetPaymentBillList(ctx *app.Context, params *model.
 		return nil, errors.New("failed to get payment bill list")
 	}
 
+	orderUuids := make([]string, 0)
+	for _, v := range paymentBills {
+		orderUuids = append(orderUuids, v.OrderNo)
+	}
+
+	salesOrderItemMap, salesOrderItems, err := NewSalesOrderService().GetSalesOrderItemsByUUIDs(ctx, orderUuids)
+
+	if err != nil {
+		ctx.Logger.Error("Failed to get sales order items", err)
+		return nil, errors.New("failed to get sales order items")
+	}
+
+	pucharsOrderItemUuids := make([]string, 0)
+	for _, v := range salesOrderItems {
+		pucharsOrderItemUuids = append(pucharsOrderItemUuids, v.PurchaseOrderProductNo)
+	}
+
+	purchaseOrderItemMap, err := NewPurchaseOrderService().GetPurchaseOrderItemListByUUIDs(ctx, pucharsOrderItemUuids)
+
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order items", err)
+		return nil, errors.New("failed to get purchase order items")
+	}
+
+	paymentBillList := make([]*model.PaymentBill, 0)
+
+	for _, v := range paymentBills {
+		v.CabinetNo = s.GetCabinetNoByOrderNo(ctx, v.OrderNo, salesOrderItemMap, purchaseOrderItemMap)
+		paymentBillList = append(paymentBillList, v)
+	}
+
 	return &model.PagedResponse{
 		Total: total,
-		Data:  paymentBills,
+		Data:  paymentBillList,
 	}, nil
+}
+
+// 更具订单号获柜号信息
+func (s *PaymentBillService) GetCabinetNoByOrderNo(ctx *app.Context, orderNo string, salesOrderItemMap map[string][]*model.SalesOrderItem, orderItemMap map[string]*model.PurchaseOrderItem) string {
+
+	itemlist, ok := salesOrderItemMap[orderNo]
+	if !ok {
+		return ""
+	}
+
+	strList := make([]string, 0)
+
+	mexist := make(map[string]bool)
+
+	for _, v := range itemlist {
+		if item, ok := orderItemMap[v.PurchaseOrderProductNo]; ok {
+			if item.CabinetNo == "" {
+				continue
+			}
+			if _, ok := mexist[item.CabinetNo]; !ok {
+				strList = append(strList, item.CabinetNo)
+				mexist[item.CabinetNo] = true
+			}
+		}
+	}
+
+	if len(strList) == 0 {
+		return ""
+	}
+
+	ctx.Logger.Info("GetCabinetNoByOrderNo:", strList)
+
+	return strings.Join(strList, ",")
 }
 
 // UpdatePaymentBillStatus

@@ -946,3 +946,24 @@ func (s *PurchaseOrderService) GetPurchaseOrderItemListByOrderNos(ctx *app.Conte
 	rlist = items
 	return
 }
+
+// 根据uuid 列表获取采购订单明细
+func (s *PurchaseOrderService) GetPurchaseOrderItemListByUUIDs(ctx *app.Context, uuids []string) (r map[string]*model.PurchaseOrderItem, err error) {
+	r = make(map[string]*model.PurchaseOrderItem)
+
+	if len(uuids) == 0 {
+		return
+	}
+
+	var items []*model.PurchaseOrderItem
+	err = ctx.DB.Where("purchase_order_product_no IN ?", uuids).Find(&items).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order item list by uuids", err)
+		return nil, errors.New("failed to get purchase order item list by uuids")
+	}
+
+	for _, item := range items {
+		r[item.PurchaseOrderProductNo] = item
+	}
+	return
+}

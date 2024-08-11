@@ -69,6 +69,7 @@ type PaymentBill struct {
 	TeamUuid string `json:"team_uuid" gorm:"type:char(36);comment:'团队UUID'"` // 团队UUID
 	// 订单号
 	OrderNo string `json:"order_no" gorm:"comment:'订单号'"` // 订单号
+
 	// 合同号
 	AgreementNo string `json:"agreement_no" gorm:"comment:'合同号'"` // 合同号
 	// PI合同号

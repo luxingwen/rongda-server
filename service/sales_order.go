@@ -27,8 +27,8 @@ func (s *SalesOrderService) CreateSalesOrder(ctx *app.Context, userId string, re
 		OrderType:          req.OrderType,
 		Title:              req.Title,
 		OrderDate:          req.OrderDate,
-		DepositAmount:      float64(req.Deposit),
-		OrderAmount:        float64(req.OrderAmount),
+		DepositAmount:      req.Deposit,
+		OrderAmount:        req.OrderAmount,
 		Salesman:           userId,
 		CustomerUuid:       req.CustomerUuid,
 		SettlementCurrency: req.SettlementCurrency,
@@ -625,4 +625,27 @@ func (s *SalesOrderService) UpdateSalesOrderDocment(ctx *app.Context, params *mo
 		return errors.New("failed to update sales order docment")
 	}
 	return nil
+}
+
+// 根据uuid列表获取销售订单明细
+func (s *SalesOrderService) GetSalesOrderItemsByUUIDs(ctx *app.Context, uuids []string) (r map[string][]*model.SalesOrderItem, rlist []*model.SalesOrderItem, err error) {
+	var (
+		orderItems []*model.SalesOrderItem
+	)
+
+	db := ctx.DB.Model(&model.SalesOrderItem{})
+
+	if err = db.Where("order_no IN ?", uuids).Find(&orderItems).Error; err != nil {
+		return
+	}
+
+	res := make(map[string][]*model.SalesOrderItem)
+	for _, item := range orderItems {
+		if _, ok := res[item.OrderNo]; !ok {
+			res[item.OrderNo] = make([]*model.SalesOrderItem, 0)
+		}
+		res[item.OrderNo] = append(res[item.OrderNo], item)
+	}
+
+	return res, orderItems, nil
 }

@@ -106,7 +106,7 @@ func (s *EntrustOrderService) GetEntrustOrderList(ctx *app.Context, params *mode
 		return nil, errors.New("failed to get entrust order count")
 	}
 
-	err = db.Offset(params.GetOffset()).Limit(params.PageSize).Find(&orders).Error
+	err = db.Order("id DESC").Offset(params.GetOffset()).Limit(params.PageSize).Find(&orders).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to get entrust order list", err)
 		return nil, errors.New("failed to get entrust order list")

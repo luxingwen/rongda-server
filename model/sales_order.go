@@ -5,15 +5,15 @@ type SalesOrderReq struct {
 	OrderType          string  `json:"order_type" form:"order_type" binding:"required"`                     // 订单类型：1.期货订单 2.现货订单
 	Title              string  `json:"title" form:"title" binding:"required"`                               // 标题
 	OrderDate          string  `json:"order_date" form:"order_date" binding:"required"`                     // 订单日期
-	Deposit            int     `json:"deposit" form:"deposit" binding:"required"`                           // 定金
+	Deposit            float64 `json:"deposit" form:"deposit" binding:"required"`                           // 定金
 	DepositRatio       float64 `json:"deposit_ratio" form:"deposit_ratio" binding:"required"`               // 定金比例
 	FinalPaymentAmount float64 `json:"final_payment_amount" form:"final_payment_amount" binding:"required"` // 尾款金额
 
 	PurchaseOrderNo string `json:"purchase_order_no" form:"purchase_order_no" binding:"-"` // 采购订单号
 	EntrustOrderId  string `json:"entrust_order_id" gorm:"comment:'委托订单ID'"`               // 委托订单ID
 
-	OrderAmount        int    `json:"order_amount" form:"order_amount" binding:"required"`               // 订单金额
-	SettlementCurrency string `json:"settlement_currency" form:"settlement_currency" binding:"required"` // 结算币种
+	OrderAmount        float64 `json:"order_amount" form:"order_amount" binding:"required"`               // 订单金额
+	SettlementCurrency string  `json:"settlement_currency" form:"settlement_currency" binding:"required"` // 结算币种
 	// 备注
 	Remarks string `json:"remarks" form:"remarks" binding:"-"`
 	// 客户uuid
