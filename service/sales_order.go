@@ -583,3 +583,46 @@ func (s *SalesOrderService) CreateFinalPaymentBill(ctx *app.Context, params *mod
 
 	return nil
 }
+
+// UpdateSalesOrderDocment 更新单据
+func (s *SalesOrderService) UpdateSalesOrderDocment(ctx *app.Context, params *model.SalesOrder) error {
+	now := time.Now().Format("2006-01-02 15:04:05")
+	params.UpdatedAt = now
+
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		err := tx.Model(&model.SalesOrder{}).Where("order_no = ?", params.OrderNo).Updates(map[string]interface{}{
+			"documents":               params.Documents,
+			"documents_received_date": params.DocumentsReceivedDate,
+			"updated_at":              now,
+		}).Error
+
+		// 获取步骤链
+		stepChain := &model.StepChain{}
+		err = tx.Where("ref_id = ? AND ref_type = ?", params.OrderNo, model.StepChainRefTypeSalesOrder).First(stepChain).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get step chain", err)
+			tx.Rollback()
+			return errors.New("failed to get step chain")
+		}
+
+		// 更新步骤
+		err = tx.Model(&model.Step{}).Where("chain_id = ? AND title = ?", stepChain.Uuid, "更新单据信息").Updates(map[string]interface{}{
+			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+			"status":     model.StepStatusFinish,
+		}).Error
+
+		if err != nil {
+			ctx.Logger.Error("Failed to update step", err)
+			tx.Rollback()
+			return errors.New("failed to update step")
+		}
+		return nil
+	})
+
+	if err != nil {
+		ctx.Logger.Error("Failed to update sales order docment", err)
+		return errors.New("failed to update sales order docment")
+	}
+	return nil
+}

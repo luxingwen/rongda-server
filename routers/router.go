@@ -298,6 +298,9 @@ func InitCustomerRouter(ctx *app.App) {
 		// 获取账单列表
 		v1.POST("/customer/payment_bill/list", customerController.GetPaymentBillList)
 
+		// 更新合同签名
+		v1.POST("/customer/update_agreement_sign", customerController.UpdateAgreementSign)
+
 	}
 }
 func InitAgentRouter(ctx *app.App) {
@@ -621,6 +624,9 @@ func InitSalesOrderRouter(ctx *app.App) {
 
 		// 创建尾款支付账单
 		v1.POST("/sales_order/create_final_payment_bill", salesOrderController.CreateFinalPaymentBill)
+
+		// 更新单据
+		v1.POST("/sales_order/update_docment", salesOrderController.UpdateSalesOrderDocment)
 	}
 }
 

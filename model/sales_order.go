@@ -64,6 +64,7 @@ const (
 
 	// 待付尾款
 	OrderStatusPendingFinalPayment = "待付尾款"
+
 	// 已付尾款
 	OrderStatusPaidFinalPayment = "已付尾款"
 
@@ -102,12 +103,27 @@ type SalesOrder struct {
 	SettlementCurrency string `json:"settlement_currency" gorm:"type:varchar(50);comment:结算币种"`
 	Remarks            string `json:"remarks" gorm:"type:varchar(50);comment:备注"`
 	Updater            string `json:"updater" gorm:"type:varchar(50);comment:更新人"`
-	CreatedAt          string `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
-	UpdatedAt          string `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
+
+	// 单据信息
+	Documents string `json:"documents" gorm:"type:text;comment:单据信息"`
+
+	// 单据收到时间
+	DocumentsReceivedDate string `json:"documents_received_date" gorm:"type:varchar(50);comment:单据收到时间"`
+
+	CreatedAt string `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
+	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
 }
 
 type CustomerSalesOrderRes struct {
 	SalesOrder
+	// 厂号
+	FactoryNo string `json:"factory_no" gorm:"type:varchar(50);comment:厂号"`
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"type:varchar(50);comment:柜号"`
+	// 原产国
+	OriginCountry string `json:"origin_country" gorm:"type:varchar(50);comment:原产国"`
+	// ETA时间
+	EtaDate           string         `json:"eta_date" gorm:"type:varchar(50);comment:ETA时间"`
 	PurchaseOrderInfo *PurchaseOrder `json:"purchase_order_info"`
 }
 

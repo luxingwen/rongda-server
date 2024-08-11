@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"sort"
+	"strings"
 	"time"
 
 	"sgin/model"
@@ -197,6 +199,23 @@ func (s *CustomerService) GetCustomerOrders(ctx *app.Context, params *model.ReqS
 		return nil, errors.New("failed to get purchase order list by order nos")
 	}
 
+	purchaseOrderItemMap, purchaseOrderItemList, err := NewPurchaseOrderService().GetPurchaseOrderItemListByOrderNos(ctx, purchaseOrderUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order item list by order nos", err)
+		return nil, errors.New("failed to get purchase order item list by order nos")
+	}
+
+	skuUuids := make([]string, 0)
+	for _, item := range purchaseOrderItemList {
+		skuUuids = append(skuUuids, item.SkuUuid)
+	}
+
+	skuMap, err := NewSkuService().GetSkuListByUUIDs(ctx, skuUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get sku list by uuids", err)
+		return nil, errors.New("failed to get sku list by uuids")
+	}
+
 	res := make([]*model.CustomerSalesOrderRes, 0)
 	for _, order := range orders {
 		customerOrderResItem := model.CustomerSalesOrderRes{
@@ -207,6 +226,17 @@ func (s *CustomerService) GetCustomerOrders(ctx *app.Context, params *model.ReqS
 			customerOrderResItem.PurchaseOrderInfo = purchaseOrder
 		}
 
+		resItem, err := s.GetPurchaseOrderInfoByOrderNo(ctx, order.PurchaseOrderNo, purchaseOrderItemMap, skuMap)
+		if err != nil {
+			ctx.Logger.Error("Failed to get purchase order info by order no", err)
+			return nil, errors.New("failed to get purchase order info by order no")
+		}
+
+		customerOrderResItem.CabinetNo = resItem.CabinetNo
+		customerOrderResItem.FactoryNo = resItem.FactoryNo
+		customerOrderResItem.OriginCountry = resItem.OriginCountry
+		customerOrderResItem.EtaDate = resItem.EtaDate
+
 		res = append(res, &customerOrderResItem)
 	}
 
@@ -214,6 +244,65 @@ func (s *CustomerService) GetCustomerOrders(ctx *app.Context, params *model.ReqS
 		Total: total,
 		Data:  res,
 	}, nil
+
+}
+
+// 根据采购订单号获取eta时间厂号柜号目的港口
+func (s *CustomerService) GetPurchaseOrderInfoByOrderNo(ctx *app.Context, orderNo string, purchaseOrderItemMap map[string][]*model.PurchaseOrderItem, skuMap map[string]*model.Sku) (model.CustomerSalesOrderRes, error) {
+
+	// 先从map里面获取列表，然后厂号使用逗号分割，柜号使用逗号分割，目的港口使用第一个， eta时间使用最近的时间
+	purchaseOrderItems, ok := purchaseOrderItemMap[orderNo]
+
+	if !ok {
+		return model.CustomerSalesOrderRes{}, nil
+	}
+
+	if len(purchaseOrderItems) == 0 {
+		return model.CustomerSalesOrderRes{}, nil
+	}
+	r := model.CustomerSalesOrderRes{}
+	factoryNo := make([]string, 0)
+	mFactoryNo := make(map[string]bool)
+	cabinetNo := make([]string, 0)
+	mCabinetNo := make(map[string]bool)
+	etaDate := make([]string, 0)
+	for _, item := range purchaseOrderItems {
+		if item.SkuUuid != "" {
+			if sku, ok := skuMap[item.SkuUuid]; ok {
+				if _, ok := mFactoryNo[sku.FactoryNo]; !ok {
+					factoryNo = append(factoryNo, sku.FactoryNo)
+					mFactoryNo[sku.FactoryNo] = true
+				}
+				if r.OriginCountry == "" {
+					r.OriginCountry = sku.Country
+				}
+			}
+		}
+		if item.CabinetNo != "" {
+			if _, ok := mCabinetNo[item.CabinetNo]; !ok {
+				mCabinetNo[item.CabinetNo] = true
+				cabinetNo = append(cabinetNo, item.CabinetNo)
+			}
+		}
+		if item.EstimatedArrivalDate != "" {
+			etaDate = append(etaDate, item.EstimatedArrivalDate)
+		}
+	}
+
+	r.FactoryNo = strings.Join(factoryNo, ",")
+	r.CabinetNo = strings.Join(cabinetNo, ",")
+
+	// 对eta时间进行排序
+	if len(etaDate) == 0 {
+		return r, nil
+	}
+	if len(etaDate) == 1 {
+		r.EtaDate = etaDate[0]
+		return r, nil
+	}
+	sort.Strings(etaDate)
+	r.EtaDate = etaDate[0]
+	return r, nil
 
 }
 

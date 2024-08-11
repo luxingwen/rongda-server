@@ -924,3 +924,25 @@ func (s *PurchaseOrderService) CompletePurchaseOrderItem(ctx *app.Context, item 
 	}
 	return
 }
+
+// 根据采购订单号列表获取采购订单明细
+func (s *PurchaseOrderService) GetPurchaseOrderItemListByOrderNos(ctx *app.Context, orderNos []string) (r map[string][]*model.PurchaseOrderItem, rlist []*model.PurchaseOrderItem, err error) {
+	r = make(map[string][]*model.PurchaseOrderItem)
+
+	if len(orderNos) == 0 {
+		return
+	}
+
+	var items []*model.PurchaseOrderItem
+	err = ctx.DB.Where("purchase_order_no IN ?", orderNos).Find(&items).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order item list by order nos", err)
+		return nil, nil, errors.New("failed to get purchase order item list by order nos")
+	}
+
+	for _, item := range items {
+		r[item.PurchaseOrderNo] = append(r[item.PurchaseOrderNo], item)
+	}
+	rlist = items
+	return
+}

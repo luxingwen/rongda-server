@@ -7,6 +7,8 @@ import (
 	"sgin/model"
 	"sgin/pkg/app"
 	"sgin/service"
+
+	"github.com/google/uuid"
 )
 
 type SalesOrderController struct {
@@ -472,4 +474,61 @@ func (t *SalesOrderController) CreateFinalPaymentBill(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(param)
+}
+
+// UpdateSalesOrderDocment
+func (t *SalesOrderController) UpdateSalesOrderDocment(ctx *app.Context) {
+
+	orderNo := ctx.PostForm("order_no")
+	if orderNo == "" {
+		ctx.JSONError(http.StatusBadRequest, "order_no is required")
+		return
+	}
+
+	var attachments []model.FileAttachment
+
+	existfiles := ctx.Request.FormValue("existfiles")
+	if existfiles != "" {
+		err := json.Unmarshal([]byte(existfiles), &attachments)
+		if err != nil {
+			ctx.Logger.Error("解析文件失败:", err)
+			ctx.JSONError(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	// Handle file uploads
+	form := ctx.Request.MultipartForm
+	files := form.File["attachment"]
+
+	for _, fileHeader := range files {
+
+		// Create a unique filename and save the file
+		filename := "/agreement/sales_order/doc_" + uuid.New().String() + filepath.Ext(fileHeader.Filename)
+		fileattachment := model.FileAttachment{
+			Name: fileHeader.Filename,
+			Url:  filename,
+		}
+		err := ctx.SaveUploadedFile(fileHeader, ctx.Config.Upload.Dir+filename)
+		if err != nil {
+			ctx.JSONError(http.StatusInternalServerError, "Cannot save file")
+			return
+		}
+		attachments = append(attachments, fileattachment)
+	}
+
+	battachments, _ := json.Marshal(attachments)
+
+	params := model.SalesOrder{
+		OrderNo:   orderNo,
+		Documents: string(battachments),
+	}
+
+	err := t.SalesOrderService.UpdateSalesOrderDocment(ctx, &params)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(nil)
 }
