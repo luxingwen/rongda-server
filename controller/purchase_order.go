@@ -125,7 +125,7 @@ func (t *PurchaseOrderController) UploadFuturesItemsExcel(ctx *app.Context) {
 		item.SkuCode = safeGetCellString(row, columnIndexMap, "SKU编码")
 		item.SkuSpec = safeGetCellString(row, columnIndexMap, "SKU规格")
 
-		item.Quantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "数量"))
+		item.Quantity, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "数量"), 10)
 		if err != nil {
 			ctx.Logger.Error("数量转换失败", err)
 		}
@@ -138,12 +138,12 @@ func (t *PurchaseOrderController) UploadFuturesItemsExcel(ctx *app.Context) {
 		if err != nil {
 			ctx.Logger.Error("总金额转换失败", err)
 		}
-		item.PIBoxNum, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "PI箱数"))
+		item.PIBoxNum, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "PI箱数"), 10)
 		if err != nil {
 			ctx.Logger.Error("PI箱数转换失败", err)
 		}
 
-		item.PIQuantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "PI数量"))
+		item.PIQuantity, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "PI数量"), 10)
 		if err != nil {
 			ctx.Logger.Error("PI数量转换失败", err)
 		}
@@ -160,11 +160,11 @@ func (t *PurchaseOrderController) UploadFuturesItemsExcel(ctx *app.Context) {
 		item.ShipName = safeGetCellString(row, columnIndexMap, "船名")
 		item.Voyage = safeGetCellString(row, columnIndexMap, "航次")
 		item.CIInvoiceNo = safeGetCellString(row, columnIndexMap, "CI发票号")
-		item.CIBoxNum, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "CI箱数"))
+		item.CIBoxNum, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "CI箱数"), 10)
 		if err != nil {
 			ctx.Logger.Error("CI箱数转换失败", err)
 		}
-		item.CIQuantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "CI数量"))
+		item.CIQuantity, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "CI数量"), 10)
 		if err != nil {
 			ctx.Logger.Error("CI数量转换失败", err)
 		}
@@ -269,12 +269,12 @@ func (t *PurchaseOrderController) UploadSpotItemsExcel(ctx *app.Context) {
 		item.SkuCode = safeGetCellString(row, columnIndexMap, "SKU编码")
 		item.SkuSpec = safeGetCellString(row, columnIndexMap, "SKU规格")
 
-		item.Quantity, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "数量"))
+		item.Quantity, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "数量"), 10)
 		if err != nil {
 			ctx.Logger.Error("数量转换失败", err)
 		}
 
-		item.BoxNum, err = strconv.Atoi(safeGetCellString(row, columnIndexMap, "箱数"))
+		item.BoxNum, err = strconv.ParseFloat(safeGetCellString(row, columnIndexMap, "箱数"), 10)
 		if err != nil {
 			ctx.Logger.Error("箱数转换失败", err)
 		}

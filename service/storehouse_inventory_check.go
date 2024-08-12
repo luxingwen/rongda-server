@@ -50,12 +50,12 @@ func (s *StorehouseInventoryCheckService) CreateInventoryCheck(ctx *app.Context,
 				return errors.New("failed to get stock")
 			}
 
-			differenceQuantity := 0
+			var differenceQuantity float64 = 0
 			differenceBoxNumOp := "0"
 			detailReq.DifferenceOp = "0" // 正常
 			beforQuantity := stock.Quantity
 			beforeBoxNum := stock.BoxNum
-			differenceBoxNum := 0
+			var differenceBoxNum float64 = 0
 			opDesc := "盘点，库存调整"
 
 			if detailReq.Quantity > stock.Quantity {

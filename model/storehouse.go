@@ -53,8 +53,8 @@ type StorehouseProduct struct {
 	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
 	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID
 	// 库存数量
-	Quantity int `json:"quantity" gorm:"comment:'库存数量'"` // 库存数量
-	BoxNum   int `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
+	Quantity float64 `json:"quantity" gorm:"comment:'库存数量'"` // 库存数量
+	BoxNum   float64 `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
 	// 柜号
 	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"`                  // 柜号
 	InDate    string `json:"in_date" gorm:"comment:'入库日期'"`                   // 入库日期
@@ -86,18 +86,18 @@ type StorehouseProductOpLog struct {
 	TeamUuid string `json:"team_uuid" gorm:"type:char(36);index;comment:'团队UUID'"` // 团队UUID
 
 	// 操作之前库存数量
-	BeforeQuantity int `json:"before_quantity" gorm:"comment:'操作之前库存数量'"` // 操作之前库存数量
-	BeforeBoxNum   int `json:"before_box_num" gorm:"comment:'操作之前箱数'"`    // 操作之前箱数
+	BeforeQuantity float64 `json:"before_quantity" gorm:"comment:'操作之前库存数量'"` // 操作之前库存数量
+	BeforeBoxNum   float64 `json:"before_box_num" gorm:"comment:'操作之前箱数'"`    // 操作之前箱数
 	// 库存数量
-	Quantity   int    `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
-	BoxNum     int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
-	LogType    string `json:"log_type" gorm:"comment:'日志类型'"`                  // 记录类型 采购单入库  销售单入库
-	OpType     int    `json:"op_type" gorm:"comment:'操作类型'"`                   // 操作类型 1:入库 2:出库 3:盘点 4:调拨
-	OpQuantity int    `json:"op_quantity" gorm:"comment:'操作数量'"`               // 操作数量
-	OpBoxNum   int    `json:"op_box_num" gorm:"comment:'操作箱数'"`                // 操作箱数
-	OpBy       string `json:"op_by" gorm:"comment:'操作人'"`                      // 操作人
-	OpDesc     string `json:"op_desc" gorm:"comment:'操作描述'"`                   // 操作描述
-	CreatedAt  string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	Quantity   float64 `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
+	BoxNum     float64 `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
+	LogType    string  `json:"log_type" gorm:"comment:'日志类型'"`                  // 记录类型 采购单入库  销售单入库
+	OpType     float64 `json:"op_type" gorm:"comment:'操作类型'"`                   // 操作类型 1:入库 2:出库 3:盘点 4:调拨
+	OpQuantity float64 `json:"op_quantity" gorm:"comment:'操作数量'"`               // 操作数量
+	OpBoxNum   float64 `json:"op_box_num" gorm:"comment:'操作箱数'"`                // 操作箱数
+	OpBy       string  `json:"op_by" gorm:"comment:'操作人'"`                      // 操作人
+	OpDesc     string  `json:"op_desc" gorm:"comment:'操作描述'"`                   // 操作描述
+	CreatedAt  string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 }
 
 type StorehouseProductOpLogRes struct {
@@ -155,11 +155,11 @@ type StorehouseInboundUpdateReq struct {
 
 // 请求入库明细信息
 type StorehouseInboundDetailReq struct {
-	PurchaseOrderProductNo string `json:"purchase_order_product_no" binding:"-"` // 采购订单物品编号
-	ProductUuid            string `json:"product_uuid" binding:"required"`       // 商品UUID
-	SkuUuid                string `json:"sku_uuid" binding:"required"`           // SKU UUID
-	Quantity               int    `json:"quantity" binding:"required"`           // 入库数量
-	BoxNum                 int    `json:"box_num" binding:"-"`                   // 箱数
+	PurchaseOrderProductNo string  `json:"purchase_order_product_no" binding:"-"` // 采购订单物品编号
+	ProductUuid            string  `json:"product_uuid" binding:"required"`       // 商品UUID
+	SkuUuid                string  `json:"sku_uuid" binding:"required"`           // SKU UUID
+	Quantity               float64 `json:"quantity" binding:"required"`           // 入库数量
+	BoxNum                 float64 `json:"box_num" binding:"-"`                   // 箱数
 	// 柜号
 	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
 
@@ -225,8 +225,8 @@ type StorehouseInboundDetail struct {
 	// 柜号
 	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
 	// 入库数量
-	Quantity int `json:"quantity" gorm:"comment:'入库数量'"` // 入库数量
-	BoxNum   int `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
+	Quantity float64 `json:"quantity" gorm:"comment:'入库数量'"` // 入库数量
+	BoxNum   float64 `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
@@ -273,11 +273,11 @@ type StorehouseOutboundReq struct {
 }
 
 type StorehouseOutboundDetailReq struct {
-	StorehouseProductUuid string `json:"storehouse_product_uuid" binding:"required"` // 仓库物品UUID
-	ProductUuid           string `json:"product_uuid" binding:"required"`            // 商品UUID
-	SkuUuid               string `json:"sku_uuid" binding:"required"`                // SKU UUID
-	Quantity              int    `json:"quantity" binding:"required"`                // 入库数量
-	BoxNum                int    `json:"box_num" binding:"-"`                        // 箱数
+	StorehouseProductUuid string  `json:"storehouse_product_uuid" binding:"required"` // 仓库物品UUID
+	ProductUuid           string  `json:"product_uuid" binding:"required"`            // 商品UUID
+	SkuUuid               string  `json:"sku_uuid" binding:"required"`                // SKU UUID
+	Quantity              float64 `json:"quantity" binding:"required"`                // 入库数量
+	BoxNum                float64 `json:"box_num" binding:"-"`                        // 箱数
 	// 柜号
 	CabinetNo string `json:"cabinet_no"` // 柜号
 }
@@ -339,10 +339,10 @@ type StorehouseOutboundDetail struct {
 	// 柜号
 	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
 	// 出库数量
-	Quantity  int    `json:"quantity" gorm:"comment:'出库数量'"`                  // 出库数量
-	BoxNum    int    `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
-	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
-	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+	Quantity  float64 `json:"quantity" gorm:"comment:'出库数量'"`                  // 出库数量
+	BoxNum    float64 `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
+	CreatedAt string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
 type StorehouseOutboundDetailRes struct {
@@ -360,11 +360,11 @@ type StorehouseInventoryCheckReq struct {
 }
 
 type StorehouseInventoryCheckDetailReq struct {
-	StorehouseProductUuid string `json:"storehouse_product_uuid" binding:"required"` // 仓库物品UUID
-	ProductUuid           string `json:"product_uuid" binding:"required"`            // 商品UUID
-	SkuUuid               string `json:"sku_uuid" binding:"required"`                // SKU UUID
-	Quantity              int    `json:"quantity" binding:"required"`                // 盘点数量
-	BoxNum                int    `json:"box_num" binding:"-"`                        // 箱数
+	StorehouseProductUuid string  `json:"storehouse_product_uuid" binding:"required"` // 仓库物品UUID
+	ProductUuid           string  `json:"product_uuid" binding:"required"`            // 商品UUID
+	SkuUuid               string  `json:"sku_uuid" binding:"required"`                // SKU UUID
+	Quantity              float64 `json:"quantity" binding:"required"`                // 盘点数量
+	BoxNum                float64 `json:"box_num" binding:"-"`                        // 箱数
 	// 差异op
 	DifferenceOp string `json:"difference_op" gorm:"comment:'差异操作'"` // 差异操作 1:盘盈 2:盘亏
 }
@@ -407,8 +407,8 @@ type StorehouseInventoryCheckDetail struct {
 	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID
 	// 盘点数量
 
-	Quantity int `json:"quantity" gorm:"comment:'盘点数量'"` // 盘点数量
-	BoxNum   int `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
+	Quantity float64 `json:"quantity" gorm:"comment:'盘点数量'"` // 盘点数量
+	BoxNum   float64 `json:"box_num" gorm:"comment:'箱数'"`    // 箱数
 
 	// 差异op
 	DifferenceOp string `json:"difference_op" gorm:"comment:'差异操作'"` // 差异操作 1:盘盈 2:盘亏
@@ -416,9 +416,9 @@ type StorehouseInventoryCheckDetail struct {
 	DifferenceBoxNumOp string `json:"difference_box_num_op" gorm:"comment:'差异箱数操作'"` // 差异箱数操作 1:盘盈 2:盘亏
 
 	// 差异数量
-	DifferenceQuantity int `json:"difference_quantity" gorm:"comment:'差异数量'"` // 差异数量
+	DifferenceQuantity float64 `json:"difference_quantity" gorm:"comment:'差异数量'"` // 差异数量
 
-	DifferenceBoxNum int `json:"difference_box_num" gorm:"comment:'差异箱数'"` // 差异箱数
+	DifferenceBoxNum float64 `json:"difference_box_num" gorm:"comment:'差异箱数'"` // 差异箱数
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间

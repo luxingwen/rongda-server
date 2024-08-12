@@ -35,14 +35,14 @@ type SalesOrderItemReq struct {
 	SkuUuid string `json:"sku_uuid" form:"sku_uuid" binding:"required"`
 
 	// 商品数量
-	ProductQuantity int `json:"product_quantity" form:"product_quantity" binding:"required"`
+	ProductQuantity float64 `json:"product_quantity" form:"product_quantity" binding:"required"`
 	// 商品单价
 	ProductPrice float64 `json:"product_price" form:"product_price" binding:"required"`
 	// 商品金额
 	ProductAmount float64 `json:"product_amount" form:"product_amount" binding:"required"`
 
 	// 箱数
-	BoxNum int `json:"box_num" form:"box_num" binding:"-"`
+	BoxNum float64 `json:"box_num" form:"box_num" binding:"-"`
 }
 
 const (
@@ -145,8 +145,8 @@ type SalesOrderItem struct {
 	ProductName            string  `json:"product_name" gorm:"type:varchar(50);comment:商品名称"`
 	SkuUuid                string  `json:"sku_uuid" gorm:"type:varchar(50);comment:sku uuid"`
 	SkuName                string  `json:"sku_name" gorm:"type:varchar(50);comment:sku名称"`
-	ProductQuantity        int     `json:"product_quantity" gorm:"comment:商品数量"`
-	BoxNum                 int     `json:"box_num" gorm:"comment:箱数"`
+	ProductQuantity        float64 `json:"product_quantity" gorm:"comment:商品数量"`
+	BoxNum                 float64 `json:"box_num" gorm:"comment:箱数"`
 	ProductPrice           float64 `json:"product_price" gorm:"comment:商品单价"`
 	ProductAmount          float64 `json:"product_amount" gorm:"comment:商品金额"`
 	CreatedAt              string  `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间

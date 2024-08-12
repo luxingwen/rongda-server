@@ -22,7 +22,7 @@ type SalesOutOfStockItemReq struct {
 	ProductUuid string `json:"product_uuid"` // ProductUuid 是产品的UUID
 	SkuUuid     string `json:"sku_uuid"`     // SkuUuid 是SKU的UUID
 	// 数量
-	Quantity int `json:"quantity"` // Quantity 是数量
+	Quantity float64 `json:"quantity"` // Quantity 是数量
 	// 价格
 	Price float64 `json:"price"` // Price 是价格
 	// 总金额
@@ -69,7 +69,7 @@ type SalesOutOfStockItem struct {
 	// SKU名称
 	SkuName string `gorm:"type:varchar(100)" json:"sku_name"` // SkuName 是SKU名称
 	// 数量
-	Quantity int `gorm:"type:int" json:"quantity"` // Quantity 是数量
+	Quantity float64 `gorm:"type:int" json:"quantity"` // Quantity 是数量
 	// 价格
 	Price float64 `gorm:"type:decimal(10,2)" json:"price"` // Price 是价格
 	// 总金额

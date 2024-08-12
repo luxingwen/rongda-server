@@ -67,19 +67,19 @@ type PurchaseOrderItemReq struct {
 	SkuSpec string `json:"sku_spec" gorm:"comment:'SKU规格'"` // SKU规格
 
 	// 数量
-	Quantity int `json:"quantity" gorm:"comment:'数量'"` // 数量
+	Quantity float64 `json:"quantity" gorm:"comment:'数量'"` // 数量
 
-	BoxNum int `json:"box_num" gorm:"comment:'箱数'"` // 箱数
+	BoxNum float64 `json:"box_num" gorm:"comment:'箱数'"` // 箱数
 	// 价格
 	Price float64 `json:"price" gorm:"comment:'价格'"` // 价格
 	// 总金额
 	TotalAmount float64 `json:"total_amount" gorm:"comment:'总金额'"` // 总金额
 
 	// PI箱数
-	PIBoxNum int `json:"pi_box_num" gorm:"comment:'PI箱数'"` // PI箱数
+	PIBoxNum float64 `json:"pi_box_num" gorm:"comment:'PI箱数'"` // PI箱数
 
 	// PI数量
-	PIQuantity int `json:"pi_quantity" gorm:"comment:'PI数量'"` // PI数量
+	PIQuantity float64 `json:"pi_quantity" gorm:"comment:'PI数量'"` // PI数量
 
 	// PI单价
 	PIUnitPrice float64 `json:"pi_unit_price" gorm:"comment:'PI单价'"` // PI单价
@@ -103,10 +103,10 @@ type PurchaseOrderItemReq struct {
 	CIInvoiceNo string `json:"ci_invoice_no" gorm:"comment:'CI发票号'"` // CI发票号
 
 	// CI箱数
-	CIBoxNum int `json:"ci_box_num" gorm:"comment:'CI箱数'"` // CI箱数
+	CIBoxNum float64 `json:"ci_box_num" gorm:"comment:'CI箱数'"` // CI箱数
 
 	// CI数量
-	CIQuantity int `json:"ci_quantity" gorm:"comment:'CI数量'"` // CI数量
+	CIQuantity float64 `json:"ci_quantity" gorm:"comment:'CI数量'"` // CI数量
 
 	// CI单价
 	CIUnitPrice float64 `json:"ci_unit_price" gorm:"comment:'CI单价'"` // CI单价
@@ -232,12 +232,12 @@ type PurchaseOrderItem struct {
 	ProductName            string  `json:"product_name" gorm:"comment:'产品名称'"`                                     // 产品名称
 	SkuUuid                string  `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`                 // SKU UUID
 	SkuName                string  `json:"sku_name" gorm:"comment:'SKU名称'"`                                        // SKU名称
-	Quantity               int     `json:"quantity" gorm:"comment:'数量'"`                                           // 数量
-	BoxNum                 int     `json:"box_num" gorm:"comment:'箱数'"`                                            // 箱数
+	Quantity               float64 `json:"quantity" gorm:"comment:'数量'"`                                           // 数量
+	BoxNum                 float64 `json:"box_num" gorm:"comment:'箱数'"`                                            // 箱数
 	Price                  float64 `json:"price" gorm:"comment:'价格'"`                                              // 价格
 	TotalAmount            float64 `json:"total_amount" gorm:"comment:'总金额'"`                                      // 总金额
-	PIBoxNum               int     `json:"pi_box_num" gorm:"comment:'PI箱数'"`                                       // PI箱数
-	PIQuantity             int     `json:"pi_quantity" gorm:"comment:'PI数量'"`                                      // PI数量
+	PIBoxNum               float64 `json:"pi_box_num" gorm:"comment:'PI箱数'"`                                       // PI箱数
+	PIQuantity             float64 `json:"pi_quantity" gorm:"comment:'PI数量'"`                                      // PI数量
 	PIUnitPrice            float64 `json:"pi_unit_price" gorm:"comment:'PI单价'"`                                    // PI单价
 	PITotalAmount          float64 `json:"pi_total_amount" gorm:"comment:'PI总金额'"`                                 // PI总金额
 	CabinetNo              string  `json:"cabinet_no" gorm:"comment:'柜号'"`                                         // 柜号
@@ -245,8 +245,8 @@ type PurchaseOrderItem struct {
 	ShipName               string  `json:"ship_name" gorm:"comment:'船名'"`                                          // 船名
 	Voyage                 string  `json:"voyage" gorm:"comment:'航次'"`                                             // 航次
 	CIInvoiceNo            string  `json:"ci_invoice_no" gorm:"comment:'CI发票号'"`                                   // CI发票号
-	CIBoxNum               int     `json:"ci_box_num" gorm:"comment:'CI箱数'"`                                       // CI箱数
-	CIQuantity             int     `json:"ci_quantity" gorm:"comment:'CI数量'"`                                      // CI数量
+	CIBoxNum               float64 `json:"ci_box_num" gorm:"comment:'CI箱数'"`                                       // CI箱数
+	CIQuantity             float64 `json:"ci_quantity" gorm:"comment:'CI数量'"`                                      // CI数量
 	CIUnitPrice            float64 `json:"ci_unit_price" gorm:"comment:'CI单价'"`                                    // CI单价
 	CITotalAmount          float64 `json:"ci_total_amount" gorm:"comment:'CI总金额'"`                                 // CI总金额
 

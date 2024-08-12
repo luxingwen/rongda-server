@@ -38,8 +38,8 @@ type TeamRef struct {
 
 // 团队邀请信息
 type TeamInvite struct {
-	Id       uint   `gorm:"primary_key" json:"id"`                 // ID 是团队的主键
-	TeamUuid string `gorm:"type:char(36);unique" json:"team_uuid"` // UUID 是团队的唯一标识符
+	Id       uint   `gorm:"primary_key" json:"id"`                // ID 是团队的主键
+	TeamUuid string `gorm:"type:char(36);index" json:"team_uuid"` // UUID 是团队的唯一标识符
 	// 邀请码
 	InviteCode string `gorm:"type:varchar(100);unique" json:"invite_code"`
 	// 邀请人
