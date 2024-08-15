@@ -218,6 +218,7 @@ func InitLoginRouter(ctx *app.App) {
 		v1.POST("/wx_login_phone", wxLoginController.VerificationCodeLoginPhone)
 		v1.POST("/wx_login", wxLoginController.LoginByPassword)
 		v1.POST("/wxlogin", wxLoginController.WxLogin)
+		v1.POST("/team_join", wxLoginController.JoinTeamByInviteCode)
 	}
 }
 
@@ -268,6 +269,7 @@ func InitCustomerRouter(ctx *app.App) {
 			SettlementService:             &service.SettlementService{},
 			StorehouseProductOpLogService: &service.StorehouseProductOpLogService{},
 			StorehouseProductService:      &service.StorehouseProductService{},
+			SalesOrderService:             &service.SalesOrderService{},
 		}
 		v1.POST("/customer/create", customerController.CreateCustomer)
 		v1.POST("/customer/update", customerController.UpdateCustomer)
@@ -276,6 +278,9 @@ func InitCustomerRouter(ctx *app.App) {
 		v1.POST("/customer/list", customerController.GetCustomerList)
 		v1.POST("/customer/all", customerController.GetAllCustomerList)
 		v1.POST("/customer/order/list", customerController.GetOrderList)
+		v1.POST("/customer/order/item_list", customerController.GetOrderItemList)
+
+		v1.POST("/customer/order/info", customerController.GetOrderInfo)
 
 		// 更新订单状态
 		v1.POST("/customer/order/update_status", customerController.UpdateOrderStatus)
@@ -842,6 +847,9 @@ func InitTeamInviteRouter(ctx *app.App) {
 		v1.POST("/team_invite/delete", teamInviteController.DeleteInvite)
 		v1.POST("/team_invite/info", teamInviteController.GetInviteInfo)
 		v1.POST("/team_invite/list", teamInviteController.GetInviteList)
+		v1.POST("/team_invite/team_info", teamInviteController.GetTeamByInviteCode)
+		v1.POST("/team_invite/team_join", teamInviteController.JoinTeamByInviteCode)
+
 	}
 }
 

@@ -129,3 +129,49 @@ func (t *TeamInviteController) GetInviteList(ctx *app.Context) {
 
 	ctx.JSONSuccess(invites)
 }
+
+// GetTeamByInviteCode
+func (t *TeamInviteController) GetTeamByInviteCode(ctx *app.Context) {
+	param := &model.ReqInviteCodeParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	team, err := t.TeamInviteService.GetTeamByInviteCode(ctx, param.InviteCode)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(team)
+}
+
+// JoinTeamByInviteCode
+func (t *TeamInviteController) JoinTeamByInviteCode(ctx *app.Context) {
+	param := &model.ReqInviteCodeParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	wxUserId := ctx.GetString("wx_user_id")
+
+	if wxUserId == "" {
+		ctx.JSONError(http.StatusBadRequest, "请先登录")
+		return
+	}
+
+	if param.TeamUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "团队UUID不能为空")
+		return
+	}
+
+	err := t.TeamInviteService.JoinTeamByInviteCode(ctx, param.TeamUuid, wxUserId, param.Code)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("ok")
+}

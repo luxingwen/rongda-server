@@ -7,6 +7,9 @@ type TeamMember struct {
 	TeamUUID string `gorm:"type:char(36)" json:"team_uuid"`   // TeamUUID 是团队的UUID
 	UserUUID string `gorm:"type:char(36)" json:"user_uuid"`   // UserUUID 是用户的UUID
 	Role     string `gorm:"type:varchar(100)" json:"role"`    // Role 是成员在团队中的角色
+	Status   string `gorm:"type:varchar(100)" json:"status"`  // 未审核 已审核 已拒绝
+	// 邀请码
+	InviteCode string `gorm:"type:varchar(100)" json:"invite_code"`
 	// 用户类型
 	Category  string `gorm:"type:varchar(100)" json:"category"`
 	CreatedAt string `gorm:"autoCreateTime" json:"created_at"` // CreatedAt 记录了团队成员加入的时间

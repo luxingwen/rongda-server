@@ -16,6 +16,7 @@ type CustomerController struct {
 	StorehouseProductOpLogService *service.StorehouseProductOpLogService
 	StorehouseProductService      *service.StorehouseProductService
 	AgreementService              *service.AgreementService
+	SalesOrderService             *service.SalesOrderService
 }
 
 // @Summary 创建客户
@@ -159,6 +160,40 @@ func (c *CustomerController) GetOrderList(ctx *app.Context) {
 	}
 
 	ctx.JSONSuccess(orders)
+}
+
+// GetOrderItemList
+func (c *CustomerController) GetOrderItemList(ctx *app.Context) {
+	param := &model.ReqSalesOrderQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	items, err := c.SalesOrderService.GetSalesOrderItems(ctx, param.OrderNo)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(items)
+}
+
+// GetOrderInfo
+func (c *CustomerController) GetOrderInfo(ctx *app.Context) {
+	param := &model.ReqSalesOrderQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	order, err := c.SalesOrderService.GetSalesOrder(ctx, param.OrderNo)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(order)
 }
 
 // UpdateOrderStatus

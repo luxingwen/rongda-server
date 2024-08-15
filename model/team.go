@@ -53,4 +53,10 @@ type ReqUpdateInviteStatus struct {
 
 type ReqInviteCodeParam struct {
 	InviteCode string `json:"invite_code"`
+	TeamUuid   string `json:"team_uuid"`
+	Name       string `json:"name"`
+	Phone      string `json:"phone"`
+	Email      string `json:"email"`
+	// 验证码
+	Code string `json:"code"`
 }

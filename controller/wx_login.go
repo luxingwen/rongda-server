@@ -162,3 +162,60 @@ func (w *WxLoginController) WxLogin(ctx *app.Context) {
 	ctx.JSONSuccess(rtoken)
 
 }
+
+// JoinTeamByInviteCode
+func (w *WxLoginController) JoinTeamByInviteCode(ctx *app.Context) {
+	param := &model.ReqInviteCodeParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if param.TeamUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "团队UUID不能为空")
+		return
+	}
+
+	if param.Phone == "" {
+		ctx.JSONError(http.StatusBadRequest, "手机号码不能为空")
+		return
+	}
+
+	if param.Code == "" {
+		ctx.JSONError(http.StatusBadRequest, "验证码不能为空")
+		return
+	}
+
+	ok, rcode, err := w.VerificationCodeService.CheckVerificationCode(ctx, param.Code, param.Email, param.Phone)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if ok == false {
+		ctx.JSONError(http.StatusBadRequest, "验证码错误")
+		return
+	}
+
+	// 更新验证码状态
+	err = w.VerificationCodeService.UpdateVerificationCode(ctx, rcode.UUID)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	wxUser, err := w.WxUserService.JoinTeamByInviteCode(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	rtoken, err := utils.GenerateWxUserToken(wxUser.Uuid)
+
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(rtoken)
+}
