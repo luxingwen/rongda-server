@@ -165,6 +165,7 @@ func (s *TeamInviteService) JoinTeamByInviteCode(ctx *app.Context, teamuuid stri
 		err := tx.Where("team_uuid = ?", teamuuid).First(teamRef).Error
 		if err != nil {
 			ctx.Logger.Error("Failed to get team by uuid", err)
+			tx.Rollback()
 			return errors.New("failed to get team by uuid")
 		}
 

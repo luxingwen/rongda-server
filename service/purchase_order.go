@@ -967,3 +967,13 @@ func (s *PurchaseOrderService) GetPurchaseOrderItemListByUUIDs(ctx *app.Context,
 	}
 	return
 }
+
+// UpdatePurchaseOrderStorehouse
+func (s *PurchaseOrderService) UpdatePurchaseOrderStorehouse(ctx *app.Context, orderNo string, storehouse string) error {
+	err := ctx.DB.Model(&model.PurchaseOrder{}).Where("order_no = ?", orderNo).Update("actual_warehouse", storehouse).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update purchase order storehouse", err)
+		return errors.New("failed to update purchase order storehouse")
+	}
+	return nil
+}

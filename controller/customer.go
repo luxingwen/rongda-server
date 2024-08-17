@@ -15,8 +15,11 @@ type CustomerController struct {
 	SettlementService             *service.SettlementService
 	StorehouseProductOpLogService *service.StorehouseProductOpLogService
 	StorehouseProductService      *service.StorehouseProductService
+	StorehouseService             *service.StorehouseService
 	AgreementService              *service.AgreementService
 	SalesOrderService             *service.SalesOrderService
+	PurchaseOrderService          *service.PurchaseOrderService
+	RemittanceBillService         *service.RemittanceBillService
 }
 
 // @Summary 创建客户
@@ -391,4 +394,95 @@ func (c *CustomerController) UpdateAgreementSign(ctx *app.Context) {
 	}
 
 	ctx.JSONSuccess("更新合同签署成功")
+}
+
+// UpdatePurchaseOrderStorehouse
+func (c *CustomerController) UpdatePurchaseOrderStorehouse(ctx *app.Context) {
+	param := &model.ReqUpdatePurchaseOrderStorehouseParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := c.PurchaseOrderService.UpdatePurchaseOrderStorehouse(ctx, param.PurchaseOrderNo, param.StorehouseUuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("更新采购订单仓库成功")
+}
+
+// CreateStorehouseOutboundOrder
+func (c *CustomerController) CreateStorehouseOutboundOrder(ctx *app.Context) {
+	param := &model.ReqStorehouseOutboundOrder{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := c.StorehouseService.CreateStorehouseOutboundOrder(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("创建出库单成功")
+}
+
+// GetStorehouseOutboundOrderList
+func (c *CustomerController) GetStorehouseOutboundOrderList(ctx *app.Context) {
+	param := &model.ReqStorehouseOutboundOrderQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	list, err := c.StorehouseService.GetStorehouseOutboundOrderList(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(list)
+}
+
+// GetStorehouseOutboundOrderInfo
+func (c *CustomerController) GetStorehouseOutboundOrderInfo(ctx *app.Context) {
+	param := &model.ReqUuidParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	info, err := c.StorehouseService.GetStorehouseOutboundOrderInfo(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(info)
+}
+
+// GetRemittanceBillList
+func (c *CustomerController) GetRemittanceBillList(ctx *app.Context) {
+
+	param := &model.ReqRemittanceBillQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if param.TeamUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "团队UUID不能为空")
+		return
+	}
+
+	list, err := c.RemittanceBillService.GetRemittanceBillList(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(list)
 }

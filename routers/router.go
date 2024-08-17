@@ -60,6 +60,7 @@ func InitRouter(ctx *app.App) {
 	InitConfigurationRouter(ctx)
 	InitPaymentBillRouter(ctx)
 	InitSettlementRouter(ctx)
+	InitRemittanceBillRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -270,6 +271,8 @@ func InitCustomerRouter(ctx *app.App) {
 			StorehouseProductOpLogService: &service.StorehouseProductOpLogService{},
 			StorehouseProductService:      &service.StorehouseProductService{},
 			SalesOrderService:             &service.SalesOrderService{},
+			PurchaseOrderService:          &service.PurchaseOrderService{},
+			StorehouseService:             &service.StorehouseService{},
 		}
 		v1.POST("/customer/create", customerController.CreateCustomer)
 		v1.POST("/customer/update", customerController.UpdateCustomer)
@@ -305,6 +308,21 @@ func InitCustomerRouter(ctx *app.App) {
 
 		// 更新合同签名
 		v1.POST("/customer/update_agreement_sign", customerController.UpdateAgreementSign)
+
+		// 更新采购订单预计入库仓库
+		v1.POST("/customer/purchase_order/update_storehouse", customerController.UpdatePurchaseOrderStorehouse)
+
+		// 出库申请
+		v1.POST("/customer/storehouse_outbound/create_order", customerController.CreateStorehouseOutboundOrder)
+
+		// 获取出货单列表
+		v1.POST("/customer/storehouse_outbound/order_list", customerController.GetStorehouseOutboundOrderList)
+
+		// 获取出货单详情
+		v1.POST("/customer/storehouse_outbound/order_info", customerController.GetStorehouseOutboundOrderInfo)
+
+		// 获取付汇单列表
+		v1.POST("/customer/remittance_bill/list", customerController.GetRemittanceBillList)
 
 	}
 }
@@ -632,6 +650,7 @@ func InitSalesOrderRouter(ctx *app.App) {
 
 		// 更新单据
 		v1.POST("/sales_order/update_docment", salesOrderController.UpdateSalesOrderDocment)
+
 	}
 }
 
@@ -910,6 +929,21 @@ func InitSettlementRouter(ctx *app.App) {
 		v1.POST("/settlement/delete", settlementController.DeleteSettlement)
 		v1.POST("/settlement/info", settlementController.GetSettlementInfo)
 		v1.POST("/settlement/list", settlementController.GetSettlementList)
+	}
+}
+
+func InitRemittanceBillRouter(ctx *app.App) {
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		remittanceBillController := &controller.RemittanceBillController{
+			RemittanceBillService: &service.RemittanceBillService{},
+		}
+		v1.POST("/remittance_bill/create", remittanceBillController.CreateRemittanceBill)
+		v1.POST("/remittance_bill/update", remittanceBillController.UpdateRemittanceBill)
+		v1.POST("/remittance_bill/delete", remittanceBillController.DeleteRemittanceBill)
+		v1.POST("/remittance_bill/info", remittanceBillController.GetRemittanceBillInfo)
+		v1.POST("/remittance_bill/list", remittanceBillController.GetRemittanceBillList)
 	}
 }
 

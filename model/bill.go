@@ -119,3 +119,47 @@ type PaymentBill struct {
 
 	IsDeleted int `json:"is_deleted" gorm:"comment:'是否删除'"` // 是否删除 1:是 0:否
 }
+
+// 付汇账单
+type RemittanceBill struct {
+	ID   uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
+	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
+
+	TeamUuid string `json:"team_uuid" gorm:"type:char(36);comment:'团队UUID'"` // 团队UUID
+	// 订单号
+	OrderNo string `json:"order_no" gorm:"comment:'订单号'"` // 订单号
+	// 供应商
+	Supplier string `json:"supplier" gorm:"comment:'供应商'"` // 供应商
+
+	// 合同号
+	AgreementNo string `json:"agreement_no" gorm:"comment:'合同号'"` // 合同号
+
+	// 类型
+	Type string `json:"type" gorm:"comment:'类型'"` // 类型  定金  尾款  全款  结算款 其他
+
+	// 币种
+	Currency string `json:"currency" gorm:"comment:'币种'"` // 币种
+
+	// 合同金额
+	AgreementAmount float64 `json:"agreement_amount" gorm:"comment:'合同金额'"` // 合同金额
+
+	// 头款金额
+	FirstAmount float64 `json:"first_amount" gorm:"comment:'头款金额'"` // 头款金额
+
+	// 状态
+	Status string `json:"status" gorm:"comment:'状态'"` // 状态 1:待付款 2:已付款 3:已取消
+
+	// 尾款金额
+	FinalAmount float64 `json:"final_amount" gorm:"comment:'尾款金额'"` // 尾款金额
+
+	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+
+	IsDeleted int `json:"is_deleted" gorm:"comment:'是否删除'"` // 是否删除 1:是 0:否
+}
+
+type RemittanceBillRes struct {
+	RemittanceBill
+	SalesOrderInfo *SalesOrderRes `json:"sales_order_info"`
+	SupplierInfo   *Supplier      `json:"supplier_info"`
+}

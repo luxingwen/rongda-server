@@ -453,3 +453,18 @@ type ReqUpdatePaymentBillIsAdvanceParam struct {
 	// 是否垫资
 	IsAdvance int `json:"is_advance"` // 是否垫资 1:是 0:否
 }
+
+type ReqUpdatePurchaseOrderStorehouseParam struct {
+	OrderNo         string `json:"order_no"`
+	PurchaseOrderNo string `json:"purchase_order_no"`
+	StorehouseUuid  string `json:"storehouse_uuid"`
+}
+
+type ReqRemittanceBillQueryParam struct {
+	OrderNo     string `json:"order_no"`
+	AgreementNo string `json:"agreement_no"`
+	TeamUuid    string `json:"team_uuid"`
+	Status      string `json:"status"`
+	Type        string `json:"type"`
+	Pagination
+}

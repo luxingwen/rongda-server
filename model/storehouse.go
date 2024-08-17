@@ -88,6 +88,8 @@ type StorehouseProductOpLog struct {
 	// 操作之前库存数量
 	BeforeQuantity float64 `json:"before_quantity" gorm:"comment:'操作之前库存数量'"` // 操作之前库存数量
 	BeforeBoxNum   float64 `json:"before_box_num" gorm:"comment:'操作之前箱数'"`    // 操作之前箱数
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
 	// 库存数量
 	Quantity   float64 `json:"quantity" gorm:"comment:'库存数量'"`                  // 库存数量
 	BoxNum     float64 `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
@@ -428,4 +430,84 @@ type StorehouseInventoryCheckDetailRes struct {
 	StorehouseInventoryCheckDetail
 	Product Product `json:"product"`
 	Sku     Sku     `json:"sku"`
+}
+
+type ReqStorehouseOutboundOrder struct {
+	StorehouseProductUuids []string `json:"storehouse_product_uuids" binding:"required"` // 仓库物品UUID
+	// 是否整柜
+	IsFullCabinet bool `json:"is_full_cabinet" binding:"-"` // 是否整柜
+
+	ApplyBy string `json:"apply_by" binding:"-"` // 申请人
+}
+
+type ReqStorehouseOutboundOrderQueryParam struct {
+	Pagination
+}
+
+// 出货单
+type StorehouseOutboundOrder struct {
+	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
+	// 出库单号
+	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
+	// 仓库uuid
+	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
+	// 销售订单
+	SalesOrderNo string `json:"sales_order_no" gorm:"comment:'销售订单'"`
+	// 出库日期
+	OutboundDate string `json:"outbound_date" gorm:"comment:'出库日期'"` // 出库日期
+	// 出库类型
+	OutboundType string `json:"outbound_type" gorm:"comment:'出库类型'"` // 出库类型 自提
+	// 出库状态
+	Status       string `json:"status" gorm:"comment:'状态'"`                                // 状态  申请中  已出库
+	CustomerUuid string `json:"customer_uuid" gorm:"type:char(36);index;comment:'客户UUID'"` // 客户UUID
+
+	// 出库人
+	OutboundBy string `json:"outbound_by" gorm:"comment:'出库人'"`                // 出库人
+	CreatedAt  string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt  string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+// 出货单明细
+type StorehouseOutboundOrderDetail struct {
+	ID uint `json:"id" gorm:"primaryKey;comment:'主键ID'"` // 主键ID
+	// 出库单号
+	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
+
+	// 销售订单
+	SalesOrderNo string `json:"sales_order_no" gorm:"comment:'销售订单'"`
+
+	// 采购单号
+	PurchaseOrderNo string `json:"purchase_order_no" gorm:"comment:'采购订单'"`
+
+	// 仓库uuid
+	StorehouseUuid string `json:"storehouse_uuid" gorm:"type:char(36);index;comment:'仓库UUID'"` // 仓库UUID
+
+	// 产品库存uuid
+	StorehouseProductUuid string `json:"storehouse_product_uuid" gorm:"type:char(36);index;comment:'仓库物品UUID'"` // 仓库物品UUID
+
+	// 商品uuid
+	ProductUuid string `json:"product_uuid" gorm:"type:char(36);index;comment:'商品UUID'"` // 商品UUID
+	SkuUuid     string `json:"sku_uuid" gorm:"type:char(36);index;comment:'SKU UUID'"`   // SKU UUID
+	// 柜号
+	CabinetNo string `json:"cabinet_no" gorm:"comment:'柜号'"` // 柜号
+
+	// 申请人
+	ApplyBy string `json:"apply_by" gorm:"comment:'申请人'"` // 申请人
+
+	// 出库状态
+	Status       string `json:"status" gorm:"comment:'状态'"`                                // 状态  申请中  已出库
+	CustomerUuid string `json:"customer_uuid" gorm:"type:char(36);index;comment:'客户UUID'"` // 客户UUID
+	// 出库数量
+	Quantity  float64 `json:"quantity" gorm:"comment:'出库数量'"`                  // 出库数量
+	BoxNum    float64 `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
+	CreatedAt string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+type StorehouseOutboundOrderDetailRes struct {
+	StorehouseOutboundOrderDetail
+	Product           Product       `json:"product"`
+	Sku               Sku           `json:"sku"`
+	PurchaseOrderInfo PurchaseOrder `json:"purchase_order_info"`
+	StorehouseInfo    Storehouse    `json:"storehouse_info"`
 }

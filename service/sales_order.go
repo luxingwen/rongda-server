@@ -649,3 +649,41 @@ func (s *SalesOrderService) GetSalesOrderItemsByUUIDs(ctx *app.Context, uuids []
 
 	return res, orderItems, nil
 }
+
+// 根据uuids获取销售订单信息
+func (s *SalesOrderService) GetSalesOrdersByUUIDs(ctx *app.Context, uuids []string) (r map[string]*model.SalesOrderRes, err error) {
+	var (
+		orderList []*model.SalesOrder
+	)
+
+	db := ctx.DB.Model(&model.SalesOrder{})
+
+	if err = db.Where("order_no IN ?", uuids).Find(&orderList).Error; err != nil {
+		return
+	}
+
+	purchaseOrderNos := make([]string, 0)
+	for _, order := range orderList {
+		purchaseOrderNos = append(purchaseOrderNos, order.PurchaseOrderNo)
+	}
+
+	purchaseOrderMap, err := NewPurchaseOrderService().GetPurchaseOrderListByOrderNos(ctx, purchaseOrderNos)
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order list by order nos", err)
+		return
+	}
+
+	res := make(map[string]*model.SalesOrderRes)
+	for _, item := range orderList {
+
+		orderRes := &model.SalesOrderRes{
+			SalesOrder: *item,
+		}
+		if purchaseOrder, ok := purchaseOrderMap[item.PurchaseOrderNo]; ok {
+			orderRes.PurchaseOrderInfo = purchaseOrder
+		}
+		res[item.OrderNo] = orderRes
+	}
+
+	return res, nil
+}
