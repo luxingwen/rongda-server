@@ -146,8 +146,37 @@ func (s *TeamMemberService) GetTeamMemberList(ctx *app.Context, params *model.Re
 		return nil, errors.New("failed to get wxUser list by uuids")
 	}
 
+	mMember := make(map[string]*model.TeamMember)
+	for _, teamMember := range teamMembers {
+		mMember[teamMember.UserUUID] = teamMember
+	}
+
+	res := make([]*model.WxUserRes, 0)
+	for _, wxUser := range reslist {
+		item := &model.WxUserRes{
+			WxUser: *wxUser,
+		}
+		if v, ok := mMember[wxUser.Uuid]; ok {
+			item.Role = v.Role
+			item.TeamMemberStatus = v.Status
+		}
+		res = append(res, item)
+	}
+
 	return &model.PagedResponse{
 		Total: total,
-		Data:  reslist,
+		Data:  res,
 	}, nil
+}
+
+// UpdateTeamMemberRole
+func (s *TeamMemberService) UpdateTeamMemberRole(ctx *app.Context, param *model.ReqTeamMemberUpdateRoleParam) error {
+
+	err := ctx.DB.Model(&model.TeamMember{}).Where("team_uuid = ? AND user_uuid = ?", param.TeamUUID, param.UserUUID).Update("role", param.Role).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update team member role", err)
+		return errors.New("failed to update team member role")
+	}
+
+	return nil
 }

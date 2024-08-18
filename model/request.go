@@ -118,6 +118,12 @@ type ReqTeamMemberQueryParam struct {
 	Pagination
 }
 
+type ReqTeamMemberUpdateRoleParam struct {
+	TeamUUID string `json:"team_uuid"`
+	UserUUID string `json:"user_uuid"`
+	Role     string `json:"role"`
+}
+
 // 创建用户角色参数
 type ReqUserRole struct {
 	UserUUID  string   `json:"user_uuid"`

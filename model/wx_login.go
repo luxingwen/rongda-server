@@ -29,6 +29,12 @@ type WxUser struct {
 	IsRealName int `gorm:"type:int" json:"is_real_name"`
 }
 
+type WxUserRes struct {
+	WxUser
+	Role             string `json:"role"`
+	TeamMemberStatus string `json:"team_member_status"`
+}
+
 type Watermark struct {
 	AppID     string `json:"appid"`
 	TimeStamp int64  `json:"timestamp"`

@@ -195,6 +195,7 @@ func (s *StorehouseService) CreateStorehouseOutboundOrder(ctx *app.Context, para
 				ApplyBy:               params.ApplyBy,
 				CustomerUuid:          storehouseGoods.CustomerUuid,
 				CreatedAt:             time.Now().Format("2006-01-02 15:04:05"),
+				UpdatedAt:             time.Now().Format("2006-01-02 15:04:05"),
 			}
 
 			err = tx.Create(storehouseOutboundRecord).Error
@@ -278,9 +279,13 @@ func (s *StorehouseService) GetStorehouseOutboundOrderList(ctx *app.Context, par
 	// 	db = db.Where("purchase_order_no like ?", "%"+param.PurchaseOrderNo+"%")
 	// }
 
-	// if param.Status != "" {
-	// 	db = db.Where("status = ?", param.Status)
-	// }
+	if param.TeamUuid != "" {
+		db = db.Where("customer_uuid = ?", param.TeamUuid)
+	}
+
+	if param.Status != "" {
+		db = db.Where("status = ?", param.Status)
+	}
 
 	if err = db.Count(&total).Error; err != nil {
 		return

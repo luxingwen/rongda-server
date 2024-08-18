@@ -72,3 +72,17 @@ func (t *TeamMemberController) GetTeamMemberList(ctx *app.Context) {
 	}
 	ctx.JSONSuccess(teamMembers)
 }
+
+// UpdateTeamMemberRole
+func (t *TeamMemberController) UpdateTeamMemberRole(ctx *app.Context) {
+	var param model.ReqTeamMemberUpdateRoleParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := t.TeamMemberService.UpdateTeamMemberRole(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess("ok")
+}

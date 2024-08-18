@@ -112,10 +112,11 @@ type StorehouseProductOpLogRes struct {
 
 type StorehouseProductRes struct {
 	StorehouseProduct
-	Storehouse   Storehouse `json:"storehouse"`
-	Product      Product    `json:"product"`
-	Sku          Sku        `json:"sku"`
-	CustomerInfo Customer   `json:"customer_info"`
+	Storehouse        Storehouse    `json:"storehouse"`
+	Product           Product       `json:"product"`
+	Sku               Sku           `json:"sku"`
+	CustomerInfo      Customer      `json:"customer_info"`
+	PurchaseOrderInfo PurchaseOrder `json:"purchase_order_info"`
 	// 库存天数
 	StockDays int `json:"stock_days"` // 库存天数
 }
@@ -441,6 +442,8 @@ type ReqStorehouseOutboundOrder struct {
 }
 
 type ReqStorehouseOutboundOrderQueryParam struct {
+	Status   string `json:"status" form:"status"`       // 状态
+	TeamUuid string `json:"team_uuid" form:"team_uuid"` // 团队UUID
 	Pagination
 }
 

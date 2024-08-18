@@ -347,6 +347,8 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 		db = db.Where("customer_uuid = ?", param.TeamUuid)
 	}
 
+	db = db.Where("quantity > 0 AND box_num > 0")
+
 	if err = db.Order("id DESC").Offset(param.GetOffset()).Limit(param.PageSize).Find(&productList).Error; err != nil {
 		return
 	}
@@ -356,10 +358,12 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 	skuUuids := make([]string, 0)
 	productUuids := make([]string, 0)
 	customerUuids := make([]string, 0)
+	purchaseOrderNos := make([]string, 0)
 	for _, v := range productList {
 		productUuids = append(productUuids, v.ProductUuid)
 		skuUuids = append(skuUuids, v.SkuUuid)
 		customerUuids = append(customerUuids, v.CustomerUuid)
+		purchaseOrderNos = append(purchaseOrderNos, v.PurchaseOrderNo)
 	}
 	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
 	if err != nil {
@@ -389,6 +393,13 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 		return
 	}
 
+	purchaseOrderMap, err := NewPurchaseOrderService().GetPurchaseOrderListByOrderNos(ctx, purchaseOrderNos)
+	if err != nil {
+
+		ctx.Logger.Error("Failed to get purchase order list by order nos", err)
+		return
+	}
+
 	res := make([]*model.StorehouseProductRes, 0)
 	for _, v := range productList {
 		productItem := &model.StorehouseProductRes{
@@ -405,6 +416,10 @@ func (s *StorehouseProductService) ListProducts(ctx *app.Context, param *model.R
 		}
 		if customer, ok := customerMap[v.CustomerUuid]; ok {
 			productItem.CustomerInfo = *customer
+		}
+
+		if purchaseOrder, ok := purchaseOrderMap[v.PurchaseOrderNo]; ok {
+			productItem.PurchaseOrderInfo = *purchaseOrder
 		}
 
 		// 计算库存天数

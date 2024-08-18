@@ -882,6 +882,8 @@ func InitTeamMemberRouter(ctx *app.App) {
 		v1.POST("/team_member/create", teamMemberController.CreateTeamMember)
 		v1.POST("/team_member/delete", teamMemberController.DeleteTeamMember)
 		v1.POST("/team_member/list", teamMemberController.GetTeamMemberList)
+		// 更新角色
+		v1.POST("/team_member/update_role", teamMemberController.UpdateTeamMemberRole)
 	}
 }
 
