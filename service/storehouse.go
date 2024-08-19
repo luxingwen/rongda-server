@@ -299,11 +299,13 @@ func (s *StorehouseService) GetStorehouseOutboundOrderList(ctx *app.Context, par
 	productUuids := make([]string, 0)
 	storehouseUuids := make([]string, 0)
 	skuuuids := make([]string, 0)
+	customerUuids := make([]string, 0)
 	for _, storehouseOutboundOrder := range storehouseOutboundOrderList {
 		purchaseOrderNos = append(purchaseOrderNos, storehouseOutboundOrder.PurchaseOrderNo)
 		productUuids = append(productUuids, storehouseOutboundOrder.ProductUuid)
 		skuuuids = append(skuuuids, storehouseOutboundOrder.SkuUuid)
 		storehouseUuids = append(storehouseUuids, storehouseOutboundOrder.StorehouseUuid)
+		customerUuids = append(customerUuids, storehouseOutboundOrder.CustomerUuid)
 	}
 
 	purchaseOrderMap, err := NewPurchaseOrderService().GetPurchaseOrderListByOrderNos(ctx, purchaseOrderNos)
@@ -331,6 +333,12 @@ func (s *StorehouseService) GetStorehouseOutboundOrderList(ctx *app.Context, par
 		return nil, errors.New("failed to get storehouse list by UUIDs")
 	}
 
+	customerMap, err := NewCustomerService().GetCustomerListByUUIDs(ctx, customerUuids)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer list by UUIDs", err)
+		return nil, errors.New("failed to get customer list by UUIDs")
+	}
+
 	res := make([]*model.StorehouseOutboundOrderDetailRes, 0)
 	for _, storehouseOutboundOrder := range storehouseOutboundOrderList {
 		storehouseOutboundOrderRes := &model.StorehouseOutboundOrderDetailRes{
@@ -351,6 +359,10 @@ func (s *StorehouseService) GetStorehouseOutboundOrderList(ctx *app.Context, par
 
 		if storehouse, ok := storehouseMap[storehouseOutboundOrder.StorehouseUuid]; ok {
 			storehouseOutboundOrderRes.StorehouseInfo = *storehouse
+		}
+
+		if customer, ok := customerMap[storehouseOutboundOrder.CustomerUuid]; ok {
+			storehouseOutboundOrderRes.CustomerInfo = *customer
 		}
 
 		res = append(res, storehouseOutboundOrderRes)
@@ -402,13 +414,75 @@ func (s *StorehouseService) GetStorehouseOutboundOrderInfo(ctx *app.Context, uui
 		return nil, errors.New("failed to get storehouse by UUID")
 	}
 
+	customer, err := NewCustomerService().GetCustomerByUUID(ctx, storehouseOutboundOrder.CustomerUuid)
+	if err != nil {
+		ctx.Logger.Error("Failed to get customer by UUID", err)
+		return nil, errors.New("failed to get customer by UUID")
+	}
+
 	storehouseOutboundOrderRes := &model.StorehouseOutboundOrderDetailRes{
 		StorehouseOutboundOrderDetail: *storehouseOutboundOrder,
 		PurchaseOrderInfo:             *purchaseOrder,
 		Product:                       *product,
 		Sku:                           *sku,
 		StorehouseInfo:                *storehouse,
+		CustomerInfo:                  *customer,
 	}
 
 	return storehouseOutboundOrderRes, nil
+}
+
+// DeleteStorehouseOutboundOrder
+func (s *StorehouseService) DeleteStorehouseOutboundOrder(ctx *app.Context, uuid string) error {
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+
+		storehouseOutboundOrder := &model.StorehouseOutboundOrderDetail{}
+		err := tx.Where("outbound_order_no = ?", uuid).First(storehouseOutboundOrder).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return errors.New("storehouse outbound order not found")
+			}
+			ctx.Logger.Error("Failed to get storehouse outbound order by UUID", err)
+			return errors.New("failed to get storehouse outbound order by UUID")
+		}
+
+		// 删除出库记录
+		err = tx.Where("outbound_order_no = ?", uuid).Delete(&model.StorehouseOutboundOrderDetail{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete storehouse outbound order", err)
+			return errors.New("failed to delete storehouse outbound order")
+		}
+
+		// 删除出库log
+		err = tx.Where("outbound_order_no = ?", uuid).Delete(&model.StorehouseProductOpLog{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete storehouse outbound log", err)
+			return errors.New("failed to delete storehouse outbound log")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		ctx.Logger.Error("Failed to delete storehouse outbound order", err)
+		return errors.New("failed to delete storehouse outbound order")
+	}
+
+	return nil
+}
+
+// UpdateStorehouseOutboundOrderDetailStatus
+func (s *StorehouseService) UpdateStorehouseOutboundOrderDetailStatus(ctx *app.Context, param *model.ReqUpdateStatus) error {
+
+	err := ctx.DB.Model(&model.StorehouseOutboundOrderDetail{}).Where("outbound_order_no = ?", param.Uuid).Updates(map[string]interface{}{
+		"status":     param.Status,
+		"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+	}).Error
+
+	if err != nil {
+		ctx.Logger.Error("Failed to update storehouse outbound order detail status", err)
+		return errors.New("failed to update storehouse outbound order detail status")
+	}
+
+	return nil
 }

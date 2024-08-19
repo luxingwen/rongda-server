@@ -505,6 +505,7 @@ type StorehouseOutboundOrderDetail struct {
 	BoxNum    float64 `json:"box_num" gorm:"comment:'箱数'"`                     // 箱数
 	CreatedAt string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+	IsDeleted int     `json:"is_deleted" gorm:"comment:'是否删除'"`                // 是否删除 1:删除 0:未删除
 }
 
 type StorehouseOutboundOrderDetailRes struct {
@@ -513,4 +514,5 @@ type StorehouseOutboundOrderDetailRes struct {
 	Sku               Sku           `json:"sku"`
 	PurchaseOrderInfo PurchaseOrder `json:"purchase_order_info"`
 	StorehouseInfo    Storehouse    `json:"storehouse_info"`
+	CustomerInfo      Customer      `json:"customer_info"`
 }

@@ -1,12 +1,14 @@
 package model
 
 type Logistics struct {
-	ID           uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
-	Uuid         string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
-	OrderNo      string `json:"order_no" gorm:"comment:'订单号'"`                  // 订单号
-	Shipper      string `json:"shipper" gorm:"comment:'承运商'"`                   // 承运商
-	ShipperPhone string `json:"shipper_phone" gorm:"comment:'承运商电话'"`           // 承运商电话
-	ShipperNo    string `json:"shipper_no" gorm:"comment:'承运单号'"`               // 承运单号
+	ID   uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`            // 主键ID
+	Uuid string `json:"uuid" gorm:"type:char(36);index;comment:'UUID'"` // UUID
+	// 出库单号
+	OutboundOrderNo string `json:"outbound_order_no" gorm:"comment:'出库单号'"` // 出库单号
+	OrderNo         string `json:"order_no" gorm:"comment:'订单号'"`           // 订单号
+	Shipper         string `json:"shipper" gorm:"comment:'承运商'"`            // 承运商
+	ShipperPhone    string `json:"shipper_phone" gorm:"comment:'承运商电话'"`    // 承运商电话
+	ShipperNo       string `json:"shipper_no" gorm:"comment:'承运单号'"`        // 承运单号
 	// 运输方式
 	TransportMode string `json:"transport_mode" gorm:"comment:'运输方式'"` // 运输方式
 	// 运输状态
@@ -38,4 +40,9 @@ type Logistics struct {
 	Attachment string `json:"attachment" gorm:"comment:'附件'"`                  // 附件
 	CreatedAt  string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt  string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+type ReqLogisticsQueryParam struct {
+	OrderNo string `json:"order_no" form:"order_no"` // 订单号
+	Pagination
 }

@@ -61,6 +61,7 @@ func InitRouter(ctx *app.App) {
 	InitPaymentBillRouter(ctx)
 	InitSettlementRouter(ctx)
 	InitRemittanceBillRouter(ctx)
+	InitLogisticsRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -527,7 +528,8 @@ func InitStorehouseOutRouter(ctx *app.App) {
 	v1.Use(middleware.SysOpLogMiddleware(&service.SysOpLogService{}))
 	{
 		storehouseOutController := &controller.StorehouseOutboundController{
-			OutboundService: &service.StorehouseOutboundService{},
+			OutboundService:   &service.StorehouseOutboundService{},
+			StorehouseService: &service.StorehouseService{},
 		}
 		v1.POST("/storehouse_outbound/create", storehouseOutController.CreateOutbound)
 		v1.POST("/storehouse_outbound/update", storehouseOutController.UpdateOutbound)
@@ -535,6 +537,13 @@ func InitStorehouseOutRouter(ctx *app.App) {
 		v1.POST("/storehouse_outbound/info", storehouseOutController.GetOutboundInfo)
 		v1.POST("/storehouse_outbound/list", storehouseOutController.GetOutboundList)
 		v1.POST("/storehouse_outbound/detail", storehouseOutController.GetOutboundDetail)
+		v1.POST("/storehouse_outbound/order_list", storehouseOutController.GetStorehouseOutboundOrderList)
+		// 删除order
+		v1.POST("/storehouse_outbound/delete_order", storehouseOutController.DeleteStorehouseOutboundOrder)
+		// 更新order状态
+		v1.POST("/storehouse_outbound/update_order_status", storehouseOutController.UpdateStorehouseOutboundOrderStatus)
+		// 获取order详情
+		v1.POST("/storehouse_outbound/order_info", storehouseOutController.GetStorehouseOutboundOrderInfo)
 	}
 }
 
@@ -946,6 +955,22 @@ func InitRemittanceBillRouter(ctx *app.App) {
 		v1.POST("/remittance_bill/delete", remittanceBillController.DeleteRemittanceBill)
 		v1.POST("/remittance_bill/info", remittanceBillController.GetRemittanceBillInfo)
 		v1.POST("/remittance_bill/list", remittanceBillController.GetRemittanceBillList)
+	}
+}
+
+func InitLogisticsRouter(ctx *app.App) {
+
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		logisticsController := &controller.LogisticsController{
+			LogisticsService: &service.LogisticsService{},
+		}
+		v1.POST("/logistics/create", logisticsController.CreateLogistics)
+		v1.POST("/logistics/update", logisticsController.UpdateLogistics)
+		v1.POST("/logistics/delete", logisticsController.DeleteLogistics)
+		v1.POST("/logistics/info", logisticsController.GetLogisticsInfo)
+		v1.POST("/logistics/list", logisticsController.GetLogisticsList)
 	}
 }
 

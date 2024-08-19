@@ -8,7 +8,8 @@ import (
 )
 
 type StorehouseOutboundController struct {
-	OutboundService *service.StorehouseOutboundService
+	OutboundService   *service.StorehouseOutboundService
+	StorehouseService *service.StorehouseService
 }
 
 // @Summary 创建出库信息
@@ -140,4 +141,64 @@ func (p *StorehouseOutboundController) GetOutboundList(ctx *app.Context) {
 		return
 	}
 	ctx.JSONSuccess(outbounds)
+}
+
+// GetStorehouseOutboundOrderList
+func (p *StorehouseOutboundController) GetStorehouseOutboundOrderList(ctx *app.Context) {
+	param := &model.ReqStorehouseOutboundOrderQueryParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	list, err := p.StorehouseService.GetStorehouseOutboundOrderList(ctx, param)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess(list)
+}
+
+// DeleteStorehouseOutboundOrder
+func (p *StorehouseOutboundController) DeleteStorehouseOutboundOrder(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := p.StorehouseService.DeleteStorehouseOutboundOrder(ctx, param.Uuid); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess("出库订单删除成功")
+}
+
+// UpdateStorehouseOutboundOrderStatus
+func (p *StorehouseOutboundController) UpdateStorehouseOutboundOrderStatus(ctx *app.Context) {
+	var param model.ReqUpdateStatus
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := p.StorehouseService.UpdateStorehouseOutboundOrderDetailStatus(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess("出库订单状态更新成功")
+}
+
+// GetStorehouseOutboundOrderInfo
+func (p *StorehouseOutboundController) GetStorehouseOutboundOrderInfo(ctx *app.Context) {
+	var param model.ReqUuidParam
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	order, err := p.StorehouseService.GetStorehouseOutboundOrderInfo(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(order)
 }

@@ -474,3 +474,9 @@ type ReqRemittanceBillQueryParam struct {
 	Type        string `json:"type"`
 	Pagination
 }
+
+// 更新状态
+type ReqUpdateStatus struct {
+	Uuid   string `json:"uuid"`
+	Status string `json:"status"`
+}
