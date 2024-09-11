@@ -5,6 +5,8 @@ import (
 	"sgin/pkg/app"
 	"strings"
 
+	"errors"
+
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	dysmsapi20170525 "github.com/alibabacloud-go/dysmsapi-20170525/v4/client"
 	util "github.com/alibabacloud-go/tea-utils/v2/service"
@@ -89,6 +91,11 @@ func SendSMS(ctx *app.Context, phoneNumber string, templateParam string) error {
 	// }
 
 	ctx.Logger.Info("SMS send:", *util.ToJSONString(resp))
+
+	if *resp.Body.Code != "OK" {
+		ctx.Logger.Error("Failed to send SMS", *util.ToJSONString(resp))
+		return errors.New("发生短信失败,请联系管理员,Error:" + *resp.Body.Message)
+	}
 	// console.Log(util.ToJSONString(resp))
 	return nil
 }

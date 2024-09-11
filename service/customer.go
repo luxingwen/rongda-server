@@ -164,6 +164,46 @@ func (s *CustomerService) GetCustomerOrders(ctx *app.Context, params *model.ReqS
 	db := ctx.DB.Model(&model.SalesOrder{})
 	db = db.Where("customer_uuid = ?", params.CustomerUuid)
 
+	if params.EntrustOrderNo != "" {
+		db = db.Where("entrust_order_id = ?", params.EntrustOrderNo)
+	}
+
+	if params.AgreementNo != "" {
+		var purchaseOrderNos []string
+		err := ctx.DB.Model(&model.PurchaseOrder{}).Where("pi_agreement_no = ? AND customer_uuid = ?", params.AgreementNo, params.CustomerUuid).Pluck("order_no", &purchaseOrderNos).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get purchase order no by agreement no", err)
+			//return nil, errors.New("failed to get purchase order no by agreement no")
+		} else {
+			db = db.Where("purchase_order_no in (?)", purchaseOrderNos)
+		}
+	}
+
+	dbPurchaseOrder := ctx.DB.Model(&model.PurchaseOrderItem{})
+
+	if params.EtaStartDate != "" {
+		dbPurchaseOrder = dbPurchaseOrder.Where("estimated_arrival_date >= ?", params.EtaStartDate)
+	}
+
+	if params.EtaEndDate != "" {
+		dbPurchaseOrder = dbPurchaseOrder.Where("estimated_arrival_date <= ?", params.EtaEndDate)
+	}
+
+	if params.CabinetNo != "" {
+		dbPurchaseOrder = dbPurchaseOrder.Where("cabinet_no = ?", params.CabinetNo)
+	}
+
+	if params.EtaStartDate != "" || params.EtaEndDate != "" || params.CabinetNo != "" {
+		var purchaseOrderNos []string
+		err := dbPurchaseOrder.Where("purchase_order_no IN(select order_no from purchase_orders where customer_uuid = ?)", params.CustomerUuid).Pluck("purchase_order_no", &purchaseOrderNos).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to get purchase order no by eta date", err)
+			//return nil, errors.New("failed to get purchase order no by eta date")
+		} else {
+			db = db.Where("purchase_order_no in (?)", purchaseOrderNos)
+		}
+	}
+
 	if params.Status != "" {
 		db = db.Where("order_status = ?", params.Status)
 	}

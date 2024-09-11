@@ -217,10 +217,16 @@ func InitLoginRouter(ctx *app.App) {
 			VerificationCodeService: &service.VerificationCodeService{},
 			WxUserService:           &service.WxUserService{},
 		}
+
+		teamInviteController := &controller.TeamInviteController{
+			TeamInviteService: &service.TeamInviteService{},
+		}
+
 		v1.POST("/wx_login_phone", wxLoginController.VerificationCodeLoginPhone)
 		v1.POST("/wx_login", wxLoginController.LoginByPassword)
 		v1.POST("/wxlogin", wxLoginController.WxLogin)
 		v1.POST("/team_join", wxLoginController.JoinTeamByInviteCode)
+		v1.POST("/team_invite/team_info", teamInviteController.GetTeamByInviteCode)
 	}
 }
 
@@ -861,6 +867,9 @@ func InitWxUserRouter(ctx *app.App) {
 		// 更改邮箱
 		v1.POST("/wx_user/update_email", wxUserController.UpdateEmail)
 
+		// 删除用户
+		v1.POST("/wx_user/delete", wxUserController.DeleteWxUser)
+
 	}
 }
 
@@ -875,7 +884,7 @@ func InitTeamInviteRouter(ctx *app.App) {
 		v1.POST("/team_invite/delete", teamInviteController.DeleteInvite)
 		v1.POST("/team_invite/info", teamInviteController.GetInviteInfo)
 		v1.POST("/team_invite/list", teamInviteController.GetInviteList)
-		v1.POST("/team_invite/team_info", teamInviteController.GetTeamByInviteCode)
+
 		v1.POST("/team_invite/team_join", teamInviteController.JoinTeamByInviteCode)
 
 	}

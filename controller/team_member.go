@@ -47,12 +47,12 @@ func (t *TeamMemberController) CreateTeamMember(ctx *app.Context) {
 // @Success 200 {object} app.Response
 // @Router /api/v1/team/member/delete [post]
 func (t *TeamMemberController) DeleteTeamMember(ctx *app.Context) {
-	var param model.ReqUuidParam
+	var param model.ReqTeamMemberCreateParam
 	if err := ctx.ShouldBindJSON(&param); err != nil {
 		ctx.JSONError(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := t.TeamMemberService.DeleteTeamMember(ctx, param.Uuid); err != nil {
+	if err := t.TeamMemberService.DeleteTeamMember(ctx, param.UserUUID, param.TeamUUID); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}

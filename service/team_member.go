@@ -67,8 +67,8 @@ func (s *TeamMemberService) UpdateTeamMember(ctx *app.Context, teamMember *model
 	return nil
 }
 
-func (s *TeamMemberService) DeleteTeamMember(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Delete(&model.TeamMember{}).Error
+func (s *TeamMemberService) DeleteTeamMember(ctx *app.Context, userUuid string, teamUuid string) error {
+	err := ctx.DB.Where("team_uuid = ? AND user_uuid = ?", teamUuid, userUuid).Delete(&model.TeamMember{}).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete team member", err)
 		return errors.New("failed to delete team member")

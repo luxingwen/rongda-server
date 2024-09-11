@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -106,7 +105,7 @@ func ParseTokenGetUserID(tokenString string) (string, string, error) {
 func GenerateVerificationCode() string {
 	rand.Seed(time.Now().UnixNano())
 	code := rand.Intn(999999)
-	return strconv.Itoa(code)
+	return fmt.Sprintf("%06d", code) // 格式化为6位数，不足的前面补零
 }
 
 // SignBody 签名

@@ -8,6 +8,7 @@ import (
 	"sgin/pkg/app"
 	"sgin/pkg/utils"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -187,6 +188,7 @@ func (s *TeamInviteService) JoinTeamByInviteCode(ctx *app.Context, teamuuid stri
 
 		// 创建teammember
 		teamMember = &model.TeamMember{
+			UUID:       uuid.New().String(),
 			TeamUUID:   teamRef.TeamUuid,
 			UserUUID:   userUUID,
 			Role:       "成员",

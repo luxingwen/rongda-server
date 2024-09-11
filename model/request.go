@@ -236,6 +236,17 @@ type ReqPurchaseBillQueryParam struct {
 }
 
 type ReqSalesOrderQueryParam struct {
+	// 委托单号
+	EntrustOrderNo string `json:"entrust_order_no"`
+	// 合同号
+	AgreementNo string `json:"agreement_no"`
+
+	EtaStartDate string `json:"eta_start_date"` // 预计到货开始日期
+	EtaEndDate   string `json:"eta_end_date"`   // 预计到货结束日期
+
+	// 柜号
+	CabinetNo string `json:"cabinet_no"`
+
 	OrderNo      string `json:"order_no"`
 	CustomerUuid string `json:"customer_uuid"`
 	Status       string `json:"status"`
@@ -443,6 +454,7 @@ type ReqSettlementQueryParam struct {
 	OrderNo         string `json:"order_no"`
 	PurchaseOrderNo string `json:"purchase_order_no"`
 	TeamUuid        string `json:"team_uuid"`
+	Status          string `json:"status"` // 状态
 	Pagination
 }
 

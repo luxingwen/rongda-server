@@ -96,6 +96,10 @@ func (s *SettlementService) GetSettlementList(ctx *app.Context, params *model.Re
 		db = db.Where("team_uuid = ?", params.TeamUuid)
 	}
 
+	if params.Status != "" {
+		db = db.Where("status = ?", params.Status)
+	}
+
 	db = db.Where("is_deleted = ?", 0)
 
 	err := db.Count(&total).Error

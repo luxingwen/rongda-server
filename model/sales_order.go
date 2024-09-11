@@ -155,8 +155,9 @@ type SalesOrderItem struct {
 
 type SalesOrderItemRes struct {
 	SalesOrderItem
-	ProductInfo *Product `json:"product"`
-	SkuInfo     *Sku     `json:"sku"`
+	ProductInfo       *Product           `json:"product"`
+	SkuInfo           *Sku               `json:"sku"`
+	PurchaseOrderItem *PurchaseOrderItem `json:"purchase_order_item"`
 }
 
 const (

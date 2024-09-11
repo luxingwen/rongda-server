@@ -222,10 +222,12 @@ func (s *SalesOrderService) GetSalesOrderItems(ctx *app.Context, orderNo string)
 
 	productUuids := make([]string, 0)
 	skuUuids := make([]string, 0)
+	purchaseOrderNos := make([]string, 0)
 
 	for _, item := range orderItems {
 		productUuids = append(productUuids, item.ProductUuid)
 		skuUuids = append(skuUuids, item.SkuUuid)
+		purchaseOrderNos = append(purchaseOrderNos, item.PurchaseOrderProductNo)
 	}
 
 	productMap, err := NewProductService().GetProductListByUUIDs(ctx, productUuids)
@@ -240,6 +242,12 @@ func (s *SalesOrderService) GetSalesOrderItems(ctx *app.Context, orderNo string)
 		return
 	}
 
+	purchaseOrderItemMap, err := NewPurchaseOrderService().GetPurchaseOrderItemListByUUIDs(ctx, purchaseOrderNos)
+	if err != nil {
+		ctx.Logger.Error("Failed to get purchase order item list by UUIDs", err)
+		return
+	}
+
 	res := make([]*model.SalesOrderItemRes, 0)
 	for _, item := range orderItems {
 		itemRes := &model.SalesOrderItemRes{
@@ -251,6 +259,11 @@ func (s *SalesOrderService) GetSalesOrderItems(ctx *app.Context, orderNo string)
 		if sku, ok := skuMap[item.SkuUuid]; ok {
 			itemRes.SkuInfo = sku
 		}
+
+		if purchaseOrderItem, ok := purchaseOrderItemMap[item.PurchaseOrderProductNo]; ok {
+			itemRes.PurchaseOrderItem = purchaseOrderItem
+		}
+
 		res = append(res, itemRes)
 	}
 

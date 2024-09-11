@@ -164,7 +164,7 @@ func (s *WxUserService) UpdateWxUser(ctx *app.Context, wxUser *model.WxUser) err
 }
 
 func (s *WxUserService) DeleteWxUser(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Model(&model.WxUser{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.WxUser{}).Where("uuid = ?", uuid).Delete(&model.WxUser{}).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete wxUser", err)
 		return errors.New("failed to delete wxUser")
@@ -305,6 +305,7 @@ func (s *WxUserService) JoinTeamByInviteCode(ctx *app.Context, param *model.ReqI
 
 		// 加入团队
 		teamMember = model.TeamMember{
+			UUID:       uuid.New().String(),
 			TeamUUID:   teamRef.TeamUuid,
 			UserUUID:   wxUser.Uuid,
 			Role:       "成员",
@@ -313,7 +314,7 @@ func (s *WxUserService) JoinTeamByInviteCode(ctx *app.Context, param *model.ReqI
 			CreatedAt:  time.Now().Format("2006-01-02 15:04:05"),
 			UpdatedAt:  time.Now().Format("2006-01-02 15:04:05"),
 		}
-		err = tx.Create(teamMember).Error
+		err = tx.Create(&teamMember).Error
 		if err != nil {
 			tx.Rollback()
 			ctx.Logger.Error("Failed to create team member", err)
@@ -322,6 +323,9 @@ func (s *WxUserService) JoinTeamByInviteCode(ctx *app.Context, param *model.ReqI
 		return nil
 	})
 	if err != nil {
+		if err.Error() == "已经加入过该团队" {
+			return wxUser, nil
+		}
 		ctx.Logger.Error("Failed to join team by invite code", err)
 		return nil, errors.New("failed to join team by invite code")
 	}

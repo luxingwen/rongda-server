@@ -201,3 +201,20 @@ func (c *WxUserController) UpdateEmail(ctx *app.Context) {
 
 	ctx.JSONSuccess("更新邮箱成功")
 }
+
+// DeleteWxUser
+func (c *WxUserController) DeleteWxUser(ctx *app.Context) {
+	param := &model.ReqUuidParam{}
+	if err := ctx.ShouldBindJSON(param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := c.WxUserService.DeleteWxUser(ctx, param.Uuid)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSONSuccess("ok")
+}
