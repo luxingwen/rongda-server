@@ -177,8 +177,14 @@ type PurchaseOrder struct {
 	Date string `json:"date" gorm:"comment:'采购日期'"` // 采购日期
 	// 采购单号
 
+	// 消费使用单位
+	ConsumerUnit string `json:"consumer_unit" gorm:"comment:'消费使用单位'"` // 消费使用单位
+
 	// 境内收货人
 	DomesticConsignee string `json:"domestic_consignee" gorm:"comment:'境内收货人'"` // 境内收货人
+
+	// 贸易条款
+	TradeTerms string `json:"trade_terms" gorm:"comment:'贸易条款'"` // 贸易条款
 
 	// PI合同号
 	PIAgreementNo string `json:"pi_agreement_no" gorm:"comment:'PI合同号'"` // PI合同号
@@ -221,6 +227,9 @@ type PurchaseOrder struct {
 
 	// 尾款金额
 	ResidualAmount float64 `json:"residual_amount" gorm:"comment:'尾款金额'"` // 尾款金额
+
+	// PI总金额
+	PITotalAmount float64 `json:"pi_total_amount" gorm:"comment:'PI总金额'"` // PI总金额
 
 	// 采购人
 	Purchaser string `json:"purchaser" gorm:"comment:'采购人'"` // 采购人
@@ -329,6 +338,12 @@ type PurchaseOrderItem struct {
 	Desc        string  `json:"desc" gorm:"comment:'备注'"`                        // 备注
 	CreatedAt   string  `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt   string  `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
+type ReqPurchaseOrderUpdateItem struct {
+	OrderNo string      `json:"order_no" gorm:"comment:'采购单号'"` // 采购单号
+	Key     string      `json:"key" gorm:"comment:'修改字段'"`      // 修改字段
+	Value   interface{} `json:"value" gorm:"comment:'修改值'"`     // 修改值
 }
 
 // PurchaseOrderResp 采购单响应

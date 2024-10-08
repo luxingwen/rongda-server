@@ -977,3 +977,17 @@ func (s *PurchaseOrderService) UpdatePurchaseOrderStorehouse(ctx *app.Context, o
 	}
 	return nil
 }
+
+// UpdatePurchaseOrderItem
+func (s *PurchaseOrderService) UpdatePurchaseOrderItem(ctx *app.Context, item *model.ReqPurchaseOrderUpdateItem) error {
+	mdata := make(map[string]interface{}, 0)
+	mdata["updated_at"] = time.Now().Format("2006-01-02 15:04:05")
+	mdata[item.Key] = item.Value
+
+	err := ctx.DB.Model(&model.PurchaseOrder{}).Where("order_no = ?", item.OrderNo).Updates(mdata).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update purchase order item", err)
+		return errors.New("failed to update purchase order item: " + err.Error())
+	}
+	return nil
+}

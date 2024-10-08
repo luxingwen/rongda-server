@@ -491,3 +491,17 @@ func (t *PurchaseOrderController) GetPurchaseOrderByStatus(ctx *app.Context) {
 	}
 	ctx.JSONSuccess(orders)
 }
+
+// UpdatePurchaseOrderItem 更新采购单商品
+func (t *PurchaseOrderController) UpdatePurchaseOrderItem(ctx *app.Context) {
+	var param model.ReqPurchaseOrderUpdateItem
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := t.PurchaseOrderService.UpdatePurchaseOrderItem(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
+}
