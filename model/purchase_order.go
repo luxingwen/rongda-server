@@ -266,23 +266,32 @@ type PurchaseOrder struct {
 	ActualArrivalPort string `json:"actual_arrival_port" gorm:"comment:'实际到港日期'"` // 实际到港日期
 
 	// 形式发票/采购订单附件
-	InvoiceAttachment string `json:"invoice_attachment" gorm:"comment:'形式发票/采购订单附件'"` // 形式发票/采购订单附件
+	InvoiceAttachment     string `json:"invoice_attachment" gorm:"comment:'形式发票/采购订单附件'"`        // 形式发票/采购订单附件
+	InvoiceAttachmentTime string `json:"invoice_attachment_time" gorm:"comment:'形式发票/采购订单附件时间'"` // 形式发票/采购订单附件时间
 	// 商业发票
-	CommercialInvoice string `json:"commercial_invoice" gorm:"comment:'商业发票'"` // 商业发票
+	CommercialInvoice     string `json:"commercial_invoice" gorm:"comment:'商业发票'"`        // 商业发票
+	CommercialInvoiceTime string `json:"commercial_invoice_time" gorm:"comment:'商业发票时间'"` // 商业发票时间
 	// 装箱单
-	PackingList string `json:"packing_list" gorm:"comment:'装箱单'"` // 装箱单
+	PackingList     string `json:"packing_list" gorm:"comment:'装箱单'"`        // 装箱单
+	PackingListTime string `json:"packing_list_time" gorm:"comment:'装箱单时间'"` // 装箱单时间
 	// 船公司提单
-	BillOfLading string `json:"bill_of_lading" gorm:"comment:'船公司提单'"` // 船公司提单
+	BillOfLading     string `json:"bill_of_lading" gorm:"comment:'船公司提单'"`        // 船公司提单
+	BillOfLadingTime string `json:"bill_of_lading_time" gorm:"comment:'船公司提单时间'"` // 船公司提单时间
 	// 批次单
-	BatchOrder string `json:"batch_order" gorm:"comment:'批次单'"` // 批次单
+	BatchOrder     string `json:"batch_order" gorm:"comment:'批次单'"`        // 批次单
+	BatchOrderTime string `json:"batch_order_time" gorm:"comment:'批次单时间'"` // 批次单时间
 	// 卫生证
-	SanitaryCertificate string `json:"sanitary_certificate" gorm:"comment:'卫生证'"` // 卫生证
+	SanitaryCertificate     string `json:"sanitary_certificate" gorm:"comment:'卫生证'"`        // 卫生证
+	SanitaryCertificateTime string `json:"sanitary_certificate_time" gorm:"comment:'卫生证时间'"` // 卫生证时间
 	// 产地证
-	CertificateOfOrigin string `json:"certificate_of_origin" gorm:"comment:'产地证'"` // 产地证
+	CertificateOfOrigin     string `json:"certificate_of_origin" gorm:"comment:'产地证'"`        // 产地证
+	CertificateOfOriginTime string `json:"certificate_of_origin_time" gorm:"comment:'产地证时间'"` // 产地证时间
 	// 报关单
-	CustomsDeclaration string `json:"customs_declaration" gorm:"comment:'报关单'"` // 报关单
+	CustomsDeclaration     string `json:"customs_declaration" gorm:"comment:'报关单'"`        // 报关单
+	CustomsDeclarationTime string `json:"customs_declaration_time" gorm:"comment:'报关单时间'"` // 报关单时间
 	// 检疫证
-	QuarantineCertificate string `json:"quarantine_certificate" gorm:"comment:'检疫证'"` // 检疫证
+	QuarantineCertificate     string `json:"quarantine_certificate" gorm:"comment:'检疫证'"`        // 检疫证
+	QuarantineCertificateTime string `json:"quarantine_certificate_time" gorm:"comment:'检疫证时间'"` // 检疫证时间
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
@@ -371,4 +380,9 @@ type FreightInfo struct {
 	BillOfLadingNo string `json:"bill_of_lading_no" gorm:"comment:'提单号'"` // 提单号
 	ShipName       string `json:"ship_name" gorm:"comment:'船名'"`          // 船名
 	Voyage         string `json:"voyage" gorm:"comment:'航次'"`             // 航次
+}
+
+type ReqPurchaseOrderDeleteReceiptFile struct {
+	OrderNo string `json:"order_no" gorm:"comment:'采购单号'"` // 采购单号
+	Key     string `json:"key" gorm:"comment:'修改字段'"`      // 修改字段
 }

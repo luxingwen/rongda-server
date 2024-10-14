@@ -991,3 +991,14 @@ func (s *PurchaseOrderService) UpdatePurchaseOrderItem(ctx *app.Context, item *m
 	}
 	return nil
 }
+
+// UpdatePurchaseOrderMap
+func (s *PurchaseOrderService) UpdatePurchaseOrderMap(ctx *app.Context, orderNo string, mdata map[string]interface{}) error {
+	mdata["updated_at"] = time.Now().Format("2006-01-02 15:04:05")
+	err := ctx.DB.Model(&model.PurchaseOrder{}).Where("order_no = ?", orderNo).Updates(mdata).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update purchase order map", err)
+		return errors.New("failed to update purchase order map: " + err.Error())
+	}
+	return nil
+}
