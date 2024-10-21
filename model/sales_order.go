@@ -91,6 +91,15 @@ type SalesOrder struct {
 	AgreementNo     string  `json:"agreement_no" gorm:"type:varchar(50);comment:合同号"`        // 合同号
 	OrderDate       string  `json:"order_date" gorm:"type:varchar(50);comment:订单日期"`         // 订单日期
 	DepositAmount   float64 `json:"deposit_amount" gorm:"comment:定金"`
+	// 是否垫资
+	IsAdvanceFund bool `json:"is_advance_fund" gorm:"comment:是否垫资"`
+	// 是否垫税
+	IsAdvanceTax bool `json:"is_advance_tax" gorm:"comment:是否垫税"`
+	// 垫资天数
+	AdvanceFundDays int `json:"advance_fund_days" gorm:"comment:垫资天数"`
+	// 是否分期支付
+	IsInstallmentPayment bool `json:"is_installment_payment" gorm:"comment:是否分期支付"`
+
 	// 定金比例
 	DepositRatio float64 `json:"deposit_ratio" gorm:"comment:定金比例"`
 	// 尾款金额
@@ -114,6 +123,12 @@ type SalesOrder struct {
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
 }
 
+type ReqSalesOrderUpdateItem struct {
+	OrderNo string      `json:"order_no" gorm:"comment:'单号'"` // 单号
+	Key     string      `json:"key" gorm:"comment:'修改字段'"`    // 修改字段
+	Value   interface{} `json:"value" gorm:"comment:'修改值'"`   // 修改值
+}
+
 type CustomerSalesOrderRes struct {
 	SalesOrder
 	// 厂号
@@ -131,7 +146,7 @@ type SalesOrderRes struct {
 	SalesOrder
 	CustomerInfo           *Customer           `json:"customer_info"`
 	SalesmanInfo           *User               `json:"salesman_info"`
-	PurchaseOrderInfo      *PurchaseOrder      `json:"purchase_order_info"`
+	PurchaseOrderInfo      *PurchaseOrderRes   `json:"purchase_order_info"`
 	SettlementCurrencyInfo *SettlementCurrency `json:"settlement_currency_info"`
 }
 

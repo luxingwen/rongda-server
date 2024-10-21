@@ -67,6 +67,22 @@ func (t *SalesOrderController) GetSalesOrder(ctx *app.Context) {
 	ctx.JSONSuccess(order)
 }
 
+// UpdateSalesOrderItem
+func (t *SalesOrderController) UpdateSalesOrderItem(ctx *app.Context) {
+	var param model.ReqSalesOrderUpdateItem
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := t.SalesOrderService.UpdateSalesOrderItem(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(nil)
+
+}
+
 // @Summary 获取订单商品列表
 // @Description 获取订单商品列表
 // @Tags 销售订单

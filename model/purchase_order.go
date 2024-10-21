@@ -297,6 +297,16 @@ type PurchaseOrder struct {
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 }
 
+type PurchaseOrderReceiptFileInfo struct {
+	ID        uint   `json:"id" gorm:"primaryKey;comment:'主键ID'"`             // 主键ID
+	OrderNo   string `json:"order_no" gorm:"comment:'采购单号'"`                  // 采购单号
+	Key       string `json:"key" gorm:"comment:'修改字段'"`                       // 修改字段
+	Filename  string `json:"filename" gorm:"comment:'文件名'"`                   // 文件名
+	FilePath  string `json:"file_path" gorm:"comment:'文件路径'"`                 // 文件路径
+	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
+	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
+}
+
 // PurchaseOrderItem 采购单明细
 type PurchaseOrderItem struct {
 	ID                     uint    `json:"id" gorm:"primaryKey;comment:'主键ID'"`                                    // 主键ID

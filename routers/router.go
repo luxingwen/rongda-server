@@ -645,6 +645,7 @@ func InitSalesOrderRouter(ctx *app.App) {
 		v1.POST("/sales_order/update", salesOrderController.UpdateSalesOrder)
 		v1.POST("/sales_order/delete", salesOrderController.DeleteSalesOrder)
 		v1.POST("/sales_order/info", salesOrderController.GetSalesOrder)
+		v1.POST("/sales_order/info/update_item", salesOrderController.UpdateSalesOrderItem)
 		v1.POST("/sales_order/list", salesOrderController.GetSalesOrderList)
 		v1.POST("/sales_order/all", salesOrderController.GetAllSalesOrder)
 		v1.POST("/sales_order/product_item/list", salesOrderController.GetSalesOrderProducts)
