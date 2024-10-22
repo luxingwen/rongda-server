@@ -464,6 +464,9 @@ func (s *PurchaseOrderService) UpdatePurchaseOrderFutures(ctx *app.Context, user
 				VAT:                  detailReq.VAT,
 				PaymentDate:          detailReq.PaymentDate,
 
+				PrepaymentFee: detailReq.PrepaymentFee,
+				ResidualFee:   detailReq.ResidualFee,
+
 				CreatedAt: nowStr,
 				UpdatedAt: nowStr,
 			}
@@ -475,7 +478,7 @@ func (s *PurchaseOrderService) UpdatePurchaseOrderFutures(ctx *app.Context, user
 					"total_amount", "pi_box_num", "pi_quantity", "pi_unit_price", "pi_total_amount", "cabinet_no", "bill_of_lading_no",
 					"ship_name", "voyage", "ci_invoice_no", "ci_box_num", "ci_quantity", "ci_unit_price", "ci_total_amount", "ci_residual_amount",
 					"production_date", "estimated_arrival_date", "rmb_deposit_amount", "rmb_residual_amount", "deposit_exchange_rate", "residual_exchange_rate",
-					"tariff", "vat", "payment_date", "desc", "updated_at"}
+					"tariff", "vat", "payment_date", "desc", "updated_at", "prepayment_fee", "residual_fee"}
 
 				if err := tx.Where("purchase_order_product_no = ?", detailReq.PurchaseOrderProductNo).Select(colsitem).Updates(detail).Error; err != nil {
 					ctx.Logger.Error("Failed to update purchase order item", err)

@@ -142,6 +142,11 @@ type PurchaseOrderItemReq struct {
 	// 缴费日期
 	PaymentDate string `json:"payment_date" gorm:"comment:'缴费日期'"` // 缴费日期
 
+	// 预付款手续费
+	PrepaymentFee float64 `json:"prepayment_fee" gorm:"comment:'预付款手续费'"` // 预付款手续费
+	// 尾款手续费
+	ResidualFee float64 `json:"residual_fee" gorm:"comment:'尾款手续费'"` // 尾款手续费
+
 	Desc string `json:"desc" gorm:"comment:'备注'"` // 备注
 }
 
@@ -343,9 +348,18 @@ type PurchaseOrderItem struct {
 
 	// RMB定金金额
 	RMBDepositAmount float64 `json:"rmb_deposit_amount" gorm:"comment:'RMB定金金额'"` // RMB定金金额
+	// RMB定金金额时间
+	RMBDepositAmountTime string `json:"rmb_deposit_amount_time" gorm:"comment:'RMB定金金额时间'"` // RMB定金金额时间
+
+	// 预付款手续费
+	PrepaymentFee float64 `json:"prepayment_fee" gorm:"comment:'预付款手续费'"` // 预付款手续费
+	// 尾款手续费
+	ResidualFee float64 `json:"residual_fee" gorm:"comment:'尾款手续费'"` // 尾款手续费
+
 	// RMB尾款金额
 	RMBResidualAmount float64 `json:"rmb_residual_amount" gorm:"comment:'RMB尾款金额'"` // RMB尾款金额
-
+	// RMB尾款金额时间
+	RMBResidualAmountTime string `json:"rmb_residual_amount_time" gorm:"comment:'RMB尾款金额时间'"` // RMB尾款金额时间
 	// 定金汇率
 	DepositExchangeRate float64 `json:"deposit_exchange_rate" gorm:"comment:'定金汇率'"` // 定金汇率
 	// 尾款汇率
