@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -534,7 +535,7 @@ func (t *PurchaseOrderController) UpdatePurchaseOrderReceiptFile(ctx *app.Contex
 
 	extfile := filepath.Ext(file.Filename)
 
-	filename := "/purchase_order/receipt_file/" + keyval + "_" + orderNo + extfile
+	filename := "/purchase_order/receipt_file/" + keyval + "_" + orderNo + "_" + uuid.New().String() + extfile
 
 	err = ctx.SaveUploadedFile(file, ctx.Config.Upload.Dir+filename)
 	if err != nil {
@@ -542,11 +543,54 @@ func (t *PurchaseOrderController) UpdatePurchaseOrderReceiptFile(ctx *app.Contex
 		return
 	}
 
-	mdata := make(map[string]interface{}, 0)
-	mdata[keyval] = filename
-	mdata[fmt.Sprintf("%s_time", keyval)] = time.Now().Format("2006-01-02 15:04:05")
+	attatchment := model.FileAttachment{
+		Name: file.Filename,
+		Url:  filename,
+	}
 
-	if err := t.PurchaseOrderService.UpdatePurchaseOrderMap(ctx, orderNo, mdata); err != nil {
+	attatchments := make([]model.FileAttachment, 0)
+
+	orderInfo, err := t.PurchaseOrderService.GetPurchaseOrder(ctx, orderNo)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	mdata := make(map[string]interface{}, 0)
+
+	b, err := json.Marshal(orderInfo)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = json.Unmarshal(b, &mdata)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	attatchmentsStr := mdata[keyval].(string)
+
+	if attatchmentsStr != "" {
+
+		json.Unmarshal([]byte(attatchmentsStr), &attatchments)
+
+	}
+
+	attatchments = append(attatchments, attatchment)
+
+	attatchmentsByte, err := json.Marshal(attatchments)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	mdata1 := make(map[string]interface{}, 0)
+	mdata1[keyval] = string(attatchmentsByte)
+	mdata1[fmt.Sprintf("%s_time", keyval)] = time.Now().Format("2006-01-02 15:04:05")
+
+	if err := t.PurchaseOrderService.UpdatePurchaseOrderMap(ctx, orderNo, mdata1); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -581,17 +625,34 @@ func (t *PurchaseOrderController) DeletePurchaseOrderReceiptFile(ctx *app.Contex
 		return
 	}
 
-	filename := mdata[param.Key].(string)
+	attachmentStr := mdata[param.Key].(string)
 
-	if filename == "" {
+	if attachmentStr == "" {
 		ctx.JSONError(http.StatusBadRequest, "文件不存在")
 		return
 	}
 
-	os.Remove(ctx.Config.Upload.Dir + filename)
+	var attachments []model.FileAttachment
+
+	json.Unmarshal([]byte(attachmentStr), &attachments)
+
+	newAttachements := make([]model.FileAttachment, 0)
+	for _, attachment := range attachments {
+		if attachment.Url == param.FileUrl && attachment.Name == param.Filename {
+			os.Remove(ctx.Config.Upload.Dir + attachment.Url)
+			continue
+		}
+		newAttachements = append(newAttachements, attachment)
+	}
+
+	attatchmentsByte, err := json.Marshal(newAttachements)
+	if err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	mdata1 := make(map[string]interface{}, 0)
-	mdata1[param.Key] = ""
+	mdata1[param.Key] = string(attatchmentsByte)
 	mdata1[fmt.Sprintf("%s_time", param.Key)] = ""
 	if err := t.PurchaseOrderService.UpdatePurchaseOrderMap(ctx, param.OrderNo, mdata1); err != nil {
 		ctx.JSONError(http.StatusInternalServerError, err.Error())

@@ -29,7 +29,36 @@ type Storehouse struct {
 	BankName string `json:"bank_name" gorm:"comment:'开户行'"` // 开户行
 	Status   int    `json:"status" gorm:"comment:'状态'"`     // 状态 1:启用 2:未启用
 	// 仓库类型
-	Type      string `json:"type" gorm:"comment:'仓库类型'"`                      // 仓库类型 1:自有仓库 2:第三方仓库
+	Type string `json:"type" gorm:"comment:'仓库类型'"` // 仓库类型 1:自有仓库 2:第三方仓库
+
+	// 签订合同时间
+	ContractDate string `json:"contract_date" gorm:"comment:'签订合同时间'"` // 签订合同时间
+	// 合同到期时间
+	ContractExpireDate string `json:"contract_expire_date" gorm:"comment:'合同到期时间'"` // 合同到期时间
+	// 合同到期提醒
+	ContractExpireRemind string `json:"contract_expire_remind" gorm:"comment:'合同到期提醒'"` // 合同到期提醒
+
+	// 冷藏费
+	ColdStorageFee float64 `json:"cold_storage_fee" gorm:"comment:'冷藏费'"` // 冷藏费
+	// 装卸费/出入库费
+	LoadingUnloadingFee float64 `json:"loading_unloading_fee" gorm:"comment:'装卸费/出入库费'"` // 装卸费/出入库费
+	// 处置费
+	DisposalFee float64 `json:"disposal_fee" gorm:"comment:'处置费'"` // 处置费
+	// 搬运费
+	HandlingFee float64 `json:"handling_fee" gorm:"comment:'搬运费'"` // 搬运费
+	// 货转费
+	GoodsTransferFee float64 `json:"goods_transfer_fee" gorm:"comment:'货转费'"` // 货转费
+	// 分选费
+	SortingFee float64 `json:"sorting_fee" gorm:"comment:'分选费'"` // 分选费
+	// 缠绕膜费
+	WrappingFilmFee float64 `json:"wrapping_film_fee" gorm:"comment:'缠绕膜费'"` // 缠绕膜费
+	// 充电费
+	ChargingFee float64 `json:"charging_fee" gorm:"comment:'充电费'"` // 充电费
+	// 抄码费
+	ReadingCodeFee float64 `json:"reading_code_fee" gorm:"comment:'抄码费'"` // 抄码费
+	// 打冷费
+	ColdFee float64 `json:"cold_fee" gorm:"comment:'打冷费'"` // 打冷费
+
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
 	IsDeleted int    `json:"is_deleted" gorm:"comment:'是否删除'"`                // 是否删除 1:删除 0:未删除

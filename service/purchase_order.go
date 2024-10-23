@@ -987,6 +987,14 @@ func (s *PurchaseOrderService) UpdatePurchaseOrderItem(ctx *app.Context, item *m
 	mdata["updated_at"] = time.Now().Format("2006-01-02 15:04:05")
 	mdata[item.Key] = item.Value
 
+	if item.Key == "residual_amount" {
+		mdata["residual_amount_time"] = time.Now().Format("2006-01-02 15:04:05")
+	}
+
+	if item.Key == "deposit_amount" {
+		mdata["deposit_amount_time"] = time.Now().Format("2006-01-02 15:04:05")
+	}
+
 	err := ctx.DB.Model(&model.PurchaseOrder{}).Where("order_no = ?", item.OrderNo).Updates(mdata).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to update purchase order item", err)

@@ -80,17 +80,20 @@ const (
 
 // 销售订单
 type SalesOrder struct {
-	ID              uint    `json:"id" gorm:"primaryKey"`
-	OrderNo         string  `json:"order_no" gorm:"uniqueIndex;type:varchar(50);comment:订单号"`
-	PurchaseOrderNo string  `json:"purchase_order_no" gorm:"type:varchar(50);comment:采购订单号"` // 采购订单号
-	EntrustOrderId  string  `json:"entrust_order_id" gorm:"comment:'委托订单ID'"`                // 委托订单ID
-	AgreementUuid   string  `json:"agreement_uuid" gorm:"type:varchar(50);comment:合同uuid"`   // 合同uuid
-	Title           string  `json:"title" gorm:"type:varchar(200);comment:标题"`               // 标题
-	OrderType       string  `json:"order_type" gorm:"type:varchar(50);comment:订单类型"`         // 订单类型：1.期货订单 2.现货订单
-	OrderStatus     string  `json:"order_status" gorm:"type:varchar(50);comment:订单状态"`       // 订单状态：待支付、已支付、已发货、已完成、已取消
-	AgreementNo     string  `json:"agreement_no" gorm:"type:varchar(50);comment:合同号"`        // 合同号
-	OrderDate       string  `json:"order_date" gorm:"type:varchar(50);comment:订单日期"`         // 订单日期
-	DepositAmount   float64 `json:"deposit_amount" gorm:"comment:定金"`
+	ID              uint   `json:"id" gorm:"primaryKey"`
+	OrderNo         string `json:"order_no" gorm:"uniqueIndex;type:varchar(50);comment:订单号"`
+	PurchaseOrderNo string `json:"purchase_order_no" gorm:"type:varchar(50);comment:采购订单号"` // 采购订单号
+	EntrustOrderId  string `json:"entrust_order_id" gorm:"comment:'委托订单ID'"`                // 委托订单ID
+	AgreementUuid   string `json:"agreement_uuid" gorm:"type:varchar(50);comment:合同uuid"`   // 合同uuid
+	Title           string `json:"title" gorm:"type:varchar(200);comment:标题"`               // 标题
+	OrderType       string `json:"order_type" gorm:"type:varchar(50);comment:订单类型"`         // 订单类型：1.期货订单 2.现货订单
+	OrderStatus     string `json:"order_status" gorm:"type:varchar(50);comment:订单状态"`       // 订单状态：待支付、已支付、已发货、已完成、已取消
+	AgreementNo     string `json:"agreement_no" gorm:"type:varchar(50);comment:合同号"`        // 合同号
+	OrderDate       string `json:"order_date" gorm:"type:varchar(50);comment:订单日期"`         // 订单日期
+	// 定金金额
+	DepositAmount float64 `json:"deposit_amount" gorm:"comment:定金"`
+	// 定金金额时间
+	DepositAmountDate string `json:"deposit_amount_date" gorm:"type:varchar(50);comment:定金时间"`
 	// 是否垫资
 	IsAdvanceFund bool `json:"is_advance_fund" gorm:"comment:是否垫资"`
 	// 是否垫税
@@ -104,6 +107,8 @@ type SalesOrder struct {
 	DepositRatio float64 `json:"deposit_ratio" gorm:"comment:定金比例"`
 	// 尾款金额
 	FinalPaymentAmount float64 `json:"final_payment_amount" gorm:"comment:尾款金额"`
+	// 尾款金额时间
+	FinalPaymentAmountDate string `json:"final_payment_amount_date" gorm:"type:varchar(50);comment:尾款时间"`
 
 	OrderAmount  float64 `json:"order_amount" gorm:"comment:订单金额"`
 	Salesman     string  `json:"salesman" gorm:"type:varchar(50);comment:销售人"`
@@ -118,6 +123,9 @@ type SalesOrder struct {
 
 	// 单据收到时间
 	DocumentsReceivedDate string `json:"documents_received_date" gorm:"type:varchar(50);comment:单据收到时间"`
+
+	// 开发票时间
+	InvoiceDate string `json:"invoice_date" gorm:"type:varchar(50);comment:开发票时间"`
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间

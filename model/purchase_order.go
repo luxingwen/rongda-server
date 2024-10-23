@@ -224,6 +224,9 @@ type PurchaseOrder struct {
 	// 定金金额
 	DepositAmount float64 `json:"deposit_amount" gorm:"comment:'定金金额'"` // 定金金额
 
+	// 定金金额时间
+	DepositAmountTime string `json:"deposit_amount_time" gorm:"comment:'定金金额时间'"` // 定金金额时间
+
 	// 定金比例
 	DepositRatio float64 `json:"deposit_ratio" gorm:"comment:'定金比例'"` // 定金比例
 
@@ -232,6 +235,9 @@ type PurchaseOrder struct {
 
 	// 尾款金额
 	ResidualAmount float64 `json:"residual_amount" gorm:"comment:'尾款金额'"` // 尾款金额
+
+	// 尾款金额时间
+	ResidualAmountTime string `json:"residual_amount_time" gorm:"comment:'尾款金额时间'"` // 尾款金额时间
 
 	// PI总金额
 	PITotalAmount float64 `json:"pi_total_amount" gorm:"comment:'PI总金额'"` // PI总金额
@@ -297,6 +303,20 @@ type PurchaseOrder struct {
 	// 检疫证
 	QuarantineCertificate     string `json:"quarantine_certificate" gorm:"comment:'检疫证'"`        // 检疫证
 	QuarantineCertificateTime string `json:"quarantine_certificate_time" gorm:"comment:'检疫证时间'"` // 检疫证时间
+
+	// 收到副本时间
+	ReceivedCopyTime string `json:"received_copy_time" gorm:"comment:'收到副本时间'"` // 收到副本时间
+	// 收到正本时间
+	ReceivedOriginalTime string `json:"received_original_time" gorm:"comment:'收到正本时间'"` // 收到正本时间
+
+	// 海关放行时间
+	CustomsClearanceTime string `json:"customs_clearance_time" gorm:"comment:'海关放行时间'"` // 海关放行时间
+	// 入库时间
+	StorageTime string `json:"storage_time" gorm:"comment:'入库时间'"` // 入库时间
+
+	// 其它证件
+	OtherCertificate     string `json:"other_certificate" gorm:"comment:'其它证件'"`        // 其它证件
+	OtherCertificateTime string `json:"other_certificate_time" gorm:"comment:'其它证件时间'"` // 其它证件时间
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
@@ -407,6 +427,8 @@ type FreightInfo struct {
 }
 
 type ReqPurchaseOrderDeleteReceiptFile struct {
-	OrderNo string `json:"order_no" gorm:"comment:'采购单号'"` // 采购单号
-	Key     string `json:"key" gorm:"comment:'修改字段'"`      // 修改字段
+	OrderNo  string `json:"order_no" gorm:"comment:'采购单号'"` // 采购单号
+	Key      string `json:"key" gorm:"comment:'修改字段'"`      // 修改字段
+	Filename string `json:"filename" gorm:"comment:'文件名'"`  // 文件名
+	FileUrl  string `json:"file_url" gorm:"comment:'文件路径'"` // 文件路径
 }
