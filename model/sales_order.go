@@ -172,8 +172,16 @@ type SalesOrderItem struct {
 	BoxNum                 float64 `json:"box_num" gorm:"comment:箱数"`
 	ProductPrice           float64 `json:"product_price" gorm:"comment:商品单价"`
 	ProductAmount          float64 `json:"product_amount" gorm:"comment:商品金额"`
-	CreatedAt              string  `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
-	UpdatedAt              string  `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
+	// 支付融大预付款
+	PayRongdaDeposit float64 `json:"pay_rongda_deposit" gorm:"comment:支付融大预付款"`
+	// 支付融大预付款时间
+	PayRongdaDepositDate string `json:"pay_rongda_deposit_date" gorm:"type:varchar(50);comment:支付融大预付款时间"`
+	// 支付融大尾款
+	PayRongdaFinalPayment float64 `json:"pay_rongda_final_payment" gorm:"comment:支付融大尾款"`
+	// 支付融大尾款时间
+	PayRongdaFinalPaymentDate string `json:"pay_rongda_final_payment_date" gorm:"type:varchar(50);comment:支付融大尾款时间"`
+	CreatedAt                 string `json:"created_at" gorm:"autoCreateTime"` // CreatedAt 记录了创建的时间
+	UpdatedAt                 string `json:"updated_at" gorm:"autoUpdateTime"` // UpdatedAt 记录了最后更新的时间
 }
 
 type SalesOrderItemRes struct {

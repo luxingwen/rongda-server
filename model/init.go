@@ -68,6 +68,7 @@ func MigrateDbTable(db *gorm.DB) {
 		&StorehouseOutboundOrder{},
 		&StorehouseOutboundOrderDetail{},
 		&Logistics{},
+		&OrderFile{},
 	)
 	if err != nil {
 		panic(err)

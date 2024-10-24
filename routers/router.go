@@ -62,6 +62,7 @@ func InitRouter(ctx *app.App) {
 	InitSettlementRouter(ctx)
 	InitRemittanceBillRouter(ctx)
 	InitLogisticsRouter(ctx)
+	InitOrderFileRouter(ctx)
 }
 
 func InitUserRouter(ctx *app.App) {
@@ -986,6 +987,20 @@ func InitLogisticsRouter(ctx *app.App) {
 		v1.POST("/logistics/delete", logisticsController.DeleteLogistics)
 		v1.POST("/logistics/info", logisticsController.GetLogisticsInfo)
 		v1.POST("/logistics/list", logisticsController.GetLogisticsList)
+	}
+}
+
+func InitOrderFileRouter(ctx *app.App) {
+
+	v1 := ctx.Group(ctx.Config.ApiPrefix + "/v1")
+	v1.Use(middleware.LoginCheck())
+	{
+		orderFileController := &controller.OrderFileController{
+			OrderFileService: &service.OrderFileService{},
+		}
+		v1.POST("/order_file/sales/upload", orderFileController.UploadSalesOrderFile)
+		v1.POST("/order_file/delete", orderFileController.DeleteOrderFile)
+		v1.POST("/order_file/list", orderFileController.GetOrderFileList)
 	}
 }
 

@@ -492,3 +492,9 @@ type ReqUpdateStatus struct {
 	Uuid   string `json:"uuid"`
 	Status string `json:"status"`
 }
+
+type ReqOrderNoParam struct {
+
+	// 订单号
+	OrderNo string `json:"order_no"`
+}
