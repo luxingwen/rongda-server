@@ -137,6 +137,12 @@ type ReqSalesOrderUpdateItem struct {
 	Value   interface{} `json:"value" gorm:"comment:'修改值'"`   // 修改值
 }
 
+type ReqSalesOrderProductUpdateItem struct {
+	Uuid  string      `json:"uuid" gorm:"comment:'uuid'"` // uuid
+	Key   string      `json:"key" gorm:"comment:'修改字段'"`  // 修改字段
+	Value interface{} `json:"value" gorm:"comment:'修改值'"` // 修改值
+}
+
 type CustomerSalesOrderRes struct {
 	SalesOrder
 	// 厂号

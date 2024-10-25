@@ -716,3 +716,17 @@ func (s *SalesOrderService) UpdateSalesOrderItem(ctx *app.Context, item *model.R
 	}
 	return nil
 }
+
+// UpdateSalesOrderProductItem
+func (s *SalesOrderService) UpdateSalesOrderProductItem(ctx *app.Context, item *model.ReqSalesOrderProductUpdateItem) error {
+	mdata := make(map[string]interface{}, 0)
+	mdata["updated_at"] = time.Now().Format("2006-01-02 15:04:05")
+	mdata[item.Key] = item.Value
+
+	err := ctx.DB.Model(&model.SalesOrderItem{}).Where("uuid = ?", item.Uuid).Updates(mdata).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update sales order product item", err)
+		return errors.New("failed to update sales order product item: " + err.Error())
+	}
+	return nil
+}
