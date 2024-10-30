@@ -40,24 +40,44 @@ type Storehouse struct {
 
 	// 冷藏费
 	ColdStorageFee float64 `json:"cold_storage_fee" gorm:"comment:'冷藏费'"` // 冷藏费
+	// 冷藏费计费方式
+	ColdStorageFeeType string `json:"cold_storage_fee_type" gorm:"comment:'冷藏费计费方式'"` // 冷藏费计费方式
 	// 装卸费/出入库费
 	LoadingUnloadingFee float64 `json:"loading_unloading_fee" gorm:"comment:'装卸费/出入库费'"` // 装卸费/出入库费
+	// 装卸费/出入库费计费方式
+	LoadingUnloadingFeeType string `json:"loading_unloading_fee_type" gorm:"comment:'装卸费/出入库费计费方式'"` // 装卸费/出入库费计费方式
 	// 处置费
 	DisposalFee float64 `json:"disposal_fee" gorm:"comment:'处置费'"` // 处置费
+	// 处置费计费方式
+	DisposalFeeType string `json:"disposal_fee_type" gorm:"comment:'处置费计费方式'"` // 处置费计费方式
 	// 搬运费
 	HandlingFee float64 `json:"handling_fee" gorm:"comment:'搬运费'"` // 搬运费
+	// 搬运费计费方式
+	HandlingFeeType string `json:"handling_fee_type" gorm:"comment:'搬运费计费方式'"` // 搬运费计费方式
 	// 货转费
 	GoodsTransferFee float64 `json:"goods_transfer_fee" gorm:"comment:'货转费'"` // 货转费
+	// 货转费计费方式
+	GoodsTransferFeeType string `json:"goods_transfer_fee_type" gorm:"comment:'货转费计费方式'"` // 货转费计费方式
 	// 分选费
 	SortingFee float64 `json:"sorting_fee" gorm:"comment:'分选费'"` // 分选费
+	// 分选费计费方式
+	SortingFeeType string `json:"sorting_fee_type" gorm:"comment:'分选费计费方式'"` // 分选费计费方式
 	// 缠绕膜费
 	WrappingFilmFee float64 `json:"wrapping_film_fee" gorm:"comment:'缠绕膜费'"` // 缠绕膜费
+	// 缠绕膜费计费方式
+	WrappingFilmFeeType string `json:"wrapping_film_fee_type" gorm:"comment:'缠绕膜费计费方式'"` // 缠绕膜费计费方式
 	// 充电费
 	ChargingFee float64 `json:"charging_fee" gorm:"comment:'充电费'"` // 充电费
+	// 充电费计费方式
+	ChargingFeeType string `json:"charging_fee_type" gorm:"comment:'充电费计费方式'"` // 充电费计费方式
 	// 抄码费
 	ReadingCodeFee float64 `json:"reading_code_fee" gorm:"comment:'抄码费'"` // 抄码费
+	// 抄码费计费方式
+	ReadingCodeFeeType string `json:"reading_code_fee_type" gorm:"comment:'抄码费计费方式'"` // 抄码费计费方式
 	// 打冷费
 	ColdFee float64 `json:"cold_fee" gorm:"comment:'打冷费'"` // 打冷费
+	// 打冷费计费方式
+	ColdFeeType string `json:"cold_fee_type" gorm:"comment:'打冷费计费方式'"` // 打冷费计费方式
 
 	CreatedAt string `json:"created_at" gorm:"autoCreateTime;comment:'创建时间'"` // 创建时间
 	UpdatedAt string `json:"updated_at" gorm:"autoUpdateTime;comment:'更新时间'"` // 更新时间
@@ -544,4 +564,10 @@ type StorehouseOutboundOrderDetailRes struct {
 	PurchaseOrderInfo PurchaseOrder `json:"purchase_order_info"`
 	StorehouseInfo    Storehouse    `json:"storehouse_info"`
 	CustomerInfo      Customer      `json:"customer_info"`
+}
+
+type ReqStorehouseUpdateItem struct {
+	StorehouseUuid string      `json:"storehouse_uuid" gorm:"comment:'Storehouse uuid'"` // Storehouse uuid
+	Key            string      `json:"key" gorm:"comment:'修改字段'"`                        // 修改字段
+	Value          interface{} `json:"value" gorm:"comment:'修改值'"`                       // 修改值
 }

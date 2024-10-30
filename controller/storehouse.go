@@ -135,3 +135,39 @@ func (p *StorehouseController) GetAllStorehouse(ctx *app.Context) {
 	}
 	ctx.JSONSuccess(storehouses)
 }
+
+// UpdateStorehouseItem
+func (p *StorehouseController) UpdateStorehouseItem(ctx *app.Context) {
+	var param model.ReqStorehouseUpdateItem
+	if err := ctx.ShouldBindJSON(&param); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := p.StorehouseService.UpdateStorehouseItem(ctx, &param); err != nil {
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess(param)
+}
+
+// UpdateStorehouseItemByMap
+func (p *StorehouseController) UpdateStorehouseItemByMap(ctx *app.Context) {
+	mdata := make(map[string]interface{})
+	if err := ctx.ShouldBindJSON(&mdata); err != nil {
+		ctx.JSONError(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	storehouseUuid := mdata["storehouse_uuid"].(string)
+	if storehouseUuid == "" {
+		ctx.JSONError(http.StatusBadRequest, "storehouse_uuid is required")
+		return
+	}
+	delete(mdata, "storehouse_uuid")
+	if err := p.StorehouseService.UpdateStorehouseItemByMap(ctx, storehouseUuid, mdata); err != nil {
+
+		ctx.JSONError(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSONSuccess("ok")
+}

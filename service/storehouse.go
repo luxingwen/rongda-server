@@ -486,3 +486,28 @@ func (s *StorehouseService) UpdateStorehouseOutboundOrderDetailStatus(ctx *app.C
 
 	return nil
 }
+
+// UpdateStorehouseItem
+func (s *StorehouseService) UpdateStorehouseItem(ctx *app.Context, item *model.ReqStorehouseUpdateItem) error {
+	mdata := make(map[string]interface{}, 0)
+	mdata["updated_at"] = time.Now().Format("2006-01-02 15:04:05")
+	mdata[item.Key] = item.Value
+
+	err := ctx.DB.Model(&model.Storehouse{}).Where("uuid = ?", item.StorehouseUuid).Updates(mdata).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update storehouse  item", err)
+		return errors.New("failed to update storehouse  item: " + err.Error())
+	}
+	return nil
+}
+
+// UpdateStorehouseItemByMap
+func (s *StorehouseService) UpdateStorehouseItemByMap(ctx *app.Context, storehouseUuid string, mdata map[string]interface{}) error {
+	mdata["updated_at"] = time.Now().Format("2006-01-02 15:04:05")
+	err := ctx.DB.Model(&model.Storehouse{}).Where("uuid = ?", storehouseUuid).Updates(mdata).Error
+	if err != nil {
+		ctx.Logger.Error("Failed to update storehouse item by map", err)
+		return errors.New("failed to update storehouse item by map: " + err.Error())
+	}
+	return nil
+}

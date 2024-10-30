@@ -495,6 +495,8 @@ func InitStorehouseRouter(ctx *app.App) {
 		v1.POST("/storehouse/info", storehouseController.GetStorehouseInfo)
 		v1.POST("/storehouse/list", storehouseController.GetStorehouseList)
 		v1.POST("/storehouse/all", storehouseController.GetAllStorehouse)
+		v1.POST("/storehouse/update_item", storehouseController.UpdateStorehouseItem)
+		v1.POST("/storehouse/update_item_by_map", storehouseController.UpdateStorehouseItemByMap)
 	}
 }
 

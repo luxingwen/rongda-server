@@ -731,7 +731,50 @@ func (s *PurchaseOrderService) UpdatePurchaseOrderStatus(ctx *app.Context, order
 }
 
 func (s *PurchaseOrderService) DeletePurchaseOrder(ctx *app.Context, orderNo string) error {
-	err := ctx.DB.Where("order_no = ?", orderNo).Delete(&model.PurchaseOrder{}).Error
+
+	err := ctx.DB.Transaction(func(tx *gorm.DB) error {
+		// 删除采购订单
+
+		err := tx.Where("order_no = ?", orderNo).Delete(&model.PurchaseOrder{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete purchase order", err)
+			return errors.New("failed to delete purchase order")
+		}
+
+		// 删除采购订单商品
+		err = tx.Where("purchase_order_no = ?", orderNo).Delete(&model.PurchaseOrderItem{}).Error
+		if err != nil {
+			ctx.Logger.Error("Failed to delete purchase order item", err)
+			return errors.New("failed to delete purchase order item")
+		}
+
+		// 获取销售订单
+
+		var salesOrder model.SalesOrder
+		if err := tx.Where("purchase_order_no = ?", orderNo).First(&salesOrder).Error; err != nil && err != gorm.ErrRecordNotFound {
+			ctx.Logger.Error("Failed to get sales order by purchase order no", err)
+			return errors.New("failed to get sales order by purchase order no")
+		}
+
+		if err == nil {
+			// 删除销售订单
+			err = tx.Where("purchase_order_no = ?", orderNo).Delete(&model.SalesOrder{}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to delete sales order", err)
+				return errors.New("failed to delete sales order")
+			}
+
+			// 删除销售订单商品
+			err = tx.Where("order_no = ?", salesOrder.OrderNo).Delete(&model.SalesOrderItem{}).Error
+			if err != nil {
+				ctx.Logger.Error("Failed to delete sales order item", err)
+				return errors.New("failed to delete sales order item")
+			}
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		ctx.Logger.Error("Failed to delete purchase order", err)
 		return errors.New("failed to delete purchase order")
