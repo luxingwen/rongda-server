@@ -79,7 +79,7 @@ func (s *CustomerService) UpdateCustomer(ctx *app.Context, customer *model.Custo
 }
 
 func (s *CustomerService) DeleteCustomer(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.Customer{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete customer", err)
 		return errors.New("failed to delete customer")

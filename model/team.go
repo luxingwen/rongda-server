@@ -29,11 +29,11 @@ const (
 )
 
 type TeamRef struct {
-	Id        uint   `gorm:"primary_key" json:"id"`                    // ID 是团队的主键
-	TeamUuid  string `gorm:"type:char(36);unique" json:"team_uuid"`    // UUID 是团队的唯一标识符
-	Category  string `gorm:"type:varchar(100);unique" json:"category"` // Name 是类型
-	CreatedAt string `gorm:"autoCreateTime" json:"created_at"`         // CreatedAt 记录了团队创建的时间
-	UpdatedAt string `gorm:"autoUpdateTime" json:"updated_at"`         // UpdatedAt 记录了团队最后更新的时间
+	Id        uint   `gorm:"primary_key" json:"id"`                 // ID 是团队的主键
+	TeamUuid  string `gorm:"type:char(36);unique" json:"team_uuid"` // UUID 是团队的唯一标识符
+	Category  string `gorm:"type:varchar(100)" json:"category"`     // Name 是类型
+	CreatedAt string `gorm:"autoCreateTime" json:"created_at"`      // CreatedAt 记录了团队创建的时间
+	UpdatedAt string `gorm:"autoUpdateTime" json:"updated_at"`      // UpdatedAt 记录了团队最后更新的时间
 }
 
 // 团队邀请信息
