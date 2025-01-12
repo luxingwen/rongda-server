@@ -77,7 +77,7 @@ func (s *SupplierService) UpdateSupplier(ctx *app.Context, supplier *model.Suppl
 }
 
 func (s *SupplierService) DeleteSupplier(ctx *app.Context, uuid string) error {
-	err := ctx.DB.Where("uuid = ?", uuid).Update("is_deleted", 1).Error
+	err := ctx.DB.Model(&model.Supplier{}).Where("uuid = ?", uuid).Update("is_deleted", 1).Error
 	if err != nil {
 		ctx.Logger.Error("Failed to delete supplier", err)
 		return errors.New("failed to delete supplier")
